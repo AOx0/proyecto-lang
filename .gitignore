@@ -1,0 +1,8 @@
+out/*
+cmake*
+zig-cache
+zig-out
+*.plist
+*.gch
+*.o
+.idea
