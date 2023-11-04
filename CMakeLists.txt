@@ -2,15 +2,13 @@
 # and header files at ./include
 
 cmake_minimum_required(VERSION 3.10)
-project(lox)
+project(lng)
 
-
-# Get all the c files in ./lib and ./src
-file(GLOB LIB_SOURCES lib/*.c)
+# Get all the c files in ./src
 file(GLOB SRC_SOURCES src/*.c)
 
 # Get all the header files in ./include
-file(GLOB HEADERS include/*.h)
+file(GLOB HEADERS src/include/*.h)
 
 # Add the executable
 add_executable(${PROJECT_NAME} ${LIB_SOURCES} ${SRC_SOURCES} ${HEADERS})

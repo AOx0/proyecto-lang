@@ -14,28 +14,28 @@ pub fn build(b: *std.Build) void {
         "-Wno-missing-field-initializers",
     };
 
-    const loxlib = b.addStaticLibrary(.{
-        .name = "loxlib",
+    const lnglib = b.addStaticLibrary(.{
+        .name = "lnglib",
         .target = target,
         .optimize = optimize,
     });
 
-    loxlib.linkLibC();
-    loxlib.addCSourceFiles(&.{ "src/err.c", "src/str.c", "src/vector.c", "src/grammar.c", "src/hashset.c" }, &flags);
+    lnglib.linkLibC();
+    lnglib.addCSourceFiles(&.{ "src/err.c", "src/str.c", "src/vector.c", "src/grammar.c", "src/hashset.c" }, &flags);
 
     {
-        const lox = b.addExecutable(.{
-            .name = "lox",
+        const lng = b.addExecutable(.{
+            .name = "lng",
             .target = target,
             .optimize = optimize,
         });
 
-        b.installArtifact(lox);
-        lox.linkLibC();
-        lox.linkLibrary(loxlib);
-        lox.addCSourceFiles(&.{"src/main.c"}, &flags);
+        b.installArtifact(lng);
+        lng.linkLibC();
+        lng.linkLibrary(lnglib);
+        lng.addCSourceFiles(&.{"src/main.c"}, &flags);
 
-        const run_cmd = b.addRunArtifact(lox);
+        const run_cmd = b.addRunArtifact(lng);
         run_cmd.step.dependOn(b.getInstallStep());
 
         if (b.args) |args| {
@@ -47,18 +47,18 @@ pub fn build(b: *std.Build) void {
     }
 
     {
-        const lox = b.addExecutable(.{
+        const lng = b.addExecutable(.{
             .name = "test",
             .target = target,
             .optimize = optimize,
         });
 
-        b.installArtifact(lox);
-        lox.linkLibC();
-        lox.linkLibrary(loxlib);
-        lox.addCSourceFiles(&.{ "test/main.c", "test/str_test.c", "test/vec_test.c" }, &flags);
+        b.installArtifact(lng);
+        lng.linkLibC();
+        lng.linkLibrary(lnglib);
+        lng.addCSourceFiles(&.{ "test/main.c", "test/str_test.c", "test/vec_test.c" }, &flags);
 
-        const run_cmd = b.addRunArtifact(lox);
+        const run_cmd = b.addRunArtifact(lng);
         run_cmd.step.dependOn(b.getInstallStep());
 
         if (b.args) |args| {
