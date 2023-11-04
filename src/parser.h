@@ -49,6 +49,25 @@
     };
     typedef struct StrSlice StrSlice;
 
+    enum RelOp {
+        And,
+        Or
+    };
+    typedef enum RelOp RelOp;
+
+    enum AddOp {
+        Add,
+        Sub
+    };
+    typedef enum AddOp AddOp;
+
+    enum MulOp {
+        Div,
+        Mod,
+        Mul
+    };
+    typedef enum MulOp MulOp;
+
 
 
 
@@ -62,15 +81,18 @@
      CONST_REAL = 259,
      CONST_ENTERA = 260,
      CONST_CADENA = 261,
-     KW_PROG = 262,
-     KW_CONST = 263,
-     KW_VAR = 264,
-     KW_ARRAY = 265,
-     KW_OF = 266,
-     T_INT = 267,
-     T_REAL = 268,
-     T_STR = 269,
-     T_BOOL = 270
+     RELOP = 262,
+     ADDOP = 263,
+     MULOP = 264,
+     KW_PROG = 265,
+     KW_CONST = 266,
+     KW_VAR = 267,
+     KW_ARRAY = 268,
+     KW_OF = 269,
+     T_INT = 270,
+     T_REAL = 271,
+     T_STR = 272,
+     T_BOOL = 273
    };
 #endif
 
@@ -87,6 +109,9 @@ typedef union YYSTYPE
     char * ident;
     StrSlice slice;
     Vec idents;
+    RelOp relop;
+    AddOp addop;
+    MulOp mulop;
 
 
 

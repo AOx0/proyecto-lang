@@ -41,6 +41,34 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
 "boolean" { return T_BOOL; }
 "array" { return KW_ARRAY; }
 "var" { return KW_VAR; }
+"and" {
+  yylval.relop = And;
+  return RELOP;
+}
+"or" {
+  yylval.relop = Or;
+  return RELOP;
+}
+"+" {
+ yylval.addop = Add;
+ return ADDOP;
+}
+"-" {
+ yylval.addop = Sub;
+ return ADDOP;
+}
+"/"|"div" {
+ yylval.mulop = Div;
+ return MULOP;
+}
+"*" {
+ yylval.mulop = Mul;
+ return MULOP;
+}
+"mod" {
+ yylval.mulop = Mod;
+ return MULOP;
+}
 {LETRA}({LETRA}|{DIGIT})* {
  yylval.slice = (StrSlice) { .start = yytext, .len = yyleng };
  return IDENT;

@@ -18,6 +18,25 @@
         int len;
     };
     typedef struct StrSlice StrSlice;
+
+    enum RelOp {
+        And,
+        Or
+    };
+    typedef enum RelOp RelOp;
+
+    enum AddOp {
+        Add,
+        Sub
+    };
+    typedef enum AddOp AddOp;
+
+    enum MulOp {
+        Div,
+        Mod,
+        Mul
+    };
+    typedef enum MulOp MulOp;
 }
 
 %union {
@@ -27,13 +46,16 @@
     char * ident;
     StrSlice slice;
     Vec idents;
+    RelOp relop;
+    AddOp addop;
+    MulOp mulop;
 }
 
 /* Ident */
 %token <slice> IDENT;
 
 /* Par */
-%token <fnum> CONST_REAL <snum> CONST_ENTERA <slice> CONST_CADENA;
+%token <fnum> CONST_REAL <snum> CONST_ENTERA <slice> CONST_CADENA <relop> RELOP <addop> ADDOP <mulop> MULOP;
 
 /* Keywords */ 
 %token KW_PROG KW_CONST KW_VAR KW_ARRAY KW_OF;

@@ -19,6 +19,9 @@ digito_no_cero: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 signo: + | - | 
 constante_entera: signo numero_entero 
 
+relop: and | or
+addop: + | - 
+mulop: * | /  | div | mod 
 tipo: estandar_tipo | array [ int_num .. int_num ] of estandar_tipo
 
 //TODO: Medio
@@ -31,9 +34,6 @@ exponente: e signo numero_entero | E signo numero_entero |
 contante_real: signo numero_entero . numero_entero | signo numero_entero . numero_entero exponente 
 
 //TODO
-relop: and | or
-addop: + | - 
-mulop: * | /  | div | mod 
 estandar_tipo: int_tipo | real_tipo | string_tipo | booleano_tipo 
 subprograma_decl: subprograma_decl subprograma_declaracion ; | ꜫ
 subprograma_declaracion: subprograma_encabezado  decl subprograma_decl  
