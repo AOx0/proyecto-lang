@@ -1,7 +1,1 @@
 program HOLA ( hola );
-
-var numero: integer;
-
-const NUMERO = ass;
-
-aaa

@@ -5,12 +5,14 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Change current directory to where `build.zig` is.
-    const build_path = b.build_root.path.?;
-    std.log.info("Changing current working directory to: {s}", .{build_path});
-    std.process.changeCurDir(build_path) catch {
-        std.log.err("Failed to set cwd to {s}", .{build_path});
-        return;
+    _ = std.fs.cwd().openFile("build.zig", .{}) catch {
+        // Change current directory to where `build.zig` is.
+        const build_path = b.build_root.path.?;
+        std.log.info("Changing current working directory to: {s}", .{build_path});
+        std.process.changeCurDir(build_path) catch {
+            std.log.err("Failed to set cwd to {s}", .{build_path});
+            return;
+        };
     };
 
     const flags = .{ "-Wall", "-Wextra", "-Werror", "-pedantic", "-pedantic-errors", if (target.isWindows()) "-DWIN" else "" };
