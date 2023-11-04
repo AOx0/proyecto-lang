@@ -71,7 +71,6 @@ int deep_compare(const char *lhs, const char *rhs, size_t len) {
 }
 
 int split_once_test(void) {
-    int res = 0;
     char *original = "Hola h  k amigo";
 
     StrSlice sl = str_slice_from_cstr(original, strlen(original));
