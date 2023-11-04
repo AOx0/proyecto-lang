@@ -85,7 +85,6 @@ int main(int argc, char *argv[]) {
     case 1: {
         char *path = argv[0];
         printf("Ejecutado archivo: %s\n", path);
-
         run_file(path);
         break;
     }
