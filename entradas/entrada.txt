@@ -1,1 +1,3 @@
 program HOLA ( hola );
+var numero, edad: integer;
+const NUMERO = "ass";

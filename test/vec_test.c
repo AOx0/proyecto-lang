@@ -1,4 +1,4 @@
-#include "../src/include/vector.h"
+#include "../src/vector.h"
 
 extern int deep_compare(const char *lhs, const char *rhs, size_t len);
 int push_vec_char(void);

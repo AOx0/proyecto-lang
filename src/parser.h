@@ -39,6 +39,7 @@
     #include <stdlib.h>
     #include <stdint.h>
     #include <inttypes.h>
+    #include "vector.h"
 
     extern FILE *yyin, *yyout;
 
@@ -58,17 +59,18 @@
       know about them.  */
    enum yytokentype {
      IDENT = 258,
-     UINT = 259,
-     STRING = 260,
-     KW_PROG = 261,
-     KW_CONST = 262,
-     KW_VAR = 263,
-     KW_ARRAY = 264,
-     KW_OF = 265,
-     T_INT = 266,
-     T_REAL = 267,
-     T_STR = 268,
-     T_BOOL = 269
+     CONST_REAL = 259,
+     CONST_ENTERA = 260,
+     CONST_CADENA = 261,
+     KW_PROG = 262,
+     KW_CONST = 263,
+     KW_VAR = 264,
+     KW_ARRAY = 265,
+     KW_OF = 266,
+     T_INT = 267,
+     T_REAL = 268,
+     T_STR = 269,
+     T_BOOL = 270
    };
 #endif
 
@@ -81,8 +83,10 @@ typedef union YYSTYPE
 
     int64_t snum;
     uint64_t unum;
+    double fnum;
     char * ident;
     StrSlice slice;
+    Vec idents;
 
 
 

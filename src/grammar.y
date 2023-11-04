@@ -1,9 +1,4 @@
 %code top {
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <stdint.h>
-    #include <inttypes.h>
-
     extern int yylex(void);
     extern int main(void);
     extern void yyerror(char *s);
@@ -14,6 +9,7 @@
     #include <stdlib.h>
     #include <stdint.h>
     #include <inttypes.h>
+    #include "vector.h"
 
     extern FILE *yyin, *yyout;
 
@@ -27,15 +23,17 @@
 %union {
     int64_t snum;
     uint64_t unum;
+    double fnum;
     char * ident;
     StrSlice slice;
+    Vec idents;
 }
 
 /* Ident */
 %token <slice> IDENT;
 
 /* Par */
-%token <unum> UINT <slice> STRING;
+%token <fnum> CONST_REAL <snum> CONST_ENTERA <slice> CONST_CADENA;
 
 /* Keywords */ 
 %token KW_PROG KW_CONST KW_VAR KW_ARRAY KW_OF;
@@ -43,23 +41,51 @@
 /* Types */
 %token T_INT T_REAL T_STR T_BOOL;
 
+%type <idents> ident_lista;
+
 %start programa;
 
 %%
 programa: KW_PROG IDENT '(' ident_lista ')' ';' decl  {
-    printf("Ident: %.*s\n", $2.len, $2.start);
-};
-ident_lista: IDENT ',' ident_lista | IDENT {
-    printf("Cadena: %.*s\n", $1.len, $1.start);
+    printf("Programa: %.*s\n", $2.len, $2.start);
+
+    printf("Entradas: %zu\n", $4.len);
+    for (size_t i=0; i < $4.len; i++) {
+        StrSlice *str = (StrSlice *)vec_get(&$4, i);
+        printf("    - %.*s\n", str->len, str->start);
+    }
 };
 
-/* Declaration */
-decl: decl_var decl | decl_const decl |  ;
-decl_var: KW_VAR ident_lista ':' tipo ';' {
-    
+ident_lista: IDENT ',' ident_lista {
+    StrSlice *sl = vec_push(&$3);
+    *sl = $1;
+    $$ = $3;
 };
-decl_const: KW_CONST IDENT '=' IDENT ';' {
-    printf("Const: %.*s\n", $2.len, $2.start);
+ident_lista: IDENT {
+    $$ = vec_new(sizeof(StrSlice));
+    StrSlice *sl = vec_push(&$$);
+    *sl = $1;
+};
+
+/* Declaration of var and const */
+decl: decl_var | decl_const | ;
+
+decl_var: decl KW_VAR ident_lista ':' tipo ';' {
+    printf("Variables: %zu\n", $3.len);
+    for (size_t i=0; i < $3.len; i++) {
+        StrSlice *str = (StrSlice *)vec_get(&$3, i);
+        printf("    - %.*s\n", str->len, str->start);
+    }
+};
+
+decl_const: decl KW_CONST IDENT '=' CONST_ENTERA ';' {
+    printf("Constante: %ld\n", $5);
+};
+decl_const: decl KW_CONST IDENT '=' CONST_REAL ';' {
+    printf("Constante: %f\n", $5);
+};
+decl_const: decl KW_CONST IDENT '=' CONST_CADENA ';' {
+    printf("Constante: %.*s\n", $5.len, $5.start);
 };
 
  /* Tipo */

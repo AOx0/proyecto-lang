@@ -1,4 +1,4 @@
-#include "include/hashset.h"
+#include "hashset.h"
 #include <stdio.h>
 
 #define HASH_BUFF_SIZE (size_t)20

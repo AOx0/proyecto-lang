@@ -1,5 +1,5 @@
-#include "include/hashset.h"
-#include "include/str.h"
+#include "hashset.h"
+#include "str.h"
 
 #include <stddef.h>
 #include <stdio.h>
