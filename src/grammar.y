@@ -43,6 +43,12 @@
 
 %type <idents> ident_lista;
 
+%destructor { 
+    printf("Dropping:  ");
+    vec_debug_verbose(&$$);
+    vec_drop(&$$);
+} <idents>;
+
 %start programa;
 
 %%
@@ -89,6 +95,6 @@ decl_const: decl KW_CONST IDENT '=' CONST_CADENA ';' {
 };
 
  /* Tipo */
-tipo: estandard_tipo | KW_ARRAY '[' T_INT '.' '.' T_INT ']' KW_OF estandard_tipo;
+tipo: estandard_tipo | KW_ARRAY '[' CONST_ENTERA '.' '.' CONST_ENTERA ']' KW_OF estandard_tipo;
 estandard_tipo: T_INT | T_REAL | T_STR | T_BOOL;
 %%
