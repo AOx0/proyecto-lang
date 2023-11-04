@@ -1,6 +1,0 @@
-S E
-E TE'
-E' +TE'|
-T FT'
-T' *FT'|
-F b|(E)

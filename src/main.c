@@ -6,6 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+int err = 0;
+
+extern FILE *yyin;
+extern int yyparse(void);
+
 int main(int argc, char *argv[]);
 void parse_file(char *path);
 int parse(char *code);
@@ -23,11 +28,41 @@ void parse_prompt(void) {
         str_trim_end(&inp, '\n');
         printf("Ingreso: %s\n", str_as_ref(&inp));
         str_debug(&inp);
+
+        #ifdef WIN
+            FILE *stream = tmpfile();
+
+            if (stream == NULL) {
+                perror("tmpfile");
+                return;
+            } else {
+                fwrite(str_as_ref(&inp), 1, inp.len, stream);
+                rewind(stream);
+                yyin = stream;
+                yyparse();
+            }
+        #else
+            FILE *stream = fmemopen(str_as_ref(&inp), inp.len, "r");
+
+            if (stream == NULL) {
+                perror("fmemopen");
+                return;
+            } else {
+                yyin = stream;
+                yyparse();
+            }
+        #endif
+        
+        fclose(stream);
         str_clear(&inp);
+
+        if (!err)
+            printf("Linea reconocida correctamente\n");
+        else
+            err = 0;
     }
 
     puts("");
-
     str_drop(&inp);
 }
 
@@ -39,14 +74,12 @@ void parse_file(char *path) {
         exit(1);
     }
 
-    String contents = str_new();
+    yyin = f;
+    yyparse();
 
-    if (str_fgets(&contents, 0, f) == 0) {
-        puts("Wrn: No se obtuvo nada del archivo!!");
-        return;
-    }
-     
-    str_drop(&contents);
+    if (!err)
+        printf("Linea reconocida correctamente\n");
+
     fclose(f);
 }
 
@@ -90,5 +123,10 @@ int main(int argc, char *argv[]) {
     }
     }
 
-    return 0;
+    return err;
+}
+
+void yyerror(char *s) {
+    err = 1;
+    fprintf(stderr, "Error: %s\n", s);
 }

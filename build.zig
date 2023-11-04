@@ -13,7 +13,7 @@ pub fn build(b: *std.Build) void {
         return;
     };
 
-    const flags = .{ "-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-pedantic-errors", "-D_XOPEN_SOURCE=600" };
+    const flags = .{ "-Wall", "-Wextra", "-Werror", "-pedantic", "-pedantic-errors", if (target.isWindows()) "-DWIN" else "" };
 
     // The main source code files without `main.c`. It is easier to compile it with specific main
     // files so that, for example, we can test it.
@@ -75,11 +75,6 @@ pub fn build(b: *std.Build) void {
 
         const run_cmd = b.addRunArtifact(lng);
         run_cmd.step.dependOn(b.getInstallStep());
-
-        if (b.args) |args| {
-            run_cmd.addArgs(args);
-        }
-
         const run_step = b.step("test", "Run tests");
         run_step.dependOn(&run_cmd.step);
     }
