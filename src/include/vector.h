@@ -1,5 +1,5 @@
-#ifndef LOX_ARRAY
-#define LOX_ARRAY
+#ifndef LNG_VECTOR
+#define LNG_VECTOR
 
 #include <stdint.h>
 #include <stdio.h>

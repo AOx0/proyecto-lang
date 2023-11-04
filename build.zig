@@ -21,7 +21,7 @@ pub fn build(b: *std.Build) void {
     });
 
     lnglib.linkLibC();
-    lnglib.addCSourceFiles(&.{ "src/err.c", "src/str.c", "src/vector.c", "src/grammar.c", "src/hashset.c" }, &flags);
+    lnglib.addCSourceFiles(&.{ "src/str.c", "src/vector.c", "src/grammar.c", "src/hashset.c" }, &flags);
 
     {
         const lng = b.addExecutable(.{

@@ -1,3 +1,6 @@
+#ifndef LNG_HASHSET
+#define LNG_HASHSET
+
 #include "vector.h"
 #include <stddef.h>
 
@@ -26,3 +29,5 @@ void *hashset_insert(HashSet *hs, void *value);
 void hashset_remove(HashSet *hs, void *value); 
 void *hashset_get(HashSet *hs, void *value); 
 void hashset_drop(HashSet *hs); 
+
+#endif

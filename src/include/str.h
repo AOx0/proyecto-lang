@@ -1,5 +1,5 @@
-#ifndef LOX_STRING
-#define LOX_STRING
+#ifndef LNG_STRING
+#define LNG_STRING
 
 #include <stddef.h>
 #include <stdio.h>

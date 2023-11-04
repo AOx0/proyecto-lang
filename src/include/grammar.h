@@ -1,5 +1,5 @@
-#ifndef LOX_GRAMMAR
-#define LOX_GRAMMAR
+#ifndef LNG_GRAMMAR
+#define LNG_GRAMMAR
 
 #include "str.h"
 #include "vector.h"
