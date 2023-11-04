@@ -1,0 +1,73 @@
+//TODO: Listo
+ident_lista: IDENT | ident_lista  , IDENT
+ident: letra | letra ident_siguiente
+ident_siguiente: letra ident_siguiente | digito ident_siguiente | 
+letra: 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k'| 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'  | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K'| 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'
+digito: '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' 
+int_tipo: integer
+real_tipo: real
+string_tipo: string
+booleano_tipo: boolean
+
+caracter_alfanumérico: letra | digito | '$' | '&' | '/' | '+' | '-' | '*' | '%' | '=' | ':' | '{' | '}' | '>' | '<' | ':' | ';' | '[' | ']' | ',' | '.' | '#'
+cadena: cadena caracter_alfanumérico | 
+constante_cadena: " cadena "
+
+numero_entero: digito_no_cero numero
+numero: numero digito | 
+digito_no_cero: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+signo: + | - | 
+constante_entera: signo numero_entero 
+
+tipo: estandar_tipo | array [ int_num .. int_num ] of estandar_tipo
+
+//TODO: Medio
+programa: program IDENT ( ident_lista ) ; decl subprograma_decl intruccion_compuesta
+decl : decl_variables | decl_constantes 
+decl_variables: decl_variables var ident_lista : tipo ; | 
+decl_constantes: decl_constantes const IDENT = constante_entera; | decl_constantes const IDENT = constante_real; | decl_constantes const IDENT = constante_cadena; | 
+
+exponente: e signo numero_entero | E signo numero_entero |  
+contante_real: signo numero_entero . numero_entero | signo numero_entero . numero_entero exponente 
+
+//TODO
+relop: and | or
+addop: + | - 
+mulop: * | /  | div | mod 
+estandar_tipo: int_tipo | real_tipo | string_tipo | booleano_tipo 
+subprograma_decl: subprograma_decl subprograma_declaracion ; | ꜫ
+subprograma_declaracion: subprograma_encabezado  decl subprograma_decl  
+          intruccion_compuesta
+subprograma_encabezado: function IDENT argumentos : estandar_tipo ; 
+                                                     | procedure IDENT argumentos ; 
+argumentos: ( parametros_lista )  | 
+parametros_lista: ident_lista : tipo | parametros_lista ; ident_lista : tipo
+intruccion_compuesta: begin instrucciones_opcionales end
+instrucciones_opcionale: instrucciones_lista | 
+instrucciones_lista: instrucciones | instrucciones_lista ; instrucciones
+ instrucciones: variable_asignacion  | procedure_instruccion  | instruccion_compuesta | if_instruccion 
+ | repeticion_instruccion | lectura_instruccion | escritura_instruccion
+repeticion_instruccion: while relop_expresion do instrucciones
+                        | for for_asignacion to expresion do instrucciones
+	          | for for_asignacion downto expresion do instrucciones
+lectura_instruccion: read ( IDENT ) | readln ( IDENT )
+escritura_instruccion: write ( constante_cadena , IDENT ) | writeln ( constante_cadena , IDENT )
+		               | write ( constante_cadena  ) | writeln ( constante_cadena  )
+			 | write ( constante_cadena , expresion ) | writeln ( constante_cadena , expresion )
+if_instruccion: if relop_expresion then instrucciones
+    		| if relop_expresion then instrucciones else instrucciones
+variable_asignacion: variable := expresion
+for_asignacion: variable_asignacion | variable
+variable: IDENT | IDENT [ expresion ]
+procedure_instruccion : IDENT | IDENT ( expresion_lista )
+relop_expresion: relop_expresion or relop_and | relop_and 
+relop_and: relop_and and relop_not | relop_not 
+relop_not: not relop_not | relop_paren
+relop_paren: ( relop_expresion ) | relop_expresion_simple 
+relop_expresion_simple: expresion relop expresion
+expresion_lista: expresion | expresion_lista , expresion
+expresion: término | expresion addop término
+término: factor | término mulop factor
+llamado_funcion : IDENT ( expresion_lista )
+factor: ident| IDENT [ expresion ] | llamado_funcion | contante_entera | constante_real | 
+   signo factor | ( expresion )
