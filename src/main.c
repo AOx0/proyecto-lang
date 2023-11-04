@@ -8,10 +8,10 @@
 #include <string.h>
 
 int main(int argc, char *argv[]);
-void run_file(char *path);
-int run(char *code);
+void parse_file(char *path);
+int parse(char *code);
 
-void run_prompt(void) {
+void parse_prompt(void) {
     String inp = str_new();
     while (1) {
         printf(">");
@@ -32,7 +32,7 @@ void run_prompt(void) {
     str_drop(&inp);
 }
 
-void run_file(char *path) {
+void parse_file(char *path) {
     FILE *f = fopen(path, "r");
 
     if (f == NULL) {
@@ -44,17 +44,14 @@ void run_file(char *path) {
 
     if (str_fgets(&contents, 0, f) == 0) {
         puts("Wrn: No se obtuvo nada del archivo!!");
-    } else {
-        Grammar g = gr_new();
-        gr_load(&g, str_as_ref(&contents), contents.len);
-        gr_drop(&g);
+        return;
     }
-
+     
     str_drop(&contents);
     fclose(f);
 }
 
-int run(char *code) {
+int parse(char *code) {
     String buffer = str_new();
     StrSlice sl = str_slice_from_cstr(code, strlen(code));
     StrIter it = str_iter_from_slice(&sl, "\n");
@@ -79,13 +76,13 @@ int main(int argc, char *argv[]) {
     switch (argc) {
     case 0: {
         puts("Corriendo interprete");
-        run_prompt();
+        parse_prompt();
         break;
     }
     case 1: {
         char *path = argv[0];
         printf("Ejecutado archivo: %s\n", path);
-        run_file(path);
+        parse_file(path);
         break;
     }
     default: {

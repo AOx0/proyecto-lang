@@ -13,12 +13,8 @@ int is_stream(FILE *file) {
 }
 
 String str_new(void) {
-    // puts("Creating str");
     String s;
-
-    s.cap = 0;
-    s.len = 0;
-    s.ptr = 0;
+    str_init(&s);
     return s;
 }
 
@@ -29,7 +25,6 @@ void str_init(String *s) {
 }
 
 void str_init_with_cap(String * s, size_t cap) {
-    // printf("Creating str with cap %zu\n", cap);
     str_init(s);
     str_grow(s, cap);
 }
@@ -48,7 +43,6 @@ void str_init_from_slice(String * s, StrSlice * sl) {
 char *str_as_ref(String *s) { return s->ptr; }
 
 String str_with_cap(size_t cap) {
-    // printf("Creating str with cap %zu\n", cap);
     String s = str_new();
 
     str_grow(&s, cap);
@@ -77,9 +71,6 @@ size_t str_fgets(String *s, char termination, FILE *restrict f) {
 
     while (1) {
         size_t read_len = fread(&buff[0], sizeof(char), BUFF_SIZE - 1, f);
-
-        // printf("Read %zu\n", read_len);
-        // printf("Read '%s'\n", buff);
         if (read_len == 0)
             break;
 
@@ -104,7 +95,6 @@ void str_trim_end(String *s, char c) {
 }
 
 void str_grow(String *s, size_t cap) {
-    // printf("Grow %zu -> %zu\n", s->cap, s->cap + cap + 1);
     if (cap == 0)
         return;
 
