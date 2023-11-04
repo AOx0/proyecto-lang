@@ -1,4 +1,4 @@
-#include "include/str.h"
+#include "../src/include/str.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -11,35 +11,45 @@ int split_once_test(void);
 int test_str(void) {
     int res = 0;
 
-    puts("STRT : str::push");
+    printf("%-30s", "STR::push");
     res |= push();
 
     if (!res)
-        puts("    PASS : str::push");
+        puts("PASS");
+    else
+        puts("FAIL");
 
-    puts("STRT : str::slice");
+    printf("%-30s", "STR::slice");
     res |= slice();
 
     if (!res)
-        puts("    PASS : str::slice");
+        puts("PASS");
+    else
+        puts("FAIL");
 
-    puts("STRT : str::iter");
+    printf("%-30s", "STR::iter");
     res |= iter();
 
     if (!res)
-        puts("    PASS : str::iter");
+        puts("PASS");
+    else
+        puts("FAIL");
 
-    puts("STRT : str::iter_lines");
+    printf("%-30s", "STR::iter_lines");
     res |= iter_lines();
 
     if (!res)
-        puts("    PASS : str::iter_lines");
+        puts("PASS");
+    else
+        puts("FAIL");
 
-    puts("STRT : str::split_once");
+    printf("%-30s", "STR::split_once");
     res |= split_once_test();
 
     if (!res)
-        puts("    PASS : str::split_once");
+        puts("PASS");
+    else
+        puts("FAIL");
 
     return res;
 }
@@ -71,11 +81,11 @@ int split_once_test(void) {
     String buff = str_new();
 
     str_push_slice(&buff, &dp.lhs);
-    printf("LHS: '%s'\n", str_as_ref(&buff));
+    // printf("LHS: '%s'\n", str_as_ref(&buff));
 
     str_clear(&buff);
     str_push_slice(&buff, &dp.rhs);
-    printf("RHS: '%s'\n", str_as_ref(&buff));
+    // printf("RHS: '%s'\n", str_as_ref(&buff));
 
     return 0;
 }

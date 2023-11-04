@@ -1,4 +1,4 @@
-#include "include/vector.h"
+#include "../src/include/vector.h"
 
 extern int deep_compare(const char *lhs, const char *rhs, size_t len);
 int push_vec_char(void);
@@ -11,41 +11,53 @@ int rem_u64(void);
 int test_v(void) {
     int res = 0;
 
-    puts("STRT : v::push_vec_char");
+    printf("%-30s", "VEC::push_vec_char");
     res |= push_vec_char();
 
     if (!res)
-        puts("    PASS : v::push_vec_char");
+        puts("PASS");
+    else
+        puts("FAIL");
 
-    puts("STRT : v::push_vec_u64");
+    printf("%-30s", "VEC::push_vec_u64");
     res |= push_vec_u64();
 
     if (!res)
-        puts("    PASS : v::push_vec_u64");
+        puts("PASS");
+    else
+        puts("FAIL");
 
-    puts("STRT : v::get_idx_u64");
+    printf("%-30s", "VEC::get_idx_u64");
     res |= get_idx_u64();
 
     if (!res)
-        puts("    PASS : v::get_idx_u64");
+        puts("PASS");
+    else
+        puts("FAIL");
 
-    puts("STRT : v::pop_u64");
+    printf("%-30s", "VEC::pop_u64");
     res |= pop_u64();
 
     if (!res)
-        puts("    PASS : v::pop_u64");
+        puts("PASS");
+    else
+        puts("FAIL");
 
-    puts("STRT : v::remove_u64");
+    printf("%-30s", "VEC::remove_u64");
     res |= rem_u64();
 
     if (!res)
-        puts("    PASS : v::remove_u64");
+        puts("PASS");
+    else
+        puts("FAIL");
 
-    puts("STRT : v::vec_slice_windows");
+    printf("%-30s", "VEC::vec_slice_windows");
     res |= vec_slice_windows();
 
     if (!res)
-        puts("    PASS : v::vec_slice_windows");
+        puts("PASS");
+    else
+        puts("FAIL");
 
     return res;
 }
