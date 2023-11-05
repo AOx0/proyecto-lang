@@ -107,7 +107,7 @@ decl_var: decl KW_VAR ident_lista ':' tipo ';' {
 };
 
 decl_const: decl KW_CONST IDENT '=' CONST_ENTERA ';' {
-    printf("Constante: %ld\n", $5);
+    printf("Constante: %lld\n", $5);
 };
 decl_const: decl KW_CONST IDENT '=' CONST_REAL ';' {
     printf("Constante: %f\n", $5);

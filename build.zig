@@ -15,7 +15,7 @@ pub fn build(b: *std.Build) void {
         };
     };
 
-    const flags = .{ "-Wall", "-Wextra", "-Werror", "-pedantic", "-pedantic-errors", if (target.isWindows()) "-DWIN" else "" };
+    const flags = .{ "-Wall", "-Wextra", "-pedantic", if (target.isWindows()) "-DWIN" else "" };
 
     // The main source code files without `main.c`. It is easier to compile it with specific main
     // files so that, for example, we can test it.
