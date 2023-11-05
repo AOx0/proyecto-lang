@@ -77,7 +77,7 @@
 %start programa;
 
 %%
-programa: KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl instruccion_compuesta {
+programa: KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl instruccion_compuesta '.' {
     printf("Programa: %.*s\n", $2.len, $2.start);
 
     printf("Entradas: %zu\n", $4.len);

@@ -1,7 +1,7 @@
-program HOLA ( hola );
+program HOLA ( );
 var numero, edad: integer;
 const NUMERO = "ass";
 
 BEGIN
 
-END
+END.
