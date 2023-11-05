@@ -23,6 +23,7 @@ relop: and | or
 addop: + | - 
 mulop: * | /  | div | mod 
 tipo: estandar_tipo | array [ int_num .. int_num ] of estandar_tipo
+estandar_tipo: int_tipo | real_tipo | string_tipo | booleano_tipo 
 
 //TODO: Medio
 programa: program IDENT ( ident_lista ) ; decl subprograma_decl intruccion_compuesta
@@ -34,7 +35,6 @@ exponente: e signo numero_entero | E signo numero_entero |
 contante_real: signo numero_entero . numero_entero | signo numero_entero . numero_entero exponente 
 
 //TODO
-estandar_tipo: int_tipo | real_tipo | string_tipo | booleano_tipo 
 subprograma_decl: subprograma_decl subprograma_declaracion ; | ꜫ
 subprograma_declaracion: subprograma_encabezado  decl subprograma_decl  
           intruccion_compuesta
