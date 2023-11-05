@@ -58,7 +58,10 @@
 %token <fnum> CONST_REAL <snum> CONST_ENTERA <slice> CONST_CADENA <relop> RELOP <addop> ADDOP <mulop> MULOP;
 
 /* Keywords */ 
-%token KW_PROG KW_CONST KW_VAR KW_ARRAY KW_OF;
+%token OP_ASIGN KW_PROCEDURE KW_PROG KW_CONST KW_VAR KW_ARRAY KW_OF KW_FUNC KW_BEGIN KW_END KW_READ KW_READLN KW_WRITE KW_WRITELN KW_WHILE KW_FOR KW_DO KW_TO KW_DOWNTO KW_IF KW_THEN KW_ELSE;
+
+/* OPs */
+%token RELOP_AND RELOP_NOT RELOP_OR;
 
 /* Types */
 %token T_INT T_REAL T_STR T_BOOL;
@@ -74,7 +77,7 @@
 %start programa;
 
 %%
-programa: KW_PROG IDENT '(' ident_lista ')' ';' decl  {
+programa: KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl instruccion_compuesta {
     printf("Programa: %.*s\n", $2.len, $2.start);
 
     printf("Entradas: %zu\n", $4.len);
@@ -84,6 +87,9 @@ programa: KW_PROG IDENT '(' ident_lista ')' ';' decl  {
     }
 };
 
+ident_lista: {
+    $$ = vec_new(sizeof(StrSlice));
+};
 ident_lista: IDENT ',' ident_lista {
     StrSlice *sl = vec_push(&$3);
     *sl = $1;
@@ -119,4 +125,60 @@ decl_const: decl KW_CONST IDENT '=' CONST_CADENA ';' {
  /* Tipo */
 tipo: estandard_tipo | KW_ARRAY '[' CONST_ENTERA '.' '.' CONST_ENTERA ']' KW_OF estandard_tipo;
 estandard_tipo: T_INT | T_REAL | T_STR | T_BOOL;
+
+ /* Subprograma */
+subprograma_decl: subprograma_decl subprograma_declaracion ';' | ;
+subprograma_declaracion: subprograma_encabezado decl subprograma_decl instruccion_compuesta;
+subprograma_encabezado: KW_FUNC IDENT argumentos ':' estandard_tipo ';' 
+                                                     | KW_PROCEDURE IDENT argumentos ';' ;
+
+/* Argumentos */
+argumentos: '(' parametros_lista ')'  | ;
+parametros_lista: ident_lista ':' tipo | parametros_lista ';' ident_lista ':' tipo {
+    printf("Argumentos: %zu\n", $3.len);
+    for (size_t i=0; i < $3.len; i++) {
+        StrSlice *str = (StrSlice *)vec_get(&$3, i);
+        printf("    - %.*s\n", str->len, str->start);
+    }
+}
+
+ /* Instrucciones */
+instruccion_compuesta: KW_BEGIN instrucciones_opcionales KW_END;
+instrucciones_opcionales: instrucciones_lista | /* Empty */ ;
+instrucciones_lista: instrucciones | instrucciones_lista ';' instrucciones;
+instrucciones: variable_asignacion | procedure_instruccion | instruccion_compuesta 
+    | if_instruccion | repeticion_instruccion | lectura_instruccion | escritura_instruccion
+;
+repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones
+    | KW_FOR for_asignacion KW_TO expresion KW_DO instrucciones
+	| KW_FOR for_asignacion KW_DOWNTO expresion KW_DO instrucciones
+;
+lectura_instruccion: KW_READ '(' IDENT ')' | KW_READLN '(' IDENT ')';
+escritura_instruccion: KW_WRITE '(' CONST_CADENA ',' IDENT ')' | KW_WRITELN '(' CONST_CADENA ',' IDENT ')'
+	| KW_WRITE '(' CONST_CADENA  ')' | KW_WRITELN '(' CONST_CADENA  ')'
+	| KW_WRITE '(' CONST_CADENA ',' expresion ')' | KW_WRITELN '(' CONST_CADENA ',' expresion ')';
+if_instruccion: KW_IF relop_expresion KW_THEN instrucciones
+    | KW_IF relop_expresion KW_THEN instrucciones KW_ELSE instrucciones;
+
+ /* Asignacion */
+variable_asignacion: variable OP_ASIGN expresion;
+for_asignacion: variable_asignacion | variable;
+variable: IDENT | IDENT '[' expresion ']';
+procedure_instruccion : IDENT | IDENT '(' expresion_lista ')';
+
+ /* Relop */
+relop_expresion: relop_expresion RELOP_OR relop_and | relop_and;
+relop_and: relop_and RELOP_AND relop_not | relop_not ;
+relop_not: RELOP_NOT relop_not | relop_paren;
+relop_paren: '(' relop_expresion ')' | relop_expresion_simple;
+relop_expresion_simple: expresion relop expresion;
+relop: RELOP_AND | RELOP_OR ;
+
+ /* Expresion */
+expresion_lista: expresion | expresion_lista ',' expresion;
+expresion: termino | expresion ADDOP termino;
+termino: factor | termino MULOP factor;
+llamado_funcion : IDENT '(' expresion_lista ')';
+factor: IDENT | IDENT '[' expresion ']' | llamado_funcion | CONST_ENTERA | CONST_REAL | signo factor | '(' expresion ')';
+signo: ADDOP | ;
 %%
