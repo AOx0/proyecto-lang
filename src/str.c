@@ -24,21 +24,20 @@ void str_init(String *s) {
     s->ptr = 0;
 }
 
-void str_init_with_cap(String * s, size_t cap) {
+void str_init_with_cap(String *s, size_t cap) {
     str_init(s);
     str_grow(s, cap);
 }
 
-void str_init_from_cstr(String * s, char * c, size_t len) {
+void str_init_from_cstr(String *s, char *c, size_t len) {
     str_init(s);
     str_grow(s, len);
     str_push_n(s, c, len);
 }
 
-void str_init_from_slice(String * s, StrSlice * sl) {
+void str_init_from_slice(String *s, StrSlice *sl) {
     str_init_from_cstr(s, sl->ptr, sl->len);
 }
-
 
 char *str_as_ref(String *s) { return s->ptr; }
 
@@ -114,13 +113,12 @@ void str_grow(String *s, size_t cap) {
 }
 
 void str_debug(String *s) {
-    printf("String { ptr: %p, len: %zu, cap: %zu }\n", (void *)s->ptr,
-           s->len, s->cap);
+    printf("String { ptr: %p, len: %zu, cap: %zu }\n", (void *)s->ptr, s->len,
+           s->cap);
 }
 
 void str_slice_debug(StrSlice *sl) {
-    printf("StrSlice { ptr: %p, len: %zu }\n", (void *)sl->ptr,
-           sl->len);
+    printf("StrSlice { ptr: %p, len: %zu }\n", (void *)sl->ptr, sl->len);
 }
 
 void str_debug_verbose(String *s) {
@@ -135,8 +133,7 @@ void str_debug_verbose(String *s) {
 }
 
 void str_slice_debug_verbose(StrSlice *sl) {
-    printf("StrSlice { ptr: %p, len: %zu, val: ", (void *)sl->ptr,
-           sl->len);
+    printf("StrSlice { ptr: %p, len: %zu, val: ", (void *)sl->ptr, sl->len);
 
     for (size_t i = 0; i < sl->len; i++) {
         printf("%.2X ", sl->ptr[i]);
@@ -146,7 +143,8 @@ void str_slice_debug_verbose(StrSlice *sl) {
 }
 
 void str_clear(String *s) {
-    if (s->len == 0) return;
+    if (s->len == 0)
+        return;
 
     memset(s->ptr, 0, s->len);
     s->len = 0;
@@ -208,8 +206,7 @@ void str_slice_self(StrSlice *sl, size_t start, size_t end) {
     sl->len = end - start;
 }
 
-StrSlice str_slice_slice(StrSlice *sl, size_t start,
-                                 size_t end) {
+StrSlice str_slice_slice(StrSlice *sl, size_t start, size_t end) {
     if (start > end) {
         printf("Panic: Index is %zu but end is %zu\n", start, end);
         exit(1);
@@ -283,22 +280,21 @@ StrSlice str_iter_next(StrIter *it) {
     exit(1);
 }
 
-
-StrSliceDupla str_slice_split_once(StrSlice * sl, char * with) {
+StrSliceDupla str_slice_split_once(StrSlice *sl, char *with) {
     size_t sep_len = strlen(with);
-    
+
     StrSliceDupla res;
-    
+
     size_t first = 0;
     int set_first = 0;
-    
-    for (size_t i = 0; i + sep_len <= sl->len ; i++) {
+
+    for (size_t i = 0; i + sep_len <= sl->len; i++) {
         if (strncmp(&sl->ptr[i], with, sep_len) == 0) {
             first = i;
             set_first = 1;
         };
     }
-    
+
     if (set_first) {
         res.lhs = str_slice_slice(sl, 0, first);
         res.rhs = str_slice_slice(sl, first + sep_len, sl->len);
@@ -308,9 +304,6 @@ StrSliceDupla str_slice_split_once(StrSlice * sl, char * with) {
         memcpy(&res.rhs, sl, sizeof(StrSlice));
         res.did_perform = 0;
     }
-    
-    
-    
+
     return res;
 }
-

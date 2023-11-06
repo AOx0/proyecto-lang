@@ -29,30 +29,30 @@ void parse_prompt(void) {
         printf("Ingreso: %s\n", str_as_ref(&inp));
         str_debug(&inp);
 
-        #ifdef WIN
-            FILE *stream = tmpfile();
+#ifdef WIN
+        FILE *stream = tmpfile();
 
-            if (stream == NULL) {
-                perror("tmpfile");
-                return;
-            } else {
-                fwrite(str_as_ref(&inp), 1, inp.len, stream);
-                rewind(stream);
-                yyin = stream;
-                yyparse();
-            }
-        #else
-            FILE *stream = fmemopen(str_as_ref(&inp), inp.len, "r");
+        if (stream == NULL) {
+            perror("tmpfile");
+            return;
+        } else {
+            fwrite(str_as_ref(&inp), 1, inp.len, stream);
+            rewind(stream);
+            yyin = stream;
+            yyparse();
+        }
+#else
+        FILE *stream = fmemopen(str_as_ref(&inp), inp.len, "r");
 
-            if (stream == NULL) {
-                perror("fmemopen");
-                return;
-            } else {
-                yyin = stream;
-                yyparse();
-            }
-        #endif
-        
+        if (stream == NULL) {
+            perror("fmemopen");
+            return;
+        } else {
+            yyin = stream;
+            yyparse();
+        }
+#endif
+
         fclose(stream);
         str_clear(&inp);
 

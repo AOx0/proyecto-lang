@@ -8,7 +8,7 @@ Vec vec_new(size_t t_size) {
     return res;
 }
 
-void vec_init(Vec * v, size_t t_size) {
+void vec_init(Vec *v, size_t t_size) {
     v->ptr = 0;
     v->cap = 0;
     v->len = 0;
@@ -34,12 +34,11 @@ void vec_grow(Vec *v, size_t cap) {
             exit(1);
         }
         v->ptr = ptr;
-        memset(&v->ptr[v->t_size * (v->cap - cap)], 0,
-               cap * v->t_size);
+        memset(&v->ptr[v->t_size * (v->cap - cap)], 0, cap * v->t_size);
     }
 }
 
-void vec_init_with_cap(Vec * v, size_t t_size, size_t cap) {
+void vec_init_with_cap(Vec *v, size_t t_size, size_t cap) {
     vec_init(v, t_size);
     vec_grow(v, cap);
 }
@@ -60,12 +59,13 @@ void *vec_pop(Vec *v) {
 }
 
 void vec_remove(Vec *v, size_t idx) {
-    if (v->len == 0 && v->len < idx) return;
+    if (v->len == 0 && v->len < idx)
+        return;
     if (v->len - 1 == idx) {
         vec_pop(v);
     } else {
-        for (size_t i = idx; i+1<v->len; i++) {
-            memcpy(vec_get(v, i), vec_get(v, i+1), v->t_size);
+        for (size_t i = idx; i + 1 < v->len; i++) {
+            memcpy(vec_get(v, i), vec_get(v, i + 1), v->t_size);
         }
         v->len -= 1;
     }
@@ -81,14 +81,15 @@ void *vec_get(Vec *v, size_t idx) {
 }
 
 void *vec_push(Vec *v) {
-    if (v->cap == v->len) vec_grow(v, 1);
+    if (v->cap == v->len)
+        vec_grow(v, 1);
     v->len += 1;
     return &v->ptr[v->t_size * (v->len - 1)];
 }
 
 void vec_debug(Vec *v) {
-    printf("Vec { ptr: %p, size: %zu, len: %zu, cap: %zu }\n",
-           (void *)v->ptr, v->t_size, v->len, v->cap);
+    printf("Vec { ptr: %p, size: %zu, len: %zu, cap: %zu }\n", (void *)v->ptr,
+           v->t_size, v->len, v->cap);
 }
 
 void vec_debug_verbose(Vec *v) {
@@ -147,8 +148,7 @@ void vec_slice_self(VecSlice *sl, size_t start, size_t end) {
     sl->len = end - start;
 }
 
-VecSlice vec_slice_slice(VecSlice *sl, size_t start,
-                                 size_t end) {
+VecSlice vec_slice_slice(VecSlice *sl, size_t start, size_t end) {
     if (start > end) {
         printf("Panic: Index is %zu but end is %zu\n", start, end);
         exit(1);
@@ -180,9 +180,9 @@ Vec vec_slice_owned(VecSlice *sl) {
 
     if (res.ptr == NULL) {
         puts("Panic: NULL ptr on non-null context");
-        exit(1);   
+        exit(1);
     }
-    
+
     memcpy(res.ptr, sl->ptr, sl->len * sl->t_size);
     res.len = sl->len;
 

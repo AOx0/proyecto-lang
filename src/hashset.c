@@ -19,15 +19,17 @@ HashSet hashset_new(size_t val_size, HashFunction hashf) {
 }
 
 void hashset_debug(HashSet *hs) {
-    printf("HashSet { t_size: %zu, elems: %zu, buff: %zu }\n", hs->val_size, hs->elements, HASH_BUFF_SIZE);
+    printf("HashSet { t_size: %zu, elems: %zu, buff: %zu }\n", hs->val_size,
+           hs->elements, HASH_BUFF_SIZE);
 }
 
 void hashset_debug_verbose(HashSet *hs) {
-    printf("HashSet { t_size: %zu, elems: %zu, buff: %zu, keys: ", hs->val_size, hs->elements, HASH_BUFF_SIZE);
-    
-    for (size_t i=0; i < hs->values.len; i++) {
+    printf("HashSet { t_size: %zu, elems: %zu, buff: %zu, keys: ", hs->val_size,
+           hs->elements, HASH_BUFF_SIZE);
+
+    for (size_t i = 0; i < hs->values.len; i++) {
         Vec *v = (Vec *)vec_get(&hs->values, i);
-        for (size_t j=0; j < v->len; j++) {
+        for (size_t j = 0; j < v->len; j++) {
             printf("%zu(%zu, %zu) ", hs->hashf(vec_get(v, j)).idx, i, j);
         }
     }
@@ -44,11 +46,11 @@ int hashset_contains(HashSet *hs, void *value) {
         return 0;
     } else {
         for (size_t i = 0; i < handler->len; i++) {
-            void * svalue = vec_get(handler, i);
+            void *svalue = vec_get(handler, i);
             HashIdx shash = hs->hashf(svalue);
             if (memcmp(&shash, &idx, sizeof(HashIdx)) == 0) {
                 return 1;
-            } 
+            }
         }
     }
 
@@ -63,16 +65,16 @@ void hashset_remove(HashSet *hs, void *value) {
 
     if (handler->len != 0) {
         for (size_t i = 0; i < handler->len; i++) {
-            void * svalue = vec_get(handler, i);
+            void *svalue = vec_get(handler, i);
             HashIdx shash = hs->hashf(svalue);
             if (memcmp(&shash, &idx, sizeof(HashIdx)) == 0) {
                 vec_remove(handler, i);
-            } 
+            }
         }
     }
 }
 
-void * hashset_get(HashSet *hs, void *value) {
+void *hashset_get(HashSet *hs, void *value) {
     HashIdx idx = hs->hashf(value);
     Vec *handler = (Vec *)vec_get(&hs->values, idx.idx % HASH_BUFF_SIZE);
 
@@ -82,18 +84,18 @@ void * hashset_get(HashSet *hs, void *value) {
         return NULL;
     } else {
         for (size_t i = 0; i < handler->len; i++) {
-            void * svalue = vec_get(handler, i);
+            void *svalue = vec_get(handler, i);
             HashIdx shash = hs->hashf(svalue);
             if (memcmp(&shash, &idx, sizeof(HashIdx)) == 0) {
                 return svalue;
-            } 
+            }
         }
     }
 
     return NULL;
 }
 
-void * hashset_insert(HashSet *hs, void *value) {
+void *hashset_insert(HashSet *hs, void *value) {
     HashIdx idx = hs->hashf(value);
     Vec *handler = (Vec *)vec_get(&hs->values, idx.idx % HASH_BUFF_SIZE);
 
@@ -106,8 +108,8 @@ void * hashset_insert(HashSet *hs, void *value) {
         return val_handler;
     } else {
         for (size_t i = 0; i < handler->len; i++) {
-            void * svalue = vec_get(handler, i);
-            HashIdx shash =hs->hashf(svalue);
+            void *svalue = vec_get(handler, i);
+            HashIdx shash = hs->hashf(svalue);
             if (memcmp(&shash, &idx, sizeof(HashIdx)) == 0) {
                 return NULL;
             } else {
@@ -123,7 +125,7 @@ void * hashset_insert(HashSet *hs, void *value) {
 }
 
 void hashset_drop(HashSet *hs) {
-    for (size_t i=0; i < hs->values.len; i++) {
+    for (size_t i = 0; i < hs->values.len; i++) {
         Vec *v = (Vec *)vec_get(&hs->values, i);
         vec_drop(v);
     }

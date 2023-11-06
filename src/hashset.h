@@ -26,8 +26,8 @@ void hashset_debug_verbose(HashSet *hs);
 void hashset_debug(HashSet *hs);
 int hashset_contains(HashSet *hs, void *value);
 void *hashset_insert(HashSet *hs, void *value);
-void hashset_remove(HashSet *hs, void *value); 
-void *hashset_get(HashSet *hs, void *value); 
-void hashset_drop(HashSet *hs); 
+void hashset_remove(HashSet *hs, void *value);
+void *hashset_get(HashSet *hs, void *value);
+void hashset_drop(HashSet *hs);
 
 #endif
