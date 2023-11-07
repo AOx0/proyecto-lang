@@ -24,6 +24,7 @@ typedef struct VecSlice VecSlice;
 Vec vec_new(size_t t_size);
 void vec_grow(Vec *v, size_t cap);
 Vec vec_with_cap(size_t t_size, size_t cap);
+void vec_shrink(Vec *v);
 void vec_init(Vec *v, size_t t_size);
 void vec_init_with_cap(Vec *v, size_t t_size, size_t cap);
 void *vec_get(Vec *v, size_t idx);

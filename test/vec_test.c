@@ -7,6 +7,7 @@ int get_idx_u64(void);
 int pop_u64(void);
 int vec_slice_windows(void);
 int rem_u64(void);
+int vec_resize(void);
 
 int test_v(void) {
     int res = 0;
@@ -58,6 +59,60 @@ int test_v(void) {
         puts("PASS");
     else
         puts("FAIL");
+
+    printf("%-30s", "VEC::vec_resize");
+    res |= vec_resize();
+
+    if (!res)
+        puts("PASS");
+    else
+        puts("FAIL");
+
+    return res;
+}
+
+int vec_resize(void) {
+    int res = 0;
+
+    Vec a = vec_new(sizeof(char));
+
+    char push_v[] = {'a', 'b', 'c', 'd'};
+
+    for (int i = 0; i < 4; i++) {
+        char *top = vec_push(&a);
+        *top = push_v[i];
+    }
+
+    vec_shrink(&a);
+
+    if (a.cap != 4) res = 1;
+    if (a.len != 4) res = 1;
+
+    vec_pop(&a);
+    vec_pop(&a);
+    
+    if (a.cap != 4) res = 1;
+    if (a.len != 2) res = 1;
+
+    vec_shrink(&a);
+
+    if (a.cap != 2) res = 1;
+    if (a.len != 2) res = 1;
+
+
+    vec_pop(&a);
+    vec_pop(&a);
+
+    if (a.cap != 2) res = 1;
+    if (a.len != 0) res = 1;
+    
+    vec_shrink(&a);
+    
+    if (a.cap != 0) res = 1;
+    if (a.len != 0) res = 1;
+    if (a.ptr != 0) res = 1;
+
+    vec_drop(&a);
 
     return res;
 }

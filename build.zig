@@ -70,6 +70,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         });
 
+        b.installArtifact(lng);
         lng.linkLibC();
         lng.linkLibrary(lnglib);
         lng.addCSourceFiles(&.{ "test/main.c", "test/str_test.c", "test/vec_test.c", "test/hash_test.c" }, &flags);

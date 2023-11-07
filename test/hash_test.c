@@ -76,5 +76,7 @@ int hash_contains(void) {
     if (hashset_contains(&set, &n))
         res = 1;
 
+    hashset_drop(&set);
+
     return res;
 }

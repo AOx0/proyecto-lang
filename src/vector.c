@@ -19,7 +19,20 @@ size_t vec_real_size(Vec *v) { return v->t_size * v->cap; }
 
 size_t vec_real_len(Vec *v) { return v->t_size * v->len; }
 
-void vec_shrink(Vec *v) {}
+void vec_shrink(Vec *v) {
+    v->cap = v->len;
+    if (v->cap == 0) {
+        free(v->ptr);
+        v->ptr = 0;
+    } else {
+        void *ptr = realloc(v->ptr, v->t_size * v->cap);
+        if (!ptr) {
+            puts("Panic: vec_grow: No ptr realloc");
+            exit(1);
+        }
+        v->ptr = ptr;
+    }
+}
 
 void vec_grow(Vec *v, size_t cap) {
     if (cap == 0)
