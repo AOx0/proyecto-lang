@@ -72,7 +72,7 @@ pub fn build(b: *std.Build) void {
 
         lng.linkLibC();
         lng.linkLibrary(lnglib);
-        lng.addCSourceFiles(&.{ "test/main.c", "test/str_test.c", "test/vec_test.c" }, &flags);
+        lng.addCSourceFiles(&.{ "test/main.c", "test/str_test.c", "test/vec_test.c", "test/hash_test.c" }, &flags);
         lng.step.dependOn(gen_step);
 
         const run_cmd = b.addRunArtifact(lng);

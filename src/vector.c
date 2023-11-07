@@ -19,6 +19,10 @@ size_t vec_real_size(Vec *v) { return v->t_size * v->cap; }
 
 size_t vec_real_len(Vec *v) { return v->t_size * v->len; }
 
+void vec_shrink(Vec *v) {
+    
+}
+
 void vec_grow(Vec *v, size_t cap) {
     if (cap == 0)
         return;

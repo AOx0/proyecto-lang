@@ -40,7 +40,7 @@ int hashset_contains(HashSet *hs, void *value) {
     HashIdx idx = hs->hashf(value);
     Vec *handler = (Vec *)vec_get(&hs->values, idx.idx % HASH_BUFF_SIZE);
 
-    printf("Hit %zu\n", idx.idx % HASH_BUFF_SIZE);
+    // printf("Hit %zu\n", idx.idx % HASH_BUFF_SIZE);
 
     if (handler->len == 0) {
         return 0;
@@ -61,7 +61,7 @@ void hashset_remove(HashSet *hs, void *value) {
     HashIdx idx = hs->hashf(value);
     Vec *handler = (Vec *)vec_get(&hs->values, idx.idx % HASH_BUFF_SIZE);
 
-    printf("Hit %zu\n", idx.idx % HASH_BUFF_SIZE);
+    // printf("Hit %zu\n", idx.idx % HASH_BUFF_SIZE);
 
     if (handler->len != 0) {
         for (size_t i = 0; i < handler->len; i++) {
@@ -78,7 +78,7 @@ void *hashset_get(HashSet *hs, void *value) {
     HashIdx idx = hs->hashf(value);
     Vec *handler = (Vec *)vec_get(&hs->values, idx.idx % HASH_BUFF_SIZE);
 
-    printf("Hit %zu\n", idx.idx % HASH_BUFF_SIZE);
+    // printf("Hit %zu\n", idx.idx % HASH_BUFF_SIZE);
 
     if (handler->len == 0) {
         return NULL;
@@ -99,7 +99,7 @@ void *hashset_insert(HashSet *hs, void *value) {
     HashIdx idx = hs->hashf(value);
     Vec *handler = (Vec *)vec_get(&hs->values, idx.idx % HASH_BUFF_SIZE);
 
-    printf("Hit %zu\n", idx.idx % HASH_BUFF_SIZE);
+    // printf("Hit %zu\n", idx.idx % HASH_BUFF_SIZE);
 
     if (handler->len == 0) {
         void *val_handler = vec_push(handler);
