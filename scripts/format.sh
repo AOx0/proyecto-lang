@@ -1,2 +1,2 @@
-#!/usr/bin/sh
-find -type f -name '*.[hc]'|awk -F '\n' '{ system("clang-format -i " $0) }'
+#!/usr/bin/env sh
+find . -type f -name '*.[hc]'|awk -F '\n' '{ print("Formatting: " $0); system("clang-format -i " $0) }'

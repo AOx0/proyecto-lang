@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/usr/bin/env sh
 rm -rf ./out
 
 # Remove generated files by flex & bison

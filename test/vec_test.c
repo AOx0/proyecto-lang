@@ -85,32 +85,42 @@ int vec_resize(void) {
 
     vec_shrink(&a);
 
-    if (a.cap != 4) res = 1;
-    if (a.len != 4) res = 1;
+    if (a.cap != 4)
+        res = 1;
+    if (a.len != 4)
+        res = 1;
 
     vec_pop(&a);
     vec_pop(&a);
-    
-    if (a.cap != 4) res = 1;
-    if (a.len != 2) res = 1;
+
+    if (a.cap != 4)
+        res = 1;
+    if (a.len != 2)
+        res = 1;
 
     vec_shrink(&a);
 
-    if (a.cap != 2) res = 1;
-    if (a.len != 2) res = 1;
-
+    if (a.cap != 2)
+        res = 1;
+    if (a.len != 2)
+        res = 1;
 
     vec_pop(&a);
     vec_pop(&a);
 
-    if (a.cap != 2) res = 1;
-    if (a.len != 0) res = 1;
-    
+    if (a.cap != 2)
+        res = 1;
+    if (a.len != 0)
+        res = 1;
+
     vec_shrink(&a);
-    
-    if (a.cap != 0) res = 1;
-    if (a.len != 0) res = 1;
-    if (a.ptr != 0) res = 1;
+
+    if (a.cap != 0)
+        res = 1;
+    if (a.len != 0)
+        res = 1;
+    if (a.ptr != 0)
+        res = 1;
 
     vec_drop(&a);
 
