@@ -21,6 +21,7 @@ struct HashSet {
 typedef struct HashSet HashSet;
 
 HashSet hashset_new(size_t val_size, HashFunction hashf);
+void hashset_init(HashSet *hs, size_t val_size, HashFunction hashf);
 
 void hashset_debug_verbose(HashSet *hs);
 void hashset_debug(HashSet *hs);

@@ -1,7 +1,29 @@
 %code top {
+    #include "hashset.h"
+    #include "str.h"
     extern int yylex(void);
     extern int main(void);
     extern void yyerror(char *s);
+
+    struct Symbol {
+        StrSlice name;
+        size_t line;
+    };
+
+    typedef struct Symbol Symbol;
+    HashSet tabla;
+    HashIdx hash_symbol(void * s) {
+        HashIdx res;
+        res.idx = 0;
+
+        Symbol *sy = (Symbol *)s;
+
+        for (size_t i=0; i<sy->name.len; i++) {
+            res.idx += sy->name.ptr[i] * (i + 1);
+        }
+        
+        return res;
+    }
 }
 
 %code requires {
@@ -10,14 +32,10 @@
     #include <stdint.h>
     #include <inttypes.h>
     #include "vector.h"
+    #include "hashset.h"
+    #include "str.h"
 
     extern FILE *yyin, *yyout;
-
-    struct StrSlice {
-        char * start;
-        int len;
-    };
-    typedef struct StrSlice StrSlice;
 
     enum RelOp {
         And,
@@ -67,36 +85,42 @@
 %token T_INT T_REAL T_STR T_BOOL;
 
 %type <idents> ident_lista;
+%type <idents> parametros_lista;
 
 %destructor { 
     printf("Dropping:  ");
     vec_debug_verbose(&$$);
     vec_drop(&$$);
-} <idents>;
+} ident_lista;
 
 %start programa;
 
 %%
-programa: KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl instruccion_compuesta '.' {
-    printf("Programa: %.*s\n", $2.len, $2.start);
-
-    printf("Entradas: %zu\n", $4.len);
-    for (size_t i=0; i < $4.len; i++) {
-        StrSlice *str = (StrSlice *)vec_get(&$4, i);
-        printf("    - %.*s\n", str->len, str->start);
+programa: { 
+    printf("Init symbol table\n");
+    hashset_init(&tabla, sizeof(Symbol), hash_symbol); 
+} KW_PROG  IDENT '(' ident_lista ')' ';' decl subprograma_decl instruccion_compuesta '.' {
+    printf("Programa: %.*s\n", $3.len, $3.ptr);
+    printf("Entradas: %zu\n", $5.len);
+    for (size_t i=0; i < $5.len; i++) {
+        StrSlice *str = (StrSlice *)vec_get(&$5, i);
+        printf("    - %.*s\n", (int)str->len, str->ptr);
     }
 };
 
 ident_lista: {
     $$ = vec_new(sizeof(StrSlice));
+    // vec_debug_verbose(&$$);
 };
 ident_lista: IDENT ',' ident_lista {
-    StrSlice *sl = vec_push(&$3);
-    *sl = $1;
     $$ = $3;
+    // vec_debug_verbose(&$$);
+    StrSlice *sl = vec_push(&$$);
+    *sl = $1;
 };
 ident_lista: IDENT {
     $$ = vec_new(sizeof(StrSlice));
+    // vec_debug_verbose(&$$);
     StrSlice *sl = vec_push(&$$);
     *sl = $1;
 };
@@ -108,7 +132,18 @@ decl_var: decl KW_VAR ident_lista ':' tipo ';' {
     printf("Variables: %zu\n", $3.len);
     for (size_t i=0; i < $3.len; i++) {
         StrSlice *str = (StrSlice *)vec_get(&$3, i);
-        printf("    - %.*s\n", str->len, str->start);
+        Symbol s = (Symbol) { .name = *str, .line = 0 };
+        if (hashset_contains(&tabla, &s)) {
+            char lit[] = "Simbolo duplicado: ";
+            String error_str;
+            str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
+            str_push_n(&error_str, str->ptr, str->len);
+            yyerror(str_as_ref(&error_str));
+            str_drop(&error_str);
+            YYABORT;
+        } 
+        hashset_insert(&tabla, &s);
+        printf("    - %.*s\n", (int)str->len, str->ptr);
     }
 };
 
@@ -119,7 +154,7 @@ decl_const: decl KW_CONST IDENT '=' CONST_REAL ';' {
     printf("Constante: %f\n", $5);
 };
 decl_const: decl KW_CONST IDENT '=' CONST_CADENA ';' {
-    printf("Constante: %.*s\n", $5.len, $5.start);
+    printf("Constante: %.*s\n", $5.len, $5.ptr);
 };
 
  /* Tipo */
@@ -129,18 +164,31 @@ estandard_tipo: T_INT | T_REAL | T_STR | T_BOOL;
  /* Subprograma */
 subprograma_decl: subprograma_decl subprograma_declaracion ';' | ;
 subprograma_declaracion: subprograma_encabezado decl subprograma_decl instruccion_compuesta;
-subprograma_encabezado: KW_FUNC IDENT argumentos ':' estandard_tipo ';' 
-                                                     | KW_PROCEDURE IDENT argumentos ';' ;
+subprograma_encabezado: KW_FUNC IDENT {
+    printf("Declarando funcion %.*s\n", (int)$2.len, $2.ptr);
+} argumentos ':' estandard_tipo ';' 
+                                                     | KW_PROCEDURE IDENT {
+    
+    printf("Declarando procedure %.*s\n", (int)$2.len, $2.ptr);
+} argumentos ';' {
+    printf("Declarada %.*s\n", (int)$2.len, $2.ptr);
+};
 
 /* Argumentos */
-argumentos: '(' parametros_lista ')'  | ;
-parametros_lista: ident_lista ':' tipo | parametros_lista ';' ident_lista ':' tipo {
-    printf("Argumentos: %zu\n", $3.len);
-    for (size_t i=0; i < $3.len; i++) {
-        StrSlice *str = (StrSlice *)vec_get(&$3, i);
-        printf("    - %.*s\n", str->len, str->start);
+argumentos: '(' parametros_lista ')' {
+    printf("Argumentos: %zu\n", $2.len);
+    for (size_t i=0; i < $2.len; i++) {
+        StrSlice *str = (StrSlice *)vec_get(&$2, i);
+        printf("    - %.*s\n", (int)str->len, str->ptr);
     }
-}
+} | ;
+parametros_lista: ident_lista ':' tipo {
+    $$ = $1;
+};
+parametros_lista: parametros_lista ';' ident_lista ':' tipo {
+    
+}; 
+
 
  /* Instrucciones */
 instruccion_compuesta: KW_BEGIN instrucciones_opcionales KW_END;

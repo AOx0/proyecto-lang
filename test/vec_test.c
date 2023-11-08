@@ -8,6 +8,7 @@ int pop_u64(void);
 int vec_slice_windows(void);
 int rem_u64(void);
 int vec_resize(void);
+int vec_extend_test(void);
 
 int test_v(void) {
     int res = 0;
@@ -22,6 +23,14 @@ int test_v(void) {
 
     printf("%-30s", "VEC::push_vec_u64");
     res |= push_vec_u64();
+
+    if (!res)
+        puts("PASS");
+    else
+        puts("FAIL");
+
+    printf("%-30s", "VEC::vec_extend_test");
+    res |= vec_extend_test();
 
     if (!res)
         puts("PASS");
@@ -256,6 +265,40 @@ int pop_u64(void) {
     return res;
 }
 
+int vec_extend_test(void) {
+    int res = 0;
+    
+    uint64_t expected[] = {10, 20, 30, 40, 50, 60, 70, 80};
+
+    Vec a = vec_new(sizeof(uint64_t));
+    uint64_t push_v[] = {10, 20, 30, 40};
+
+    for (int i = 0; i < 4; i++) {
+        uint64_t *top = vec_push(&a);
+        *top = push_v[i];
+    }
+    res |= deep_compare((char *)&push_v[0], (char *)a.ptr, 4);
+
+
+    Vec b = vec_new(sizeof(uint64_t));
+    uint64_t push_b[] = {50, 60, 70, 80};
+
+    for (int i = 0; i < 4; i++) {
+        uint64_t *top = vec_push(&b);
+        *top = push_b[i];
+    }
+    res |= deep_compare((char *)&push_b[0], (char *)b.ptr, 4);
+
+    vec_extend(&a, &b);
+
+    res |= deep_compare((char *)&expected[0], (char *)a.ptr, 8);
+
+    vec_drop(&a);
+    vec_drop(&b);
+
+    return res;
+}
+
 int vec_slice_windows(void) {
     int res = 0;
 
@@ -267,6 +310,7 @@ int vec_slice_windows(void) {
     vec_slice_self(&sl, 3, 5);
 
     res |= deep_compare((char *)exp_slice, (char *)sl.ptr, 3);
+
 
     return res;
 }

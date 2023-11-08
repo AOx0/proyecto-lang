@@ -2,6 +2,17 @@
  #include <stdlib.h>
  #include <stdio.h>
  #include "parser.h"
+ #include "str.h"
+
+ size_t comentarios_abiertos = 0;
+ // Su scanner tiene un contador tanto de lineas como de columnasº
+ // Lo hace referenciando con la palabra extern.
+
+ // Tiene un buffer donde va poniendo la cadena que encuentra, y lo manda al arbol sintactico, asi no necesitamos union
+
+ // Le funciono mejor la tabla de simbolos con un programa de 40k+ lineas,
+ // si quita la lista de colisiones la maneja usando un arreglo de apuntadores
+ size_t linea;
 %}
 
 %option prefix="yy"
@@ -9,6 +20,8 @@
 %option nounput
 %option noinput
 %option caseless
+
+%x COMENTARIO
 
 LETRA [a-zA-Z]
 DIGIT [0-9]
@@ -18,10 +31,27 @@ SIGNO [+-]?
 ENTERO {NZDIGIT}{DIGIT}*
 CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"|";"|"["|"]"|","|"."|"#"
 %%
+<COMENTARIO>. { ECHO; }
+<COMENTARIO>\n { yyleng=2; yytext = "\\n"; ECHO; }
+<INITIAL,COMENTARIO>"(*" {
+    if (++comentarios_abiertos == 1) {
+        BEGIN(COMENTARIO); 
+        printf("   Comentario: %s", yytext); 
+    } else {
+        ECHO;
+    }
+}
+<COMENTARIO>"*)"  { 
+   if (--comentarios_abiertos == 0) {
+       BEGIN(INITIAL); printf("%s\n", yytext); 
+   } else {
+       ECHO;
+   }
+}
 {SPACE}+ /* Nah */
 \n /* Nah */
 ["]{CALFANUM}*["] {
- yylval.slice = (StrSlice) { .start = yytext, .len = yyleng };
+ yylval.slice = (StrSlice) { .ptr = yytext, .len = yyleng };
  return CONST_CADENA;
 }
 {SIGNO}{ENTERO} {
@@ -83,7 +113,7 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
  return MULOP;
 }
 {LETRA}({LETRA}|{DIGIT})* {
- yylval.slice = (StrSlice) { .start = yytext, .len = yyleng };
+ yylval.slice = (StrSlice) { .ptr = yytext, .len = yyleng };
  return IDENT;
 }
 %%

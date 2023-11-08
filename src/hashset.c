@@ -18,6 +18,19 @@ HashSet hashset_new(size_t val_size, HashFunction hashf) {
     return res;
 }
 
+void hashset_init(HashSet *hs, size_t val_size, HashFunction hashf) {
+    hs->values = vec_with_cap(sizeof(Vec), HASH_BUFF_SIZE);
+
+    for (size_t i = 0; i < HASH_BUFF_SIZE; i++) {
+        Vec *handler = (Vec *)vec_push(&hs->values);
+        vec_init(handler, val_size);
+    }
+
+    hs->hashf = hashf;
+    hs->val_size = val_size;
+    hs->elements = 0;
+}
+
 void hashset_debug(HashSet *hs) {
     printf("HashSet { t_size: %zu, elems: %zu, buff: %zu }\n", hs->val_size,
            hs->elements, HASH_BUFF_SIZE);

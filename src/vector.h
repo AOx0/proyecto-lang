@@ -36,6 +36,7 @@ void vec_debug_verbose(Vec *v);
 size_t vec_real_size(Vec *v);
 size_t vec_real_len(Vec *v);
 void vec_clear(Vec *v);
+void vec_extend(Vec *v, Vec *o);
 void vec_drop(Vec *v);
 
 void *vec_last(Vec *v);

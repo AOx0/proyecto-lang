@@ -10,6 +10,7 @@ int err = 0;
 
 extern FILE *yyin;
 extern int yyparse(void);
+extern HashSet tabla;
 
 int main(int argc, char *argv[]);
 void parse_file(char *path);
@@ -97,6 +98,7 @@ int parse(char *code) {
         printf("Line: %s\n", str_as_ref(&buffer));
     }
 
+
     str_drop(&buffer);
     return 0;
 }
@@ -122,6 +124,9 @@ int main(int argc, char *argv[]) {
         break;
     }
     }
+
+    // Al final liberamos la tabla de hashes de memoria
+    hashset_drop(&tabla);
 
     return err;
 }
