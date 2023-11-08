@@ -91,7 +91,7 @@
     printf("Dropping:  ");
     vec_debug_verbose(&$$);
     vec_drop(&$$);
-} ident_lista;
+} ident_lista parametros_lista;
 
 %start programa;
 
@@ -186,7 +186,9 @@ parametros_lista: ident_lista ':' tipo {
     $$ = $1;
 };
 parametros_lista: parametros_lista ';' ident_lista ':' tipo {
-    
+    $$ = $1;
+    vec_extend(&$$, &$3);
+    vec_drop(&$3);  
 }; 
 
 
