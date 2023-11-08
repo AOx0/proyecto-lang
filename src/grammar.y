@@ -108,10 +108,6 @@ programa: {
     }
 };
 
-ident_lista: {
-    $$ = vec_new(sizeof(StrSlice));
-    // vec_debug_verbose(&$$);
-};
 ident_lista: IDENT ',' ident_lista {
     $$ = $3;
     // vec_debug_verbose(&$$);
@@ -207,13 +203,20 @@ lectura_instruccion: KW_READ '(' IDENT ')' | KW_READLN '(' IDENT ')';
 escritura_instruccion: KW_WRITE '(' CONST_CADENA ',' IDENT ')' | KW_WRITELN '(' CONST_CADENA ',' IDENT ')'
 	| KW_WRITE '(' CONST_CADENA  ')' | KW_WRITELN '(' CONST_CADENA  ')'
 	| KW_WRITE '(' CONST_CADENA ',' expresion ')' | KW_WRITELN '(' CONST_CADENA ',' expresion ')';
+escritura_instruccion: KW_WRITE '(' IDENT ',' IDENT ')' | KW_WRITELN '(' IDENT ',' IDENT ')'
+	| KW_WRITE '(' IDENT  ')' | KW_WRITELN '(' IDENT  ')'
+	| KW_WRITE '(' IDENT ',' expresion ')' | KW_WRITELN '(' IDENT ',' expresion ')';
 if_instruccion: KW_IF relop_expresion KW_THEN instrucciones
     | KW_IF relop_expresion KW_THEN instrucciones KW_ELSE instrucciones;
 
  /* Asignacion */
-variable_asignacion: variable OP_ASIGN expresion;
+variable_asignacion: variable OP_ASIGN expresion {
+    puts("Asignando a");
+};
 for_asignacion: variable_asignacion | variable;
-variable: IDENT | IDENT '[' expresion ']';
+variable: IDENT | IDENT '[' expresion ']' {
+    printf("Referenciando a %.*s\n", (int)$1.len, $1.ptr);
+};
 procedure_instruccion : IDENT | IDENT '(' expresion_lista ')';
 
  /* Relop */
@@ -229,6 +232,5 @@ expresion_lista: expresion | expresion_lista ',' expresion;
 expresion: termino | expresion ADDOP termino;
 termino: factor | termino MULOP factor;
 llamado_funcion : IDENT '(' expresion_lista ')';
-factor: IDENT | IDENT '[' expresion ']' | llamado_funcion | CONST_ENTERA | CONST_REAL | signo factor | '(' expresion ')';
-signo: ADDOP | ;
+factor: IDENT | IDENT '[' expresion ']' | llamado_funcion | CONST_ENTERA | CONST_REAL | ADDOP factor | factor | '(' expresion ')';
 %%

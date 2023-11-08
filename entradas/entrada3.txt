@@ -29,8 +29,8 @@ begin
     a := 5;
     b := 3;
     multadd;
-    while (a > b) do
+    while (a and b) do
       b := b + 1;
     writeln(c);
-    writeln(d);
+    writeln(d)
 end.

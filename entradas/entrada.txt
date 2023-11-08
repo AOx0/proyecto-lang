@@ -1,5 +1,5 @@
-program HOLA ( );
-var numero, edad, numero: integer;
+program HOLA (input, output);
+var numero, edad: integer;
 const NUMERO = "ass";
 
 BEGIN
