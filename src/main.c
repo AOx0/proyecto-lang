@@ -34,40 +34,17 @@ void parse_file(char *path) {
     fclose(f);
 }
 
-int parse(char *code) {
-    String buffer = str_new();
-    StrSlice sl = str_slice_from_cstr(code, strlen(code));
-    StrIter it = str_iter_from_slice(&sl, "\n");
-
-    while (!it.ended) {
-        StrSlice next = str_iter_next(&it);
-
-        str_clear(&buffer);
-        str_push_slice(&buffer, &next);
-
-        printf("Line: %s\n", str_as_ref(&buffer));
-    }
-
-    str_drop(&buffer);
-    return 0;
-}
-
 int main(int argc, char *argv[]) {
     ++argv;
     --argc;
 
-    switch (argc) {
-    case 1: {
+    if (argc == 1) {
         char *path = argv[0];
         printf("Ejecutado archivo: %s\n", path);
         parse_file(path);
-        break;
-    }
-    default: {
-        puts("Error,usage:\n    lng <FILE>");
-        break;
-    }
-    }
+    } else
+        printf("The lng compiler, translate PASCAL to C code\n\nUsage: lng "
+               "<FILE>\n");
 
     // Al final liberamos la tabla de hashes de memoria
     hashset_drop(&tabla);

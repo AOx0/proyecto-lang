@@ -65,6 +65,7 @@
 extern int yylex(void);
 extern int main(void);
 extern void yyerror(char *s);
+extern size_t linea;
 
 struct Symbol {
         StrSlice name;
@@ -480,7 +481,7 @@ union yyalloc {
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS 39
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES 93
+#define YYNRULES 92
 /* YYNRULES -- Number of states.  */
 #define YYNSTATES 205
 
@@ -520,7 +521,7 @@ static const yytype_uint16 yyprhs[] = {
     143, 148, 155, 162, 167, 172, 179, 186, 191, 196, 203, 210, 217, 224,
     229, 234, 241, 248, 253, 260, 264, 266, 268, 270, 275, 277, 282, 286,
     288, 292, 294, 297, 299, 303, 305, 309, 311, 313, 315, 319, 321, 325,
-    327, 331, 336, 338, 343, 345, 347, 349, 352, 354};
+    327, 331, 336, 338, 343, 345, 347, 349, 352};
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
 static const yytype_int8 yyrhs[] = {
@@ -542,17 +543,17 @@ static const yytype_int8 yyrhs[] = {
     -1, 77, -1, 77, 32, 78, -1, 78, -1, 33, 78, -1, 79, -1, 39, 76, 40, -1, 80,
     -1, 83, 81, 83, -1, 32, -1, 34, -1, 83, -1, 82, 43, 83, -1, 84, -1, 83, 8,
     84, -1, 86, -1, 84, 9,  86, -1, 3,  39, 82, 40, -1, 3,  -1, 3,  46, 83, 47,
-    -1, 85, -1, 5,  -1, 4,  -1, 8,  86, -1, 86, -1, 39, 83, 40, -1};
+    -1, 85, -1, 5,  -1, 4,  -1, 8,  86, -1, 39, 83, 40, -1};
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] = {
-    0,   130, 130, 130, 144, 150, 158, 158, 158, 160, 170, 173, 176, 181,
-    181, 182, 182, 182, 182, 185, 185, 186, 187, 187, 189, 189, 196, 202,
-    203, 206, 214, 215, 215, 216, 216, 217, 217, 217, 218, 218, 218, 218,
-    220, 221, 222, 224, 228, 232, 232, 236, 236, 237, 237, 238, 238, 244,
-    248, 252, 256, 260, 261, 264, 265, 265, 266, 266, 270, 270, 273, 273,
-    274, 274, 275, 275, 276, 276, 277, 278, 278, 281, 281, 282, 282, 283,
-    283, 284, 285, 285, 285, 285, 285, 285, 285, 285};
+    0,   137, 137, 137, 151, 157, 165, 165, 165, 167, 177, 180, 183, 188,
+    188, 189, 189, 189, 189, 192, 192, 193, 194, 194, 196, 196, 203, 209,
+    210, 213, 221, 222, 222, 223, 223, 224, 224, 224, 225, 225, 225, 225,
+    227, 228, 229, 231, 235, 239, 239, 243, 243, 244, 244, 245, 245, 251,
+    255, 259, 263, 267, 268, 271, 272, 272, 273, 273, 277, 277, 280, 280,
+    281, 281, 282, 282, 283, 283, 284, 285, 285, 288, 288, 289, 289, 290,
+    290, 291, 292, 292, 292, 292, 292, 292, 292};
 #endif
 
 #if YYDEBUG || YYERROR_VERBOSE || 0
@@ -664,14 +665,14 @@ static const yytype_uint8 yyr1[] = {
     57, 57, 58, 60, 59, 61, 59, 62, 62, 63, 63, 64, 65, 65, 66, 66, 67, 67, 67,
     67, 67, 67, 67, 68, 68, 68, 69, 69, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70,
     70, 70, 71, 71, 72, 73, 73, 74, 74, 75, 75, 76, 76, 77, 77, 78, 78, 79, 79,
-    80, 81, 81, 82, 82, 83, 83, 84, 84, 85, 86, 86, 86, 86, 86, 86, 86, 86};
+    80, 81, 81, 82, 82, 83, 83, 84, 84, 85, 86, 86, 86, 86, 86, 86, 86};
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] = {
     0, 2, 0, 11, 3, 1, 1, 1, 0, 6, 6, 6, 6, 1, 9, 1, 1, 1, 1, 3, 0, 4, 0, 7,
     0, 5, 3, 0,  3, 5, 3, 1, 0, 1, 3, 1, 1, 1, 1, 1, 1, 1, 4, 6, 6, 4, 4, 6,
     6, 4, 4, 6,  6, 6, 6, 4, 4, 6, 6, 4, 6, 3, 1, 1, 1, 4, 1, 4, 3, 1, 3, 1,
-    2, 1, 3, 1,  3, 1, 1, 1, 3, 1, 3, 1, 3, 4, 1, 4, 1, 1, 1, 2, 1, 3};
+    2, 1, 3, 1,  3, 1, 1, 1, 3, 1, 3, 1, 3, 4, 1, 4, 1, 1, 1, 2, 3};
 
 /* YYDEFACT[STATE-NAME] -- Default reduction number in state STATE-NUM.
    Performed when YYTABLE doesn't specify something else to do.  Zero
@@ -685,7 +686,7 @@ static const yytype_uint8 yydefact[] = {
     11, 10, 12, 0,  9,  0,  0,  0,  0,  0,  79, 0,  0,  0,  0,  0,  0,  0,  0,
     0,  91, 72, 0,  0,  0,  0,  0,  0,  77, 78, 0,  0,  0,  0,  0,  34, 61, 21,
     0,  0,  0,  25, 0,  0,  67, 0,  65, 45, 46, 55, 0,  49, 0,  56, 0,  50, 0,
-    0,  0,  74, 93, 42, 68, 70, 82, 76, 84, 0,  0,  59, 0,  0,  26, 0,  0,  80,
+    0,  0,  74, 92, 42, 68, 70, 82, 76, 84, 0,  0,  59, 0,  0,  26, 0,  0,  80,
     86, 0,  86, 0,  86, 0,  86, 0,  85, 87, 0,  0,  0,  0,  28, 0,  23, 53, 57,
     47, 51, 54, 58, 48, 52, 43, 44, 60, 0,  0,  0,  29, 0,  14};
 
@@ -1244,7 +1245,7 @@ YYSTYPE *yyvaluep;
     case 51: /* ident_lista */
 
     {
-        printf("Dropping:  ");
+        printf("Dropping ident_lista:  ");
         vec_debug_verbose(&((*yyvaluep).idents));
         vec_drop(&((*yyvaluep).idents));
     };
@@ -1253,7 +1254,7 @@ YYSTYPE *yyvaluep;
     case 63: /* parametros_lista */
 
     {
-        printf("Dropping:  ");
+        printf("Dropping parametros_lista:  ");
         vec_debug_verbose(&((*yyvaluep).idents));
         vec_drop(&((*yyvaluep).idents));
     };
@@ -1565,15 +1566,15 @@ yyreduce:
     case 9:
 
     {
-        printf("Variables: %zu\n", (yyvsp[(3) - (6)].idents).len);
+        printf("Declarando variables: %zu\n", (yyvsp[(3) - (6)].idents).len);
         for (size_t i = 0; i < (yyvsp[(3) - (6)].idents).len; i++) {
             Symbol s = (Symbol){
                 .name = *(StrSlice *)vec_get(&(yyvsp[(3) - (6)].idents), i),
                 .scope = 0,
-                .line = 0};
+                .line = linea};
             assert_not_sym_exists(&s);
             hashset_insert(&tabla, &s);
-            printf("    - %.*s\n", (int)s.name.len, s.name.ptr);
+            printf("    - %zu: %.*s\n", linea, (int)s.name.len, s.name.ptr);
         }
     } break;
 

@@ -12,7 +12,7 @@
 
  // Le funciono mejor la tabla de simbolos con un programa de 40k+ lineas,
  // si quita la lista de colisiones la maneja usando un arreglo de apuntadores
- size_t linea;
+ size_t linea = 1;
 %}
 
 %option prefix="yy"
@@ -32,7 +32,7 @@ ENTERO {NZDIGIT}{DIGIT}*
 CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"|";"|"["|"]"|","|"."|"#"
 %%
 <COMENTARIO>. { ECHO; }
-<COMENTARIO>\n { yyleng=2; yytext = "\\n"; ECHO; }
+<COMENTARIO>\n { yyleng=2; yytext = "\\n"; linea++; ECHO; }
 <INITIAL,COMENTARIO>"(*" {
     if (++comentarios_abiertos == 1) {
         BEGIN(COMENTARIO); 
@@ -49,7 +49,7 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
    }
 }
 {SPACE}+ /* Nah */
-\n /* Nah */
+\n { linea++; }
 ["]{CALFANUM}*["] {
  yylval.slice = (StrSlice) { .ptr = yytext, .len = yyleng };
  return CONST_CADENA;

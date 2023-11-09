@@ -509,7 +509,7 @@ size_t comentarios_abiertos = 0;
 
 // Le funciono mejor la tabla de simbolos con un programa de 40k+ lineas,
 // si quita la lista de colisiones la maneja usando un arreglo de apuntadores
-size_t linea;
+size_t linea = 1;
 #define YY_NO_INPUT 1
 
 #define INITIAL 0
@@ -780,6 +780,7 @@ YY_DECL {
                 YY_RULE_SETUP {
                     yyleng = 2;
                     yytext = "\\n";
+                    linea++;
                     ECHO;
                 }
                 YY_BREAK
@@ -809,8 +810,7 @@ YY_DECL {
                 YY_BREAK
             case 6:
                 /* rule 6 can match eol */
-                YY_RULE_SETUP
-                /* Nah */
+                YY_RULE_SETUP { linea++; }
                 YY_BREAK
             case 7:
                 YY_RULE_SETUP {

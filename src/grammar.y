@@ -4,6 +4,7 @@
     extern int yylex(void);
     extern int main(void);
     extern void yyerror(char *s);
+    extern size_t linea;
 
     struct Symbol {
         StrSlice name;
@@ -119,10 +120,16 @@
 %type <idents> parametros_lista;
 
 %destructor { 
-    printf("Dropping:  ");
+    printf("Dropping ident_lista:  ");
     vec_debug_verbose(&$$);
     vec_drop(&$$);
-} ident_lista parametros_lista;
+} ident_lista;
+
+%destructor { 
+    printf("Dropping parametros_lista:  ");
+    vec_debug_verbose(&$$);
+    vec_drop(&$$);
+} parametros_lista;
 
 %start programa;
 
@@ -158,12 +165,12 @@ ident_lista: IDENT {
 decl: decl_var | decl_const | ;
 
 decl_var: decl KW_VAR ident_lista ':' tipo ';' {
-    printf("Variables: %zu\n", $3.len);
+    printf("Declarando variables: %zu\n", $3.len);
     for (size_t i=0; i < $3.len; i++) {
-        Symbol s = (Symbol) { .name = *(StrSlice *)vec_get(&$3, i), .scope = 0, .line = 0 };
+        Symbol s = (Symbol) { .name = *(StrSlice *)vec_get(&$3, i), .scope = 0, .line = linea };
         assert_not_sym_exists(&s);
         hashset_insert(&tabla, &s);
-        printf("    - %.*s\n", (int)s.name.len, s.name.ptr);
+        printf("    - %zu: %.*s\n", linea, (int)s.name.len, s.name.ptr);
     }
 };
 
@@ -282,5 +289,5 @@ expresion_lista: expresion | expresion_lista ',' expresion;
 expresion: termino | expresion ADDOP termino;
 termino: factor | termino MULOP factor;
 llamado_funcion : IDENT '(' expresion_lista ')';
-factor: IDENT | IDENT '[' expresion ']' | llamado_funcion | CONST_ENTERA | CONST_REAL | ADDOP factor | factor | '(' expresion ')';
+factor: IDENT | IDENT '[' expresion ']' | llamado_funcion | CONST_ENTERA | CONST_REAL | ADDOP factor | '(' expresion ')';
 %%
