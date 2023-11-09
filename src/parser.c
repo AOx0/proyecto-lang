@@ -549,10 +549,10 @@ static const yytype_uint16 yyrline[] = {
     0,   130, 130, 130, 144, 150, 158, 158, 158, 160, 170, 173, 176, 181,
     181, 182, 182, 182, 182, 185, 185, 186, 187, 187, 189, 189, 196, 202,
     203, 206, 214, 215, 215, 216, 216, 217, 217, 217, 218, 218, 218, 218,
-    220, 221, 222, 224, 224, 228, 228, 232, 232, 233, 233, 234, 234, 240,
-    240, 241, 241, 245, 246, 249, 250, 250, 251, 251, 255, 255, 258, 258,
-    259, 259, 260, 260, 261, 261, 262, 263, 263, 266, 266, 267, 267, 268,
-    268, 269, 270, 270, 270, 270, 270, 270, 270, 270};
+    220, 221, 222, 224, 228, 232, 232, 236, 236, 237, 237, 238, 238, 244,
+    248, 252, 256, 260, 261, 264, 265, 265, 266, 266, 270, 270, 273, 273,
+    274, 274, 275, 275, 276, 276, 277, 278, 278, 281, 281, 282, 282, 283,
+    283, 284, 285, 285, 285, 285, 285, 285, 285, 285};
 #endif
 
 #if YYDEBUG || YYERROR_VERBOSE || 0
@@ -1641,6 +1641,14 @@ yyreduce:
         vec_drop(&(yyvsp[(3) - (5)].idents));
     } break;
 
+    case 45:
+
+    {
+        Symbol s =
+            (Symbol){.name = (yyvsp[(3) - (4)].slice), .scope = 0, .line = 0};
+        assert_sym_exists(&s);
+    } break;
+
     case 46:
 
     {
@@ -1666,6 +1674,27 @@ yyreduce:
             (Symbol){.name = (yyvsp[(5) - (6)].slice), .scope = 0, .line = 0};
         assert_sym_exists(&s);
         assert_sym_exists(&s1);
+    } break;
+
+    case 55:
+
+    {
+        Symbol s = (Symbol){.name = (yyvsp[(3) - (4)].slice), .line = 0};
+        assert_sym_exists(&s);
+    } break;
+
+    case 56:
+
+    {
+        Symbol s = (Symbol){.name = (yyvsp[(3) - (4)].slice), .line = 0};
+        assert_sym_exists(&s);
+    } break;
+
+    case 57:
+
+    {
+        Symbol s = (Symbol){.name = (yyvsp[(3) - (6)].slice), .line = 0};
+        assert_sym_exists(&s);
     } break;
 
     case 58:

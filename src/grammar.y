@@ -221,7 +221,11 @@ repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones
     | KW_FOR for_asignacion KW_TO expresion KW_DO instrucciones
 	| KW_FOR for_asignacion KW_DOWNTO expresion KW_DO instrucciones
 ;
-lectura_instruccion: KW_READ '(' IDENT ')' | KW_READLN '(' IDENT ')' { 
+lectura_instruccion: KW_READ '(' IDENT ')' {
+    Symbol s = (Symbol) { .name = $3, .scope = 0, .line = 0 };
+    assert_sym_exists(&s);
+}; 
+lectura_instruccion: KW_READLN '(' IDENT ')' { 
     Symbol s = (Symbol) { .name = $3, .scope = 0, .line = 0 };
     assert_sym_exists(&s);
 };
@@ -237,8 +241,19 @@ escritura_instruccion: KW_WRITE '(' IDENT ',' IDENT ')' | KW_WRITELN '(' IDENT '
     assert_sym_exists(&s);
     assert_sym_exists(&s1);
 };
-escritura_instruccion: KW_WRITE '(' IDENT  ')' | KW_WRITELN '(' IDENT  ')'
-	| KW_WRITE '(' IDENT ',' expresion ')' | KW_WRITELN '(' IDENT ',' expresion ')' {
+escritura_instruccion: KW_WRITE '(' IDENT  ')' {
+    Symbol s = (Symbol) { .name = $3, .line = 0 };
+    assert_sym_exists(&s);
+};
+escritura_instruccion: KW_WRITELN '(' IDENT  ')' {
+    Symbol s = (Symbol) { .name = $3, .line = 0 };
+    assert_sym_exists(&s);
+};
+escritura_instruccion: KW_WRITE '(' IDENT ',' expresion ')' {
+    Symbol s = (Symbol) { .name = $3, .line = 0 };
+    assert_sym_exists(&s);
+};
+escritura_instruccion: KW_WRITELN '(' IDENT ',' expresion ')' {
     Symbol s = (Symbol) { .name = $3, .line = 0 };
     assert_sym_exists(&s);
 };

@@ -24,7 +24,7 @@ program principal(input, output);
     procedure multadd;
     begin
         c := Add(a, b);
-        writeln("c");
+        writeln(c);
         d := Mult(c, a)
     end;
 
