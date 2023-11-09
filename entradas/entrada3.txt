@@ -9,12 +9,14 @@ program principal(input, output);
     (* Suma numeros *)
     function Add(a: integer; b: integer) : integer;
     begin
+        writeln(c);
         Add := a + b
     end;
 
     (* Multiplica numeros *)
     function Mult(c: integer; a: integer) : integer;
     begin
+        write(c);
         Mult := c * a
     end;
 
@@ -22,6 +24,7 @@ program principal(input, output);
     procedure multadd;
     begin
         c := Add(a, b);
+        writeln("c");
         d := Mult(c, a)
     end;
 

@@ -102,7 +102,7 @@
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
-# define YYDEBUG 0
+# define YYDEBUG 1
 #endif
 
 /* Enabling verbose error messages.  */
@@ -553,18 +553,18 @@ static const yytype_int8 yyrhs[] =
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
-static const yytype_uint8 yyrline[] =
+static const yytype_uint16 yyrline[] =
 {
        0,    99,    99,    99,   111,   117,   125,   125,   125,   127,
      146,   149,   152,   157,   157,   158,   158,   158,   158,   161,
-     161,   162,   163,   163,   166,   166,   174,   180,   181,   184,
-     192,   193,   193,   194,   194,   195,   195,   195,   196,   196,
-     196,   196,   198,   199,   200,   202,   202,   203,   203,   204,
-     204,   205,   205,   206,   206,   207,   207,   208,   208,   209,
-     210,   213,   216,   216,   217,   217,   220,   220,   223,   223,
-     224,   224,   225,   225,   226,   226,   227,   228,   228,   231,
-     231,   232,   232,   233,   233,   234,   235,   235,   235,   235,
-     235,   235,   235,   235
+     161,   162,   163,   163,   165,   165,   172,   178,   179,   182,
+     190,   191,   191,   192,   192,   193,   193,   193,   194,   194,
+     194,   194,   196,   197,   198,   200,   200,   214,   214,   228,
+     228,   229,   229,   230,   230,   257,   257,   258,   258,   273,
+     274,   277,   278,   278,   279,   279,   293,   293,   296,   296,
+     297,   297,   298,   298,   299,   299,   300,   301,   301,   304,
+     304,   305,   305,   306,   306,   307,   308,   308,   308,   308,
+     308,   308,   308,   308
 };
 #endif
 
@@ -1041,7 +1041,7 @@ do {					\
 
 /* Nonzero means print parse trace.  It is left uninitialized so that
    multiple parsers can coexist.  */
-int yydebug;
+int yydebug = 1;
 #else /* !YYDEBUG */
 # define YYDPRINTF(Args)
 # define YY_SYMBOL_PRINT(Title, Type, Value, Location)
@@ -1715,7 +1715,6 @@ yyreduce:
   case 24:
 
     {
-    
     printf("Declarando procedure %.*s\n", (int)(yyvsp[(2) - (2)].slice).len, (yyvsp[(2) - (2)].slice).ptr);
 ;}
     break;
@@ -1754,17 +1753,107 @@ yyreduce:
 ;}
     break;
 
-  case 61:
+  case 46:
+
+    { 
+    Symbol s = (Symbol) { .name = (yyvsp[(3) - (4)].slice), .line = 0 };
+    if (!hashset_contains(&tabla, &s)) {
+        char lit[] = "Simbolo no declarado: ";
+        String error_str;
+        str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
+        str_push_n(&error_str, (yyvsp[(3) - (4)].slice).ptr, (yyvsp[(3) - (4)].slice).len);
+        yyerror(str_as_ref(&error_str));
+        str_drop(&error_str);
+        YYABORT;
+    } else {
+        printf("Referenciando %.*s\n", (int)(yyvsp[(3) - (4)].slice).len, (yyvsp[(3) - (4)].slice).ptr);
+    }
+;}
+    break;
+
+  case 48:
 
     {
-    puts("Asignando a");
+    Symbol s = (Symbol) { .name = (yyvsp[(5) - (6)].slice), .line = 0 };
+    if (!hashset_contains(&tabla, &s)) {
+        char lit[] = "Simbolo no declarado: ";
+        String error_str;
+        str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
+        str_push_n(&error_str, (yyvsp[(5) - (6)].slice).ptr, (yyvsp[(5) - (6)].slice).len);
+        yyerror(str_as_ref(&error_str));
+        str_drop(&error_str);
+        YYABORT;
+    } else {
+        printf("Referenciando %.*s\n", (int)(yyvsp[(5) - (6)].slice).len, (yyvsp[(5) - (6)].slice).ptr);
+    }
+;}
+    break;
+
+  case 54:
+
+    {
+    Symbol s = (Symbol) { .name = (yyvsp[(3) - (6)].slice), .line = 0 };
+    if (!hashset_contains(&tabla, &s)) {
+        char lit[] = "Simbolo no declarado: ";
+        String error_str;
+        str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
+        str_push_n(&error_str, (yyvsp[(3) - (6)].slice).ptr, (yyvsp[(3) - (6)].slice).len);
+        yyerror(str_as_ref(&error_str));
+        str_drop(&error_str);
+        YYABORT;
+    } else {
+        printf("Referenciando %.*s\n", (int)(yyvsp[(3) - (6)].slice).len, (yyvsp[(3) - (6)].slice).ptr);
+    }
+
+    Symbol s1 = (Symbol) { .name = (yyvsp[(5) - (6)].slice), .line = 0 };
+    if (!hashset_contains(&tabla, &s1)) {
+        char lit[] = "Simbolo no declarado: ";
+        String error_str;
+        str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
+        str_push_n(&error_str, (yyvsp[(5) - (6)].slice).ptr, (yyvsp[(5) - (6)].slice).len);
+        yyerror(str_as_ref(&error_str));
+        str_drop(&error_str);
+        YYABORT;
+    } else {
+        printf("Referenciando %.*s\n", (int)(yyvsp[(5) - (6)].slice).len, (yyvsp[(5) - (6)].slice).ptr);
+    }
+;}
+    break;
+
+  case 58:
+
+    {
+    printf("aaaaaaaaaaaaaaaaaaaa\n");
+    Symbol s = (Symbol) { .name = (yyvsp[(3) - (6)].slice), .line = 0 };
+    if (!hashset_contains(&tabla, &s)) {
+        char lit[] = "Simbolo no declarado: ";
+        String error_str;
+        str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
+        str_push_n(&error_str, (yyvsp[(3) - (6)].slice).ptr, (yyvsp[(3) - (6)].slice).len);
+        yyerror(str_as_ref(&error_str));
+        str_drop(&error_str);
+        YYABORT;
+    } 
+        printf("Referenciando %.*s\n", (int)(yyvsp[(3) - (6)].slice).len, (yyvsp[(3) - (6)].slice).ptr);
+    
 ;}
     break;
 
   case 65:
 
     {
-    printf("Referenciando a %.*s\n", (int)(yyvsp[(1) - (4)].slice).len, (yyvsp[(1) - (4)].slice).ptr);
+    Symbol s = (Symbol) { .name = (yyvsp[(1) - (4)].slice), .line = 0 };
+    if (!hashset_contains(&tabla, &s)) {
+        char lit[] = "Simbolo no declarado: ";
+        String error_str;
+        str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
+        str_push_n(&error_str, (yyvsp[(1) - (4)].slice).ptr, (yyvsp[(1) - (4)].slice).len);
+        yyerror(str_as_ref(&error_str));
+        str_drop(&error_str);
+        YYABORT;
+    } else {
+        printf("Referenciando %.*s\n", (int)(yyvsp[(1) - (4)].slice).len, (yyvsp[(1) - (4)].slice).ptr);
+    }
 ;}
     break;
 
