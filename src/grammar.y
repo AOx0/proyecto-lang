@@ -7,22 +7,53 @@
 
     struct Symbol {
         StrSlice name;
+        size_t scope;
         size_t line;
     };
 
     typedef struct Symbol Symbol;
     HashSet tabla;
+    String wrn_buff;
+    
     HashIdx hash_symbol(void * s) {
         HashIdx res;
         res.idx = 0;
 
         Symbol *sy = (Symbol *)s;
 
-        for (size_t i=0; i<sy->name.len; i++) {
+        for (size_t i=0; i<sy->name.len && i < 5; i++) {
             res.idx += sy->name.ptr[i] * (i + 1);
         }
+
+        res.idx *= sy->scope + 1;
+
+        // printf("HASH: %zu\n", res.idx);
         
         return res;
+    }
+
+    void assert_sym_exists(Symbol * s) {
+        if (!hashset_contains(&tabla, s)) {
+            str_clear(&wrn_buff);
+            char lit[] = "Error: Simbolo no declarado en el scope actual: ";
+            str_push_n(&wrn_buff, &lit[0], strlen(&lit[0]));
+            str_push_n(&wrn_buff, s->name.ptr, s->name.len);
+            yyerror(str_as_ref(&wrn_buff));
+        } else {
+            printf("Existe %.*s\n", (int)s->name.len, s->name.ptr);
+        }
+    }
+    
+    void assert_not_sym_exists(Symbol * s) {
+        if (hashset_contains(&tabla, s)) {
+            str_clear(&wrn_buff);
+            char lit[] = "Error: Simbolo ya declarado en el mismo scope: ";
+            str_push_n(&wrn_buff, &lit[0], strlen(&lit[0]));
+            str_push_n(&wrn_buff, s->name.ptr, s->name.len);
+            yyerror(str_as_ref(&wrn_buff));
+        } else {
+            printf("No existe %.*s\n", (int)s->name.len, s->name.ptr);
+        }
     }
 }
 
@@ -97,8 +128,10 @@
 
 %%
 programa: { 
-    printf("Init symbol table\n");
+    puts("Init symbol table");
     hashset_init(&tabla, sizeof(Symbol), hash_symbol); 
+    puts("Init warning buffer");
+    str_init(&wrn_buff);
 } KW_PROG  IDENT '(' ident_lista ')' ';' decl subprograma_decl instruccion_compuesta '.' {
     printf("Programa: %.*s\n", $3.len, $3.ptr);
     printf("Entradas: %zu\n", $5.len);
@@ -127,19 +160,10 @@ decl: decl_var | decl_const | ;
 decl_var: decl KW_VAR ident_lista ':' tipo ';' {
     printf("Variables: %zu\n", $3.len);
     for (size_t i=0; i < $3.len; i++) {
-        StrSlice *str = (StrSlice *)vec_get(&$3, i);
-        Symbol s = (Symbol) { .name = *str, .line = 0 };
-        if (hashset_contains(&tabla, &s)) {
-            char lit[] = "Simbolo duplicado: ";
-            String error_str;
-            str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
-            str_push_n(&error_str, str->ptr, str->len);
-            yyerror(str_as_ref(&error_str));
-            str_drop(&error_str);
-            YYABORT;
-        } 
+        Symbol s = (Symbol) { .name = *(StrSlice *)vec_get(&$3, i), .scope = 0, .line = 0 };
+        assert_not_sym_exists(&s);
         hashset_insert(&tabla, &s);
-        printf("    - %.*s\n", (int)str->len, str->ptr);
+        printf("    - %.*s\n", (int)s.name.len, s.name.ptr);
     }
 };
 
@@ -198,77 +222,25 @@ repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones
 	| KW_FOR for_asignacion KW_DOWNTO expresion KW_DO instrucciones
 ;
 lectura_instruccion: KW_READ '(' IDENT ')' | KW_READLN '(' IDENT ')' { 
-    Symbol s = (Symbol) { .name = $3, .line = 0 };
-    if (!hashset_contains(&tabla, &s)) {
-        char lit[] = "Simbolo no declarado: ";
-        String error_str;
-        str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
-        str_push_n(&error_str, $3.ptr, $3.len);
-        yyerror(str_as_ref(&error_str));
-        str_drop(&error_str);
-        YYABORT;
-    } else {
-        printf("Referenciando %.*s\n", (int)$3.len, $3.ptr);
-    }
+    Symbol s = (Symbol) { .name = $3, .scope = 0, .line = 0 };
+    assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITE '(' CONST_CADENA ',' IDENT ')' | KW_WRITELN '(' CONST_CADENA ',' IDENT ')' {
-    Symbol s = (Symbol) { .name = $5, .line = 0 };
-    if (!hashset_contains(&tabla, &s)) {
-        char lit[] = "Simbolo no declarado: ";
-        String error_str;
-        str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
-        str_push_n(&error_str, $5.ptr, $5.len);
-        yyerror(str_as_ref(&error_str));
-        str_drop(&error_str);
-        YYABORT;
-    } else {
-        printf("Referenciando %.*s\n", (int)$5.len, $5.ptr);
-    }
+    Symbol s = (Symbol) { .name = $5, .scope = 0, .line = 0 };
+    assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITE '(' CONST_CADENA  ')' | KW_WRITELN '(' CONST_CADENA  ')'
 	| KW_WRITE '(' CONST_CADENA ',' expresion ')' | KW_WRITELN '(' CONST_CADENA ',' expresion ')';
 escritura_instruccion: KW_WRITE '(' IDENT ',' IDENT ')' | KW_WRITELN '(' IDENT ',' IDENT ')' {
-    Symbol s = (Symbol) { .name = $3, .line = 0 };
-    if (!hashset_contains(&tabla, &s)) {
-        char lit[] = "Simbolo no declarado: ";
-        String error_str;
-        str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
-        str_push_n(&error_str, $3.ptr, $3.len);
-        yyerror(str_as_ref(&error_str));
-        str_drop(&error_str);
-        YYABORT;
-    } else {
-        printf("Referenciando %.*s\n", (int)$3.len, $3.ptr);
-    }
-
-    Symbol s1 = (Symbol) { .name = $5, .line = 0 };
-    if (!hashset_contains(&tabla, &s1)) {
-        char lit[] = "Simbolo no declarado: ";
-        String error_str;
-        str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
-        str_push_n(&error_str, $5.ptr, $5.len);
-        yyerror(str_as_ref(&error_str));
-        str_drop(&error_str);
-        YYABORT;
-    } else {
-        printf("Referenciando %.*s\n", (int)$5.len, $5.ptr);
-    }
+    Symbol s = (Symbol) { .name = $3, .scope = 0, .line = 0 };
+    Symbol s1 = (Symbol) { .name = $5, .scope = 0, .line = 0 };
+    assert_sym_exists(&s);
+    assert_sym_exists(&s1);
 };
 escritura_instruccion: KW_WRITE '(' IDENT  ')' | KW_WRITELN '(' IDENT  ')'
 	| KW_WRITE '(' IDENT ',' expresion ')' | KW_WRITELN '(' IDENT ',' expresion ')' {
-    printf("aaaaaaaaaaaaaaaaaaaa\n");
     Symbol s = (Symbol) { .name = $3, .line = 0 };
-    if (!hashset_contains(&tabla, &s)) {
-        char lit[] = "Simbolo no declarado: ";
-        String error_str;
-        str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
-        str_push_n(&error_str, $3.ptr, $3.len);
-        yyerror(str_as_ref(&error_str));
-        str_drop(&error_str);
-        YYABORT;
-    } 
-        printf("Referenciando %.*s\n", (int)$3.len, $3.ptr);
-    
+    assert_sym_exists(&s);
 };
 if_instruccion: KW_IF relop_expresion KW_THEN instrucciones
     | KW_IF relop_expresion KW_THEN instrucciones KW_ELSE instrucciones;
@@ -278,17 +250,7 @@ variable_asignacion: variable OP_ASIGN expresion;
 for_asignacion: variable_asignacion | variable;
 variable: IDENT | IDENT '[' expresion ']' {
     Symbol s = (Symbol) { .name = $1, .line = 0 };
-    if (!hashset_contains(&tabla, &s)) {
-        char lit[] = "Simbolo no declarado: ";
-        String error_str;
-        str_init_from_cstr(&error_str, &lit[0], strlen(&lit[0]));
-        str_push_n(&error_str, $1.ptr, $1.len);
-        yyerror(str_as_ref(&error_str));
-        str_drop(&error_str);
-        YYABORT;
-    } else {
-        printf("Referenciando %.*s\n", (int)$1.len, $1.ptr);
-    }
+    assert_sym_exists(&s);
 };
 procedure_instruccion : IDENT | IDENT '(' expresion_lista ')';
 

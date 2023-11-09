@@ -11,61 +11,11 @@ int err = 0;
 extern FILE *yyin;
 extern int yyparse(void);
 extern HashSet tabla;
+extern String wrn_buff;
 
 int main(int argc, char *argv[]);
 void parse_file(char *path);
 int parse(char *code);
-
-void parse_prompt(void) {
-    String inp = str_new();
-    while (1) {
-        printf(">");
-
-        if (str_getline(&inp) == 0)
-            break;
-        if (strcmp(str_as_ref(&inp), "exit\n") == 0)
-            break;
-
-        str_trim_end(&inp, '\n');
-        printf("Ingreso: %s\n", str_as_ref(&inp));
-        str_debug(&inp);
-
-#ifdef WIN
-        FILE *stream = tmpfile();
-
-        if (stream == NULL) {
-            perror("tmpfile");
-            return;
-        } else {
-            fwrite(str_as_ref(&inp), 1, inp.len, stream);
-            rewind(stream);
-            yyin = stream;
-            yyparse();
-        }
-#else
-        FILE *stream = fmemopen(str_as_ref(&inp), inp.len, "r");
-
-        if (stream == NULL) {
-            perror("fmemopen");
-            return;
-        } else {
-            yyin = stream;
-            yyparse();
-        }
-#endif
-
-        fclose(stream);
-        str_clear(&inp);
-
-        if (!err)
-            printf("Linea reconocida correctamente\n");
-        else
-            err = 0;
-    }
-
-    puts("");
-    str_drop(&inp);
-}
 
 void parse_file(char *path) {
     FILE *f = fopen(path, "r");
@@ -108,11 +58,6 @@ int main(int argc, char *argv[]) {
     --argc;
 
     switch (argc) {
-    case 0: {
-        puts("Corriendo interprete");
-        parse_prompt();
-        break;
-    }
     case 1: {
         char *path = argv[0];
         printf("Ejecutado archivo: %s\n", path);
@@ -127,11 +72,12 @@ int main(int argc, char *argv[]) {
 
     // Al final liberamos la tabla de hashes de memoria
     hashset_drop(&tabla);
+    str_drop(&wrn_buff);
 
     return err;
 }
 
 void yyerror(char *s) {
     err = 1;
-    fprintf(stderr, "Error: %s\n", s);
+    fprintf(stderr, "%s\n", s);
 }
