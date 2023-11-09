@@ -267,7 +267,7 @@ int pop_u64(void) {
 
 int vec_extend_test(void) {
     int res = 0;
-    
+
     uint64_t expected[] = {10, 20, 30, 40, 50, 60, 70, 80};
 
     Vec a = vec_new(sizeof(uint64_t));
@@ -278,7 +278,6 @@ int vec_extend_test(void) {
         *top = push_v[i];
     }
     res |= deep_compare((char *)&push_v[0], (char *)a.ptr, 4);
-
 
     Vec b = vec_new(sizeof(uint64_t));
     uint64_t push_b[] = {50, 60, 70, 80};
@@ -310,7 +309,6 @@ int vec_slice_windows(void) {
     vec_slice_self(&sl, 3, 5);
 
     res |= deep_compare((char *)exp_slice, (char *)sl.ptr, 3);
-
 
     return res;
 }

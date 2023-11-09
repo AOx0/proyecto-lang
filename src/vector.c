@@ -35,13 +35,12 @@ void vec_shrink(Vec *v) {
     }
 }
 
-
 void vec_grow(Vec *v, size_t cap) {
     if (cap == 0)
         return;
 
     // printf("Grow %zu\n", cap);
-    
+
     if (v->cap == 0) {
         v->cap += cap;
         v->ptr = calloc(v->cap, v->t_size);
@@ -129,13 +128,13 @@ void vec_clear(Vec *v) {
 
 void vec_extend(Vec *v, Vec *o) {
     if (v->cap - v->len < o->len) {
-        vec_grow(v, o->len - (v->cap - v->len) );
+        vec_grow(v, o->len - (v->cap - v->len));
     }
-    
-    for (size_t i=0; i < o->len; i++) {
-        void * top = vec_push(v);
+
+    for (size_t i = 0; i < o->len; i++) {
+        void *top = vec_push(v);
         memcpy(top, vec_get(o, i), v->t_size);
-    }    
+    }
 }
 
 void vec_drop(Vec *v) {

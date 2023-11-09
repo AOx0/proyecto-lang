@@ -48,7 +48,6 @@ int parse(char *code) {
         printf("Line: %s\n", str_as_ref(&buffer));
     }
 
-
     str_drop(&buffer);
     return 0;
 }
