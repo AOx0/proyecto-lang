@@ -9,9 +9,10 @@ test: zig_test
 	$(OUT)/test
 
 pre:
-	flex -Ld src/lexer.l
-	bison -ldt src/grammar.y
+	flex -L src/lexer.l
+	bison -ld src/grammar.y
 	
+	sed -i 's/grammar.tab.h/parser.h/g' grammar.tab.c
 	mv lex.yy.c src/lexer.c
 	mv grammar.tab.c src/parser.c
 	mv grammar.tab.h src/parser.h

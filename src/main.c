@@ -14,6 +14,7 @@ extern FILE *yyin;
 extern int yyparse(void);
 extern HashSet tabla;
 extern String wrn_buff;
+extern size_t linea;
 
 int main(int argc, char *argv[]);
 void parse_file(char *path);
@@ -55,12 +56,13 @@ int main(int argc, char *argv[]) {
                "<FILE>\n");
 
     size_t i = 0;
+	puts("Contenidos de la tabla:");
     while (tabla.elements > i) {
         for (size_t j = 0; j < HASH_BUFF_SIZE; j++) {
             Vec * arr = (Vec *)vec_get(&tabla.values, j);
             for (size_t h = 0; h < arr->len; h++) {
                 Symbol * s = (Symbol *)vec_get(arr, h);
-                printf("Elemento %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
+                printf(" - Simbolo (%zu,%zu) %zu(%zu): %.*s\n", j, h, s->line, s->scope, (int)s->name.len, s->name.ptr);
                 i+=1;
             }
         }
@@ -75,5 +77,5 @@ int main(int argc, char *argv[]) {
 
 void yyerror(char *s) {
     err = 1;
-    fprintf(stderr, "%s\n", s);
+    fprintf(stderr, "Line %zu: %s\n", linea, s);
 }

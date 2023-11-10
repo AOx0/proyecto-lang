@@ -32,21 +32,21 @@ SIGNO [+-]?
 ENTERO {NZDIGIT}{DIGIT}*
 CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"|";"|"["|"]"|","|"."|"#"
 %%
-<COMENTARIO>. { ECHO; }
-<COMENTARIO>\n { yyleng=2; yytext = "\\n"; linea++; ECHO; }
+<COMENTARIO>. { /*ECHO;*/ }
+<COMENTARIO>\n { yyleng=2; yytext = "\\n"; linea++; /*ECHO;*/ }
 <INITIAL,COMENTARIO>"(*" {
     if (++comentarios_abiertos == 1) {
         BEGIN(COMENTARIO); 
-        printf("   Comentario: %s", yytext); 
+        // printf("   Comentario: %s", yytext); 
     } else {
-        ECHO;
+        // ECHO;
     }
 }
 <COMENTARIO>"*)"  { 
    if (--comentarios_abiertos == 0) {
-       BEGIN(INITIAL); printf("%s\n", yytext); 
+       BEGIN(INITIAL); /*printf("%s\n", yytext); */
    } else {
-       ECHO;
+       // ECHO;
    }
 }
 {SPACE}+ /* Nah */

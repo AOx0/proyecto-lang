@@ -7,6 +7,7 @@
     extern void yyerror(char *s);
     extern size_t linea;
     extern size_t scope;
+	size_t fun_id = 0;
 
     HashSet tabla;
     String wrn_buff;
@@ -23,7 +24,7 @@
 
         res.idx *= sy->scope + 1;
 
-        printf("HASH: %zu FROM: %zu(%zu): %.*s\n", res.idx, sy->line, sy->scope, (int)sy->name.len, sy->name.ptr);
+        // printf("HASH: %zu FROM: %zu(%zu): %.*s\n", res.idx, sy->line, sy->scope, (int)sy->name.len, sy->name.ptr);
         
         return res;
     }
@@ -36,7 +37,7 @@
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
             yyerror(str_as_ref(&wrn_buff));
         } else {
-            printf("Existe %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
+            // printf("Existe %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
         }
     }
     
@@ -48,7 +49,7 @@
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
             yyerror(str_as_ref(&wrn_buff));
         } else {
-            printf("No existe %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
+            // printf("No existe %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
         }
     }
 }
@@ -195,16 +196,24 @@ subprograma_decl: subprograma_decl subprograma_declaracion ';' | ;
 subprograma_declaracion: subprograma_encabezado decl subprograma_decl instruccion_compuesta;
 subprograma_encabezado: KW_FUNC IDENT {
     printf("Declarando funcion %.*s\n", (int)$2.len, $2.ptr);
-    scope++;
+    fun_id++;
+	scope+=fun_id;
+	Symbol s = (Symbol) { .name = $2, .scope = scope, .line = linea };
+	assert_not_sym_exists(&s);
+	hashset_insert(&tabla, &s);
 } argumentos ':' estandard_tipo ';' {
-    scope--;
+    scope-=fun_id;
     printf("Declarada %.*s\n", (int)$2.len, $2.ptr);
 } ;
 subprograma_encabezado: KW_PROCEDURE IDENT {
-    scope++;
+    fun_id++;
+	scope+=fun_id;
     printf("Declarando procedure %.*s\n", (int)$2.len, $2.ptr);
+	Symbol s = (Symbol) { .name = $2, .scope = scope, .line = linea };
+	assert_not_sym_exists(&s);
+	hashset_insert(&tabla, &s);
 } argumentos ';' {
-    scope--;
+    scope-=fun_id;
     printf("Declarada %.*s\n", (int)$2.len, $2.ptr);
 };
 
@@ -215,6 +224,7 @@ argumentos: '(' parametros_lista ')' {
         Symbol s = (Symbol) { .name = *(StrSlice *)vec_get(&$2, i), .scope = scope, .line = linea };
         assert_not_sym_exists(&s);
         hashset_insert(&tabla, &s);
+		printf("    - %.*s\n", (int)s.name.len, s.name.ptr);
     }
 } | ;
 parametros_lista: ident_lista ':' tipo {
