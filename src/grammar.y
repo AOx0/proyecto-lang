@@ -8,6 +8,8 @@
     extern size_t linea;
     extern size_t scope;
 	size_t fun_id = 0;
+	
+	#define SYM(s) (Symbol){ .name = s, .scope = scope, .line = linea }
 
     HashSet tabla;
     String wrn_buff;
@@ -149,6 +151,8 @@ programa: {
         StrSlice *str = (StrSlice *)vec_get(&$5, i);
         printf("    - %.*s\n", (int)str->len, str->ptr);
     }
+	
+	vec_drop(&$5);
 };
 
 ident_lista: IDENT ',' ident_lista {
@@ -170,11 +174,13 @@ decl: decl_var | decl_const | ;
 decl_var: decl KW_VAR ident_lista ':' tipo ';' {
     printf("Declarando variables: %zu\n", $3.len);
     for (size_t i=0; i < $3.len; i++) {
-        Symbol s = (Symbol) { .name = *(StrSlice *)vec_get(&$3, i), .scope = scope, .line = linea };
+        Symbol s = SYM(*(StrSlice *)vec_get(&$3, i));
         assert_not_sym_exists(&s);
         hashset_insert(&tabla, &s);
     printf("    - %zu: %zu: %.*s\n", linea, scope, (int)s.name.len, s.name.ptr);
     }
+	
+	vec_drop(&$3);
 };
 
 decl_const: decl KW_CONST IDENT '=' CONST_ENTERA ';' {
@@ -198,7 +204,7 @@ subprograma_encabezado: KW_FUNC IDENT {
     printf("Declarando funcion %.*s\n", (int)$2.len, $2.ptr);
     fun_id++;
 	scope+=fun_id;
-	Symbol s = (Symbol) { .name = $2, .scope = scope, .line = linea };
+	Symbol s = SYM($2);
 	assert_not_sym_exists(&s);
 	hashset_insert(&tabla, &s);
 } argumentos ':' estandard_tipo ';' {
@@ -209,7 +215,7 @@ subprograma_encabezado: KW_PROCEDURE IDENT {
     fun_id++;
 	scope+=fun_id;
     printf("Declarando procedure %.*s\n", (int)$2.len, $2.ptr);
-	Symbol s = (Symbol) { .name = $2, .scope = scope, .line = linea };
+	Symbol s = SYM($2);
 	assert_not_sym_exists(&s);
 	hashset_insert(&tabla, &s);
 } argumentos ';' {
@@ -221,11 +227,13 @@ subprograma_encabezado: KW_PROCEDURE IDENT {
 argumentos: '(' parametros_lista ')' {
     printf("Argumentos: %zu\n", $2.len);
     for (size_t i=0; i < $2.len; i++) {
-        Symbol s = (Symbol) { .name = *(StrSlice *)vec_get(&$2, i), .scope = scope, .line = linea };
+        Symbol s = SYM(*(StrSlice *)vec_get(&$2, i));
         assert_not_sym_exists(&s);
         hashset_insert(&tabla, &s);
 		printf("    - %.*s\n", (int)s.name.len, s.name.ptr);
     }
+	
+	vec_drop(&$2);
 } | ;
 parametros_lista: ident_lista ':' tipo {
     $$ = $1;
@@ -249,39 +257,39 @@ repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones
 	| KW_FOR for_asignacion KW_DOWNTO expresion KW_DO instrucciones
 ;
 lectura_instruccion: KW_READ '(' IDENT ')' {
-    Symbol s = (Symbol) { .name = $3, .scope = scope, .line = linea };
+    Symbol s = SYM($3);
     assert_sym_exists(&s);
 }; 
 lectura_instruccion: KW_READLN '(' IDENT ')' { 
-    Symbol s = (Symbol) { .name = $3, .scope = scope, .line = linea };
+    Symbol s = SYM($3);
     assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITE '(' CONST_CADENA ',' IDENT ')' | KW_WRITELN '(' CONST_CADENA ',' IDENT ')' {
-    Symbol s = (Symbol) { .name = $5, .scope = scope, .line = linea };
+    Symbol s = SYM($5);
     assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITE '(' CONST_CADENA  ')' | KW_WRITELN '(' CONST_CADENA  ')'
 	| KW_WRITE '(' CONST_CADENA ',' expresion ')' | KW_WRITELN '(' CONST_CADENA ',' expresion ')';
 escritura_instruccion: KW_WRITE '(' IDENT ',' IDENT ')' | KW_WRITELN '(' IDENT ',' IDENT ')' {
-    Symbol s = (Symbol) { .name = $3, .scope = scope, .line = linea };
-    Symbol s1 = (Symbol) { .name = $5, .scope = scope, .line = linea };
+    Symbol s = SYM($3);
+    Symbol s1 = SYM($5);
     assert_sym_exists(&s);
     assert_sym_exists(&s1);
 };
 escritura_instruccion: KW_WRITE '(' IDENT  ')' {
-    Symbol s = (Symbol) { .name = $3, .line = linea };
+    Symbol s = SYM($3);
     assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITELN '(' IDENT  ')' {
-    Symbol s = (Symbol) { .name = $3, .line = linea };
+    Symbol s = SYM($3);
     assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITE '(' IDENT ',' expresion ')' {
-    Symbol s = (Symbol) { .name = $3, .line = linea };
+    Symbol s = SYM($3);
     assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITELN '(' IDENT ',' expresion ')' {
-    Symbol s = (Symbol) { .name = $3, .line = linea };
+    Symbol s = SYM($3);
     assert_sym_exists(&s);
 };
 if_instruccion: KW_IF relop_expresion KW_THEN instrucciones
@@ -291,7 +299,7 @@ if_instruccion: KW_IF relop_expresion KW_THEN instrucciones
 variable_asignacion: variable OP_ASIGN expresion; 
 for_asignacion: variable_asignacion | variable;
 variable: IDENT | IDENT '[' expresion ']' {
-    Symbol s = (Symbol) { .name = $1, .line = linea };
+    Symbol s = SYM($1);
     assert_sym_exists(&s);
 };
 procedure_instruccion : IDENT | IDENT '(' expresion_lista ')';

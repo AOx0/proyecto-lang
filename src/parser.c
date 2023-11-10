@@ -74,6 +74,8 @@
     extern size_t linea;
     extern size_t scope;
 	size_t fun_id = 0;
+	
+	#define SYM(s) (Symbol){ .name = s, .scope = scope, .line = linea }
 
     HashSet tabla;
     String wrn_buff;
@@ -625,16 +627,16 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   140,   140,   140,   154,   160,   168,   168,   168,   170,
-     180,   183,   186,   191,   191,   192,   192,   192,   192,   195,
-     195,   196,   197,   197,   208,   208,   221,   229,   230,   233,
-     241,   242,   242,   243,   243,   244,   244,   244,   245,   245,
-     245,   245,   247,   248,   249,   251,   255,   259,   259,   263,
-     263,   264,   264,   265,   265,   271,   275,   279,   283,   287,
-     288,   291,   292,   292,   293,   293,   297,   297,   300,   300,
-     301,   301,   302,   302,   303,   303,   304,   305,   305,   308,
-     308,   309,   309,   310,   310,   311,   312,   312,   312,   312,
-     312,   312,   312
+       0,   142,   142,   142,   158,   164,   172,   172,   172,   174,
+     186,   189,   192,   197,   197,   198,   198,   198,   198,   201,
+     201,   202,   203,   203,   214,   214,   227,   237,   238,   241,
+     249,   250,   250,   251,   251,   252,   252,   252,   253,   253,
+     253,   253,   255,   256,   257,   259,   263,   267,   267,   271,
+     271,   272,   272,   273,   273,   279,   283,   287,   291,   295,
+     296,   299,   300,   300,   301,   301,   305,   305,   308,   308,
+     309,   309,   310,   310,   311,   311,   312,   313,   313,   316,
+     316,   317,   317,   318,   318,   319,   320,   320,   320,   320,
+     320,   320,   320
 };
 #endif
 
@@ -1370,6 +1372,8 @@ yyreduce:
         StrSlice *str = (StrSlice *)vec_get(&(yyvsp[-6].idents), i);
         printf("    - %.*s\n", (int)str->len, str->ptr);
     }
+	
+	vec_drop(&(yyvsp[-6].idents));
 }
     break;
 
@@ -1395,11 +1399,13 @@ yyreduce:
                                                {
     printf("Declarando variables: %zu\n", (yyvsp[-3].idents).len);
     for (size_t i=0; i < (yyvsp[-3].idents).len; i++) {
-        Symbol s = (Symbol) { .name = *(StrSlice *)vec_get(&(yyvsp[-3].idents), i), .scope = scope, .line = linea };
+        Symbol s = SYM(*(StrSlice *)vec_get(&(yyvsp[-3].idents), i));
         assert_not_sym_exists(&s);
         hashset_insert(&tabla, &s);
     printf("    - %zu: %zu: %.*s\n", linea, scope, (int)s.name.len, s.name.ptr);
     }
+	
+	vec_drop(&(yyvsp[-3].idents));
 }
     break;
 
@@ -1426,7 +1432,7 @@ yyreduce:
     printf("Declarando funcion %.*s\n", (int)(yyvsp[0].slice).len, (yyvsp[0].slice).ptr);
     fun_id++;
 	scope+=fun_id;
-	Symbol s = (Symbol) { .name = (yyvsp[0].slice), .scope = scope, .line = linea };
+	Symbol s = SYM((yyvsp[0].slice));
 	assert_not_sym_exists(&s);
 	hashset_insert(&tabla, &s);
 }
@@ -1444,7 +1450,7 @@ yyreduce:
     fun_id++;
 	scope+=fun_id;
     printf("Declarando procedure %.*s\n", (int)(yyvsp[0].slice).len, (yyvsp[0].slice).ptr);
-	Symbol s = (Symbol) { .name = (yyvsp[0].slice), .scope = scope, .line = linea };
+	Symbol s = SYM((yyvsp[0].slice));
 	assert_not_sym_exists(&s);
 	hashset_insert(&tabla, &s);
 }
@@ -1461,11 +1467,13 @@ yyreduce:
                                      {
     printf("Argumentos: %zu\n", (yyvsp[-1].idents).len);
     for (size_t i=0; i < (yyvsp[-1].idents).len; i++) {
-        Symbol s = (Symbol) { .name = *(StrSlice *)vec_get(&(yyvsp[-1].idents), i), .scope = scope, .line = linea };
+        Symbol s = SYM(*(StrSlice *)vec_get(&(yyvsp[-1].idents), i));
         assert_not_sym_exists(&s);
         hashset_insert(&tabla, &s);
 		printf("    - %.*s\n", (int)s.name.len, s.name.ptr);
     }
+	
+	vec_drop(&(yyvsp[-1].idents));
 }
     break;
 
@@ -1485,29 +1493,29 @@ yyreduce:
 
   case 45: /* lectura_instruccion: KW_READ '(' IDENT ')'  */
                                            {
-    Symbol s = (Symbol) { .name = (yyvsp[-1].slice), .scope = scope, .line = linea };
+    Symbol s = SYM((yyvsp[-1].slice));
     assert_sym_exists(&s);
 }
     break;
 
   case 46: /* lectura_instruccion: KW_READLN '(' IDENT ')'  */
                                              { 
-    Symbol s = (Symbol) { .name = (yyvsp[-1].slice), .scope = scope, .line = linea };
+    Symbol s = SYM((yyvsp[-1].slice));
     assert_sym_exists(&s);
 }
     break;
 
   case 48: /* escritura_instruccion: KW_WRITELN '(' CONST_CADENA ',' IDENT ')'  */
                                                                                                            {
-    Symbol s = (Symbol) { .name = (yyvsp[-1].slice), .scope = scope, .line = linea };
+    Symbol s = SYM((yyvsp[-1].slice));
     assert_sym_exists(&s);
 }
     break;
 
   case 54: /* escritura_instruccion: KW_WRITELN '(' IDENT ',' IDENT ')'  */
                                                                                              {
-    Symbol s = (Symbol) { .name = (yyvsp[-3].slice), .scope = scope, .line = linea };
-    Symbol s1 = (Symbol) { .name = (yyvsp[-1].slice), .scope = scope, .line = linea };
+    Symbol s = SYM((yyvsp[-3].slice));
+    Symbol s1 = SYM((yyvsp[-1].slice));
     assert_sym_exists(&s);
     assert_sym_exists(&s1);
 }
@@ -1515,35 +1523,35 @@ yyreduce:
 
   case 55: /* escritura_instruccion: KW_WRITE '(' IDENT ')'  */
                                                {
-    Symbol s = (Symbol) { .name = (yyvsp[-1].slice), .line = linea };
+    Symbol s = SYM((yyvsp[-1].slice));
     assert_sym_exists(&s);
 }
     break;
 
   case 56: /* escritura_instruccion: KW_WRITELN '(' IDENT ')'  */
                                                  {
-    Symbol s = (Symbol) { .name = (yyvsp[-1].slice), .line = linea };
+    Symbol s = SYM((yyvsp[-1].slice));
     assert_sym_exists(&s);
 }
     break;
 
   case 57: /* escritura_instruccion: KW_WRITE '(' IDENT ',' expresion ')'  */
                                                             {
-    Symbol s = (Symbol) { .name = (yyvsp[-3].slice), .line = linea };
+    Symbol s = SYM((yyvsp[-3].slice));
     assert_sym_exists(&s);
 }
     break;
 
   case 58: /* escritura_instruccion: KW_WRITELN '(' IDENT ',' expresion ')'  */
                                                               {
-    Symbol s = (Symbol) { .name = (yyvsp[-3].slice), .line = linea };
+    Symbol s = SYM((yyvsp[-3].slice));
     assert_sym_exists(&s);
 }
     break;
 
   case 65: /* variable: IDENT '[' expresion ']'  */
                                           {
-    Symbol s = (Symbol) { .name = (yyvsp[-3].slice), .line = linea };
+    Symbol s = SYM((yyvsp[-3].slice));
     assert_sym_exists(&s);
 }
     break;

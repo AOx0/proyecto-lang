@@ -1,7 +1,7 @@
 #ifndef LNG_HASHSET
 #define LNG_HASHSET
 
-#define HASH_BUFF_SIZE (size_t)100
+#define HASH_BUFF_SIZE (size_t)50
 
 
 #include "vector.h"
