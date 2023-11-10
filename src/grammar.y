@@ -2,6 +2,7 @@
     #include "hashset.h"
     #include "str.h"
     #include "parser.h"
+
     extern int yylex(void);
     extern int main(void);
     extern void yyerror(char *s);
@@ -57,6 +58,11 @@
 }
 
 %code requires {
+
+    #ifndef LNG_PARSERH
+    #define LNG_PARSERH
+    
+    
     #include <stdio.h>
     #include <stdlib.h>
     #include <stdint.h>
@@ -92,6 +98,8 @@
         Mul
     };
     typedef enum MulOp MulOp;
+
+    #endif
 }
 
 %union {

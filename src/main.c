@@ -1,7 +1,7 @@
 #include "hashset.h"
+#include "parser.h"
 #include "str.h"
 #include "vector.h"
-#include "parser.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -56,14 +56,15 @@ int main(int argc, char *argv[]) {
                "<FILE>\n");
 
     size_t i = 0;
-	puts("Contenidos de la tabla:");
+    puts("Contenidos de la tabla:");
     while (tabla.elements > i) {
         for (size_t j = 0; j < HASH_BUFF_SIZE; j++) {
-            Vec * arr = (Vec *)vec_get(&tabla.values, j);
+            Vec *arr = (Vec *)vec_get(&tabla.values, j);
             for (size_t h = 0; h < arr->len; h++) {
-                Symbol * s = (Symbol *)vec_get(arr, h);
-                printf(" - Simbolo (%zu,%zu) %zu(%zu): %.*s\n", j, h, s->line, s->scope, (int)s->name.len, s->name.ptr);
-                i+=1;
+                Symbol *s = (Symbol *)vec_get(arr, h);
+                printf(" - Simbolo (%zu,%zu) %zu(%zu): %.*s\n", j, h, s->line,
+                       s->scope, (int)s->name.len, s->name.ptr);
+                i += 1;
             }
         }
     }

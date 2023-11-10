@@ -3,10 +3,9 @@
 
 #define HASH_BUFF_SIZE (size_t)50
 
-
 #include "vector.h"
-#include <string.h>
 #include <stddef.h>
+#include <string.h>
 
 struct HashIdx {
         size_t idx;
