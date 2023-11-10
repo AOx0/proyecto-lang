@@ -4,6 +4,12 @@ const Move = @import("build/move.zig").MoveFileStep;
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const no_bison = b.option(bool, "no-bison", "Do not run bison") orelse false;
+    const no_flex = b.option(bool, "no-flex", "Do not run flex") orelse false;
+    const no_gen = b.option(bool, "no-gen", "Do not run flex nor bison") orelse false;
+    const debug_bison = b.option(bool, "debug-bison", "Run bison with the `-t` flag") orelse false;
+    const debug_flex = b.option(bool, "debug-flex", "Run flex with the `-d` flag") orelse false;
+    const debug_gen = b.option(bool, "debug-gen", "Run flex and bison with debug flags") orelse false;
 
     _ = std.fs.cwd().openFile("build.zig", .{}) catch {
         // Change current directory to where `build.zig` is.
@@ -15,8 +21,18 @@ pub fn build(b: *std.Build) void {
         };
     };
 
-    const flags = .{ "-Wall", "-Wextra", "-pedantic", if (target.isWindows()) "-DWIN" else "" };
+    // Gen bison & flex files
+    const mv_flex = Move.create(b, &.{"./lex.yy.c"}, &.{"./src/lexer.c"});
+    mv_flex.step.dependOn(&b.addSystemCommand(&.{ "flex", if (debug_gen or debug_flex) "-Ld" else "-L", "src/lexer.l" }).step);
 
+    const mv_bison = Move.create(b, &.{ "./grammar.tab.c", "./grammar.tab.h" }, &.{ "./src/parser.c", "./src/parser.h" });
+    mv_bison.step.dependOn(&b.addSystemCommand(&.{ "bison", if (debug_gen or debug_bison) "-ld" else "-ldt", "src/grammar.y" }).step);
+
+    const gen_step = b.step("gen", "Generar lexer.{c,h}, parser.{c, h}");
+    gen_step.dependOn(&mv_flex.step);
+    gen_step.dependOn(&mv_bison.step);
+
+    const flags = .{ "-Wall", "-Wextra", "-pedantic", if (target.isWindows()) "-DWIN" else "" };
     // The main source code files without `main.c`. It is easier to compile it with specific main
     // files so that, for example, we can test it.
     const lnglib = b.addStaticLibrary(.{
@@ -25,19 +41,11 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // Gen bison & flex files
-    const mv_flex = Move.create(b, &.{"./lex.yy.c"}, &.{"./src/lexer.c"});
-    mv_flex.step.dependOn(&b.addSystemCommand(&.{ "flex", "-L", "src/lexer.l" }).step);
-
-    const mv_bison = Move.create(b, &.{ "./grammar.tab.c", "./grammar.tab.h" }, &.{ "./src/parser.c", "./src/parser.h" });
-    mv_bison.step.dependOn(&b.addSystemCommand(&.{ "bison", "-ld", "src/grammar.y" }).step);
-
-    const gen_step = b.step("gen", "Generar lexer.{c,h}, parser.{c, h}");
-    gen_step.dependOn(&mv_flex.step);
-    gen_step.dependOn(&mv_bison.step);
-
     lnglib.linkLibC();
     lnglib.addCSourceFiles(&.{ "src/str.c", "src/vector.c", "src/hashset.c", "src/parser.c", "src/lexer.c" }, &flags);
+
+    if (!no_flex and !no_gen) lnglib.step.dependOn(&mv_flex.step);
+    if (!no_bison and !no_gen) lnglib.step.dependOn(&mv_bison.step);
 
     {
         const lng = b.addExecutable(.{
@@ -50,7 +58,6 @@ pub fn build(b: *std.Build) void {
         lng.linkLibC();
         lng.linkLibrary(lnglib);
         lng.addCSourceFiles(&.{"src/main.c"}, &flags);
-        lng.step.dependOn(gen_step);
 
         const run_cmd = b.addRunArtifact(lng);
         run_cmd.step.dependOn(b.getInstallStep());
@@ -74,7 +81,6 @@ pub fn build(b: *std.Build) void {
         lng.linkLibC();
         lng.linkLibrary(lnglib);
         lng.addCSourceFiles(&.{ "test/main.c", "test/str_test.c", "test/vec_test.c", "test/hash_test.c" }, &flags);
-        lng.step.dependOn(gen_step);
 
         const run_cmd = b.addRunArtifact(lng);
         run_cmd.step.dependOn(b.getInstallStep());
