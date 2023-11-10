@@ -31,8 +31,6 @@ void parse_file(char *path) {
     yyin = f;
     yyparse();
 
-    if (!err)
-        printf("Linea reconocida correctamente\n");
 
     fclose(f);
 }
@@ -67,6 +65,8 @@ int main(int argc, char *argv[]) {
     hashset_drop(&tabla);
     str_drop(&wrn_buff);
 
+    if (!err)
+        printf("Linea reconocida correctamente\n");
     return err;
 }
 
