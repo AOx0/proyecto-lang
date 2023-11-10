@@ -1,18 +1,13 @@
 %code top {
     #include "hashset.h"
     #include "str.h"
+    #include "parser.h"
     extern int yylex(void);
     extern int main(void);
     extern void yyerror(char *s);
     extern size_t linea;
+    extern size_t scope;
 
-    struct Symbol {
-        StrSlice name;
-        size_t scope;
-        size_t line;
-    };
-
-    typedef struct Symbol Symbol;
     HashSet tabla;
     String wrn_buff;
     
@@ -28,7 +23,7 @@
 
         res.idx *= sy->scope + 1;
 
-        // printf("HASH: %zu\n", res.idx);
+        printf("HASH: %zu FROM: %zu(%zu): %.*s\n", res.idx, sy->line, sy->scope, (int)sy->name.len, sy->name.ptr);
         
         return res;
     }
@@ -41,7 +36,7 @@
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
             yyerror(str_as_ref(&wrn_buff));
         } else {
-            printf("Existe %.*s\n", (int)s->name.len, s->name.ptr);
+            printf("Existe %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
         }
     }
     
@@ -53,7 +48,7 @@
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
             yyerror(str_as_ref(&wrn_buff));
         } else {
-            printf("No existe %.*s\n", (int)s->name.len, s->name.ptr);
+            printf("No existe %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
         }
     }
 }
@@ -66,6 +61,13 @@
     #include "vector.h"
     #include "hashset.h"
     #include "str.h"
+
+    struct Symbol {
+        StrSlice name;
+        size_t scope;
+        size_t line;
+    };
+    typedef struct Symbol Symbol;
 
     extern FILE *yyin, *yyout;
 
@@ -167,10 +169,10 @@ decl: decl_var | decl_const | ;
 decl_var: decl KW_VAR ident_lista ':' tipo ';' {
     printf("Declarando variables: %zu\n", $3.len);
     for (size_t i=0; i < $3.len; i++) {
-        Symbol s = (Symbol) { .name = *(StrSlice *)vec_get(&$3, i), .scope = 0, .line = linea };
+        Symbol s = (Symbol) { .name = *(StrSlice *)vec_get(&$3, i), .scope = scope, .line = linea };
         assert_not_sym_exists(&s);
         hashset_insert(&tabla, &s);
-        printf("    - %zu: %.*s\n", linea, (int)s.name.len, s.name.ptr);
+    printf("    - %zu: %zu: %.*s\n", linea, scope, (int)s.name.len, s.name.ptr);
     }
 };
 
@@ -193,9 +195,16 @@ subprograma_decl: subprograma_decl subprograma_declaracion ';' | ;
 subprograma_declaracion: subprograma_encabezado decl subprograma_decl instruccion_compuesta;
 subprograma_encabezado: KW_FUNC IDENT {
     printf("Declarando funcion %.*s\n", (int)$2.len, $2.ptr);
-} argumentos ':' estandard_tipo ';' | KW_PROCEDURE IDENT {
+    scope++;
+} argumentos ':' estandard_tipo ';' {
+    scope--;
+    printf("Declarada %.*s\n", (int)$2.len, $2.ptr);
+} ;
+subprograma_encabezado: KW_PROCEDURE IDENT {
+    scope++;
     printf("Declarando procedure %.*s\n", (int)$2.len, $2.ptr);
 } argumentos ';' {
+    scope--;
     printf("Declarada %.*s\n", (int)$2.len, $2.ptr);
 };
 
@@ -203,8 +212,9 @@ subprograma_encabezado: KW_FUNC IDENT {
 argumentos: '(' parametros_lista ')' {
     printf("Argumentos: %zu\n", $2.len);
     for (size_t i=0; i < $2.len; i++) {
-        StrSlice *str = (StrSlice *)vec_get(&$2, i);
-        printf("    - %.*s\n", (int)str->len, str->ptr);
+        Symbol s = (Symbol) { .name = *(StrSlice *)vec_get(&$2, i), .scope = scope, .line = linea };
+        assert_not_sym_exists(&s);
+        hashset_insert(&tabla, &s);
     }
 } | ;
 parametros_lista: ident_lista ':' tipo {
@@ -229,39 +239,39 @@ repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones
 	| KW_FOR for_asignacion KW_DOWNTO expresion KW_DO instrucciones
 ;
 lectura_instruccion: KW_READ '(' IDENT ')' {
-    Symbol s = (Symbol) { .name = $3, .scope = 0, .line = 0 };
+    Symbol s = (Symbol) { .name = $3, .scope = scope, .line = linea };
     assert_sym_exists(&s);
 }; 
 lectura_instruccion: KW_READLN '(' IDENT ')' { 
-    Symbol s = (Symbol) { .name = $3, .scope = 0, .line = 0 };
+    Symbol s = (Symbol) { .name = $3, .scope = scope, .line = linea };
     assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITE '(' CONST_CADENA ',' IDENT ')' | KW_WRITELN '(' CONST_CADENA ',' IDENT ')' {
-    Symbol s = (Symbol) { .name = $5, .scope = 0, .line = 0 };
+    Symbol s = (Symbol) { .name = $5, .scope = scope, .line = linea };
     assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITE '(' CONST_CADENA  ')' | KW_WRITELN '(' CONST_CADENA  ')'
 	| KW_WRITE '(' CONST_CADENA ',' expresion ')' | KW_WRITELN '(' CONST_CADENA ',' expresion ')';
 escritura_instruccion: KW_WRITE '(' IDENT ',' IDENT ')' | KW_WRITELN '(' IDENT ',' IDENT ')' {
-    Symbol s = (Symbol) { .name = $3, .scope = 0, .line = 0 };
-    Symbol s1 = (Symbol) { .name = $5, .scope = 0, .line = 0 };
+    Symbol s = (Symbol) { .name = $3, .scope = scope, .line = linea };
+    Symbol s1 = (Symbol) { .name = $5, .scope = scope, .line = linea };
     assert_sym_exists(&s);
     assert_sym_exists(&s1);
 };
 escritura_instruccion: KW_WRITE '(' IDENT  ')' {
-    Symbol s = (Symbol) { .name = $3, .line = 0 };
+    Symbol s = (Symbol) { .name = $3, .line = linea };
     assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITELN '(' IDENT  ')' {
-    Symbol s = (Symbol) { .name = $3, .line = 0 };
+    Symbol s = (Symbol) { .name = $3, .line = linea };
     assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITE '(' IDENT ',' expresion ')' {
-    Symbol s = (Symbol) { .name = $3, .line = 0 };
+    Symbol s = (Symbol) { .name = $3, .line = linea };
     assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITELN '(' IDENT ',' expresion ')' {
-    Symbol s = (Symbol) { .name = $3, .line = 0 };
+    Symbol s = (Symbol) { .name = $3, .line = linea };
     assert_sym_exists(&s);
 };
 if_instruccion: KW_IF relop_expresion KW_THEN instrucciones
@@ -271,7 +281,7 @@ if_instruccion: KW_IF relop_expresion KW_THEN instrucciones
 variable_asignacion: variable OP_ASIGN expresion; 
 for_asignacion: variable_asignacion | variable;
 variable: IDENT | IDENT '[' expresion ']' {
-    Symbol s = (Symbol) { .name = $1, .line = 0 };
+    Symbol s = (Symbol) { .name = $1, .line = linea };
     assert_sym_exists(&s);
 };
 procedure_instruccion : IDENT | IDENT '(' expresion_lista ')';

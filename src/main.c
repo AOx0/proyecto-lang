@@ -1,5 +1,7 @@
 #include "hashset.h"
 #include "str.h"
+#include "vector.h"
+#include "parser.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -17,6 +19,9 @@ int main(int argc, char *argv[]);
 void parse_file(char *path);
 int parse(char *code);
 
+/// Main function
+///
+/// This function does things
 void parse_file(char *path) {
     FILE *f = fopen(path, "r");
 
@@ -34,6 +39,9 @@ void parse_file(char *path) {
     fclose(f);
 }
 
+/// Main function
+///
+/// This function does things
 int main(int argc, char *argv[]) {
     ++argv;
     --argc;
@@ -45,6 +53,18 @@ int main(int argc, char *argv[]) {
     } else
         printf("The lng compiler, translate PASCAL to C code\n\nUsage: lng "
                "<FILE>\n");
+
+    size_t i = 0;
+    while (tabla.elements > i) {
+        for (size_t j = 0; j < HASH_BUFF_SIZE; j++) {
+            Vec * arr = (Vec *)vec_get(&tabla.values, j);
+            for (size_t h = 0; h < arr->len; h++) {
+                Symbol * s = (Symbol *)vec_get(arr, h);
+                printf("Elemento %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
+                i+=1;
+            }
+        }
+    }
 
     // Al final liberamos la tabla de hashes de memoria
     hashset_drop(&tabla);

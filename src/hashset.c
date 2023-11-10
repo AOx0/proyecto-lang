@@ -1,8 +1,6 @@
 #include "hashset.h"
 #include <stdio.h>
 
-#define HASH_BUFF_SIZE (size_t)3500
-
 HashSet hashset_new(size_t val_size, HashFunction hashf) {
     HashSet res;
     res.values = vec_with_cap(sizeof(Vec), HASH_BUFF_SIZE);

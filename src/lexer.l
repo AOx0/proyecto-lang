@@ -13,6 +13,7 @@
  // Le funciono mejor la tabla de simbolos con un programa de 40k+ lineas,
  // si quita la lista de colisiones la maneja usando un arreglo de apuntadores
  size_t linea = 1;
+ size_t scope = 0;
 %}
 
 %option prefix="yy"

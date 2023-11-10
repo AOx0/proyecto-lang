@@ -1,7 +1,11 @@
 #ifndef LNG_HASHSET
 #define LNG_HASHSET
 
+#define HASH_BUFF_SIZE (size_t)3500
+
+
 #include "vector.h"
+#include <string.h>
 #include <stddef.h>
 
 struct HashIdx {
