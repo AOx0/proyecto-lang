@@ -20,9 +20,6 @@ int main(int argc, char *argv[]);
 void parse_file(char *path);
 int parse(char *code);
 
-/// Main function
-///
-/// This function does things
 void parse_file(char *path) {
     FILE *f = fopen(path, "r");
 
@@ -40,9 +37,6 @@ void parse_file(char *path) {
     fclose(f);
 }
 
-/// Main function
-///
-/// This function does things
 int main(int argc, char *argv[]) {
     ++argv;
     --argc;
