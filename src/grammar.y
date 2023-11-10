@@ -10,7 +10,7 @@
     extern size_t scope;
 	size_t fun_id = 0;
 	
-	#define SYM(s) (Symbol){ .name = s, .scope = scope, .line = linea }
+	#define SYM(s) (Symbol){ .name = s, .scope = scope, .line = linea, .refs = vec_new(sizeof(size_t)) }
 
     HashSet tabla;
     String wrn_buff;
@@ -75,6 +75,7 @@
         StrSlice name;
         size_t scope;
         size_t line;
+        Vec refs;
     };
     typedef struct Symbol Symbol;
 
@@ -185,20 +186,29 @@ decl_var: decl KW_VAR ident_lista ':' tipo ';' {
         Symbol s = SYM(*(StrSlice *)vec_get(&$3, i));
         assert_not_sym_exists(&s);
         hashset_insert(&tabla, &s);
-    printf("    - %zu: %zu: %.*s\n", linea, scope, (int)s.name.len, s.name.ptr);
+    printf("    - %.*s\n", (int)s.name.len, s.name.ptr);
     }
 	
 	vec_drop(&$3);
 };
 
 decl_const: decl KW_CONST IDENT '=' CONST_ENTERA ';' {
-    printf("Constante: %lld\n", $5);
+    printf("Declarando constante: %lld\n", $5);
+    Symbol s = SYM($3);
+    assert_not_sym_exists(&s);
+    hashset_insert(&tabla, &s);
 };
 decl_const: decl KW_CONST IDENT '=' CONST_REAL ';' {
-    printf("Constante: %f\n", $5);
+    printf("Declarando constante: %f\n", $5);
+    Symbol s = SYM($3);
+    assert_not_sym_exists(&s);
+    hashset_insert(&tabla, &s);
 };
 decl_const: decl KW_CONST IDENT '=' CONST_CADENA ';' {
-    printf("Constante: %.*s\n", $5.len, $5.ptr);
+    printf("Declarando constante: %.*s\n", $5.len, $5.ptr);
+    Symbol s = SYM($3);
+    assert_not_sym_exists(&s);
+    hashset_insert(&tabla, &s);
 };
 
  /* Tipo */
@@ -210,22 +220,22 @@ subprograma_decl: subprograma_decl subprograma_declaracion ';' | ;
 subprograma_declaracion: subprograma_encabezado decl subprograma_decl instruccion_compuesta;
 subprograma_encabezado: KW_FUNC IDENT {
     printf("Declarando funcion %.*s\n", (int)$2.len, $2.ptr);
-    fun_id++;
-	scope+=fun_id;
 	Symbol s = SYM($2);
 	assert_not_sym_exists(&s);
 	hashset_insert(&tabla, &s);
+    fun_id++;
+	scope+=fun_id;
 } argumentos ':' estandard_tipo ';' {
     scope-=fun_id;
     printf("Declarada %.*s\n", (int)$2.len, $2.ptr);
 } ;
 subprograma_encabezado: KW_PROCEDURE IDENT {
-    fun_id++;
-	scope+=fun_id;
     printf("Declarando procedure %.*s\n", (int)$2.len, $2.ptr);
 	Symbol s = SYM($2);
 	assert_not_sym_exists(&s);
 	hashset_insert(&tabla, &s);
+    fun_id++;
+	scope+=fun_id;
 } argumentos ';' {
     scope-=fun_id;
     printf("Declarada %.*s\n", (int)$2.len, $2.ptr);
@@ -272,13 +282,23 @@ lectura_instruccion: KW_READLN '(' IDENT ')' {
     Symbol s = SYM($3);
     assert_sym_exists(&s);
 };
-escritura_instruccion: KW_WRITE '(' CONST_CADENA ',' IDENT ')' | KW_WRITELN '(' CONST_CADENA ',' IDENT ')' {
+escritura_instruccion: KW_WRITE '(' CONST_CADENA ',' IDENT ')' {
+    Symbol s = SYM($5);
+    assert_sym_exists(&s);
+};
+escritura_instruccion: KW_WRITELN '(' CONST_CADENA ',' IDENT ')' {
     Symbol s = SYM($5);
     assert_sym_exists(&s);
 };
 escritura_instruccion: KW_WRITE '(' CONST_CADENA  ')' | KW_WRITELN '(' CONST_CADENA  ')'
 	| KW_WRITE '(' CONST_CADENA ',' expresion ')' | KW_WRITELN '(' CONST_CADENA ',' expresion ')';
-escritura_instruccion: KW_WRITE '(' IDENT ',' IDENT ')' | KW_WRITELN '(' IDENT ',' IDENT ')' {
+escritura_instruccion: KW_WRITE '(' IDENT ',' IDENT ')' {
+    Symbol s = SYM($3);
+    Symbol s1 = SYM($5);
+    assert_sym_exists(&s);
+    assert_sym_exists(&s1);
+}
+escritura_instruccion: KW_WRITELN '(' IDENT ',' IDENT ')' {
     Symbol s = SYM($3);
     Symbol s1 = SYM($5);
     assert_sym_exists(&s);
@@ -306,11 +326,24 @@ if_instruccion: KW_IF relop_expresion KW_THEN instrucciones
  /* Asignacion */
 variable_asignacion: variable OP_ASIGN expresion; 
 for_asignacion: variable_asignacion | variable;
-variable: IDENT | IDENT '[' expresion ']' {
+variable: IDENT {
     Symbol s = SYM($1);
     assert_sym_exists(&s);
 };
-procedure_instruccion : IDENT | IDENT '(' expresion_lista ')';
+variable: IDENT '[' expresion ']' {
+    Symbol s = SYM($1);
+    assert_sym_exists(&s);
+};
+procedure_instruccion : IDENT {
+    Symbol s = SYM($1);
+    printf("Llamando procedimiento/funcion: %.*s\n", (int)s.name.len, s.name.ptr);
+    assert_sym_exists(&s);
+};
+procedure_instruccion : IDENT '(' expresion_lista ')' {
+    Symbol s = SYM($1);
+    printf("Llamando procedimiento/funcion: %.*s\n", (int)s.name.len, s.name.ptr);
+    assert_sym_exists(&s);
+};
 
  /* Relop */
 relop_expresion: relop_expresion RELOP_OR relop_and | relop_and;
