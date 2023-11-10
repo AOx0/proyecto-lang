@@ -104,9 +104,20 @@ HashIdx hash_symbol(void *s) {
 }
 
 void assert_sym_exists(Symbol *s) {
-    if (!hashset_contains(&tabla, s)) {
+    size_t orig_scope = s->scope;
+    int found = 0;
+    for (size_t i = orig_scope; i >= 0; i--) {
+        s->scope = i;
+        if (hashset_contains(&tabla, s)) {
+            found = 1;
+            break;
+        }
+    }
+
+    if (!found) {
         str_clear(&wrn_buff);
         char lit[] = "Error: Simbolo no declarado en el scope actual: ";
+        printf("Scope: %zu\n", scope);
         str_push_n(&wrn_buff, &lit[0], strlen(&lit[0]));
         str_push_n(&wrn_buff, s->name.ptr, s->name.len);
         yyerror(str_as_ref(&wrn_buff));
@@ -114,6 +125,7 @@ void assert_sym_exists(Symbol *s) {
         // printf("Existe %zu(%zu):  %.*s\n", s->line, s->scope,
         // (int)s->name.len, s->name.ptr);
     }
+    s->scope = orig_scope;
 }
 
 void assert_not_sym_exists(Symbol *s) {
@@ -532,13 +544,13 @@ static const yytype_int8 yyrhs[] = {
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] = {
-    0,   151, 151, 151, 167, 173, 181, 181, 181, 183, 195, 201, 207, 215,
-    215, 216, 216, 216, 216, 219, 219, 220, 221, 221, 232, 232, 245, 255,
-    256, 259, 267, 268, 268, 269, 269, 270, 270, 270, 271, 271, 271, 271,
-    273, 274, 275, 277, 281, 285, 289, 293, 293, 294, 294, 295, 301, 307,
-    311, 315, 319, 323, 324, 327, 328, 328, 329, 333, 337, 342, 349, 349,
-    350, 350, 351, 351, 352, 352, 353, 354, 354, 357, 357, 358, 358, 359,
-    359, 360, 361, 361, 361, 361, 361, 361, 361};
+    0,   164, 164, 164, 180, 186, 194, 194, 194, 196, 208, 214, 220, 228,
+    228, 229, 229, 229, 229, 232, 232, 233, 236, 236, 246, 246, 258, 268,
+    269, 272, 280, 281, 281, 282, 282, 283, 283, 283, 284, 284, 284, 284,
+    286, 287, 288, 290, 294, 298, 302, 306, 306, 307, 307, 308, 314, 320,
+    324, 328, 332, 336, 337, 340, 341, 341, 342, 346, 350, 355, 362, 362,
+    363, 363, 364, 364, 365, 365, 366, 367, 367, 370, 370, 371, 371, 372,
+    372, 373, 378, 378, 378, 378, 378, 378, 378};
 #endif
 
 #if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
@@ -1600,6 +1612,13 @@ yyreduce:
         ;
     } break;
 
+    case 21:
+
+    {
+        scope -= fun_id;
+        ;
+    } break;
+
     case 22:
 
     {
@@ -1616,7 +1635,6 @@ yyreduce:
     case 23:
 
     {
-        scope -= fun_id;
         printf("Declarada %.*s\n", (int)(yyvsp[(2) - (7)].slice).len,
                (yyvsp[(2) - (7)].slice).ptr);
         ;
@@ -1638,7 +1656,6 @@ yyreduce:
     case 25:
 
     {
-        scope -= fun_id;
         printf("Declarada %.*s\n", (int)(yyvsp[(2) - (5)].slice).len,
                (yyvsp[(2) - (5)].slice).ptr);
         ;
@@ -1779,8 +1796,7 @@ yyreduce:
 
     {
         Symbol s = SYM((yyvsp[(1) - (1)].slice));
-        printf("Llamando procedimiento/funcion: %.*s\n", (int)s.name.len,
-               s.name.ptr);
+        printf("Llamando procedimiento: %.*s\n", (int)s.name.len, s.name.ptr);
         assert_sym_exists(&s);
         ;
     } break;
@@ -1789,8 +1805,16 @@ yyreduce:
 
     {
         Symbol s = SYM((yyvsp[(1) - (4)].slice));
-        printf("Llamando procedimiento/funcion: %.*s\n", (int)s.name.len,
-               s.name.ptr);
+        printf("Llamando procedimiento: %.*s\n", (int)s.name.len, s.name.ptr);
+        assert_sym_exists(&s);
+        ;
+    } break;
+
+    case 85:
+
+    {
+        Symbol s = SYM((yyvsp[(1) - (4)].slice));
+        printf("Llamando funcion: %.*s\n", (int)s.name.len, s.name.ptr);
         assert_sym_exists(&s);
         ;
     } break;

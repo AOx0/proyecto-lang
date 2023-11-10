@@ -14,9 +14,9 @@ program principal(input, output);
     end;
 
     (* Multiplica numeros *)
-    function Mult(c: integer; a: integer) : integer;
+    function Mult(z: integer; a: integer) : integer;
     begin
-        write(c);
+        write(z);
         Mult := c * a
     end;
 

@@ -33,15 +33,28 @@
     }
 
     void assert_sym_exists(Symbol * s) {
-        if (!hashset_contains(&tabla, s)) {
+        size_t orig_scope = s->scope;
+        int found = 0;
+        for (size_t i = orig_scope; i >= 0; i--) {
+            s->scope = i;
+            if (hashset_contains(&tabla, s)) {
+                found = 1;
+                break;
+            }
+        }
+
+        if (!found) {
             str_clear(&wrn_buff);
             char lit[] = "Error: Simbolo no declarado en el scope actual: ";
+            printf("Scope: %zu\n", scope);
             str_push_n(&wrn_buff, &lit[0], strlen(&lit[0]));
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
             yyerror(str_as_ref(&wrn_buff));
         } else {
             // printf("Existe %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
         }
+        s->scope = orig_scope;
+        
     }
     
     void assert_not_sym_exists(Symbol * s) {
@@ -217,7 +230,9 @@ estandard_tipo: T_INT | T_REAL | T_STR | T_BOOL;
 
  /* Subprograma */
 subprograma_decl: subprograma_decl subprograma_declaracion ';' | ;
-subprograma_declaracion: subprograma_encabezado decl subprograma_decl instruccion_compuesta;
+subprograma_declaracion: subprograma_encabezado decl subprograma_decl instruccion_compuesta {
+    scope-=fun_id;
+};
 subprograma_encabezado: KW_FUNC IDENT {
     printf("Declarando funcion %.*s\n", (int)$2.len, $2.ptr);
 	Symbol s = SYM($2);
@@ -226,7 +241,6 @@ subprograma_encabezado: KW_FUNC IDENT {
     fun_id++;
 	scope+=fun_id;
 } argumentos ':' estandard_tipo ';' {
-    scope-=fun_id;
     printf("Declarada %.*s\n", (int)$2.len, $2.ptr);
 } ;
 subprograma_encabezado: KW_PROCEDURE IDENT {
@@ -237,7 +251,6 @@ subprograma_encabezado: KW_PROCEDURE IDENT {
     fun_id++;
 	scope+=fun_id;
 } argumentos ';' {
-    scope-=fun_id;
     printf("Declarada %.*s\n", (int)$2.len, $2.ptr);
 };
 
@@ -336,12 +349,12 @@ variable: IDENT '[' expresion ']' {
 };
 procedure_instruccion : IDENT {
     Symbol s = SYM($1);
-    printf("Llamando procedimiento/funcion: %.*s\n", (int)s.name.len, s.name.ptr);
+    printf("Llamando procedimiento: %.*s\n", (int)s.name.len, s.name.ptr);
     assert_sym_exists(&s);
 };
 procedure_instruccion : IDENT '(' expresion_lista ')' {
     Symbol s = SYM($1);
-    printf("Llamando procedimiento/funcion: %.*s\n", (int)s.name.len, s.name.ptr);
+    printf("Llamando procedimiento: %.*s\n", (int)s.name.len, s.name.ptr);
     assert_sym_exists(&s);
 };
 
@@ -357,6 +370,10 @@ relop: RELOP_AND | RELOP_OR ;
 expresion_lista: expresion | expresion_lista ',' expresion;
 expresion: termino | expresion ADDOP termino;
 termino: factor | termino MULOP factor;
-llamado_funcion : IDENT '(' expresion_lista ')';
+llamado_funcion : IDENT '(' expresion_lista ')' {
+    Symbol s = SYM($1);
+    printf("Llamando funcion: %.*s\n", (int)s.name.len, s.name.ptr);
+    assert_sym_exists(&s);
+};
 factor: IDENT | IDENT '[' expresion ']' | llamado_funcion | CONST_ENTERA | CONST_REAL | ADDOP factor | '(' expresion ')';
 %%
