@@ -31,7 +31,6 @@ void parse_file(char *path) {
     yyin = f;
     yyparse();
 
-
     fclose(f);
 }
 

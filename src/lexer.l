@@ -93,6 +93,10 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
 "and" { return RELOP_AND; }
 "not" { return RELOP_NOT; }
 "or" { return RELOP_OR; }
+">" { return RELOP_BT; }
+"<" { return RELOP_LT; }
+">=" { return RELOP_EBT; }
+"<=" { return RELOP_ELT; }
 "+" {
  yylval.addop = Add;
  return ADDOP;

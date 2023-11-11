@@ -28,11 +28,20 @@ program principal(input, output);
         d := Mult(c, a)
     end;
 
+(*
+    Codigo: 
+        - 20% Lexicografico
+        - 20% Sintactico
+        - 20% Tabla de simbolos
+        - 20% Arbol sintactico
+        - 20% Generacion de C++
+        
+*)
 begin
     a := 5;
     b := 3;
     multadd;
-    while (a and b) do
+    while (a > b) do
       b := b + 1;
     writeln(c);
     writeln(d)

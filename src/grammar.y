@@ -138,7 +138,7 @@
 %token OP_ASIGN KW_PROCEDURE KW_PROG KW_CONST KW_VAR KW_ARRAY KW_OF KW_FUNC KW_BEGIN KW_END KW_READ KW_READLN KW_WRITE KW_WRITELN KW_WHILE KW_FOR KW_DO KW_TO KW_DOWNTO KW_IF KW_THEN KW_ELSE;
 
 /* OPs */
-%token RELOP_AND RELOP_NOT RELOP_OR;
+%token RELOP_BT RELOP_LT RELOP_EBT RELOP_ELT RELOP_AND RELOP_NOT RELOP_OR;
 
 /* Types */
 %token T_INT T_REAL T_STR T_BOOL;
@@ -364,7 +364,7 @@ relop_and: relop_and RELOP_AND relop_not | relop_not ;
 relop_not: RELOP_NOT relop_not | relop_paren;
 relop_paren: '(' relop_expresion ')' | relop_expresion_simple;
 relop_expresion_simple: expresion relop expresion;
-relop: RELOP_AND | RELOP_OR ;
+relop: RELOP_AND | RELOP_OR | RELOP_BT | RELOP_LT | RELOP_EBT | RELOP_ELT;
 
  /* Expresion */
 expresion_lista: expresion | expresion_lista ',' expresion;
