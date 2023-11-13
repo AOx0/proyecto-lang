@@ -97,6 +97,8 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
 "<" { return RELOP_LT; }
 ">=" { return RELOP_EBT; }
 "<=" { return RELOP_ELT; }
+"==" { return RELOP_EQ; }
+"!=" { return RELOP_NEQ; }
 "+" {
  yylval.addop = Add;
  return ADDOP;

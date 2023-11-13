@@ -108,17 +108,19 @@ enum yytokentype {
     KW_IF = 284,
     KW_THEN = 285,
     KW_ELSE = 286,
-    RELOP_BT = 287,
-    RELOP_LT = 288,
-    RELOP_EBT = 289,
-    RELOP_ELT = 290,
-    RELOP_AND = 291,
-    RELOP_NOT = 292,
-    RELOP_OR = 293,
-    T_INT = 294,
-    T_REAL = 295,
-    T_STR = 296,
-    T_BOOL = 297
+    RELOP_EQ = 287,
+    RELOP_NEQ = 288,
+    RELOP_BT = 289,
+    RELOP_LT = 290,
+    RELOP_EBT = 291,
+    RELOP_ELT = 292,
+    RELOP_AND = 293,
+    RELOP_NOT = 294,
+    RELOP_OR = 295,
+    T_INT = 296,
+    T_REAL = 297,
+    T_STR = 298,
+    T_BOOL = 299
 };
 #endif
 
