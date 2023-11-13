@@ -53,9 +53,18 @@ int main(int argc, char *argv[]) {
             Vec *arr = (Vec *)vec_get(&tabla.values, j);
             for (size_t h = 0; h < arr->len; h++) {
                 Symbol *s = (Symbol *)vec_get(arr, h);
-                printf(" - Simbolo (%zu,%zu) %zu(%zu): %.*s\n", j, h, s->line,
-                       s->scope, (int)s->name.len, s->name.ptr);
+                printf(" - Simbolo (%zu,%zu) %zu(%zu) refs: { ", j, h, s->line,
+                       s->scope);
+                for (size_t i = 0; i < s->refs.len; i++) {
+                    size_t *ref = (size_t *)vec_get(&s->refs, i);
+                    printf("%zu", *ref);
+                    if (i + 1 != s->refs.len) {
+                        printf(", ");
+                    }
+                }
+                printf(" }: %.*s\n", (int)s->name.len, s->name.ptr);
                 i += 1;
+                vec_drop(&s->refs);
             }
         }
     }

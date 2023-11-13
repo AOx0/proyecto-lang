@@ -98,13 +98,23 @@ HashIdx hash_symbol(void *s) {
     return res;
 }
 
-void assert_sym_exists(Symbol *s) {
+void add_reference_to_sym(Symbol *s) {
+    size_t *ref = vec_push(&s->refs);
+    *ref = linea;
+}
+
+void *assert_sym_exists(Symbol *s) {
     size_t orig_scope = s->scope;
     int found = 0;
-    for (size_t i = orig_scope; i >= 0; i--) {
+    Symbol *res = NULL;
+
+    for (size_t i = orig_scope; i >= 0; i -= orig_scope) {
         s->scope = i;
+        printf("Looking %.*s in scope %zu\n", (int)s->name.len, s->name.ptr, i);
         if (hashset_contains(&tabla, s)) {
             found = 1;
+            res = (Symbol *)hashset_get(&tabla, s);
+            add_reference_to_sym(res);
             break;
         }
     }
@@ -121,6 +131,7 @@ void assert_sym_exists(Symbol *s) {
         // (int)s->name.len, s->name.ptr);
     }
     s->scope = orig_scope;
+    return res;
 }
 
 void assert_not_sym_exists(Symbol *s) {
@@ -583,13 +594,13 @@ static const yytype_int8 yyrhs[] = {
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] = {
-    0,   164, 164, 164, 180, 186, 194, 194, 194, 196, 208, 214, 220, 228,
-    228, 229, 229, 229, 229, 232, 232, 233, 236, 236, 246, 246, 258, 268,
-    269, 272, 280, 281, 281, 282, 282, 283, 283, 283, 284, 284, 284, 284,
-    286, 287, 288, 290, 294, 298, 302, 306, 306, 307, 307, 308, 314, 320,
-    324, 328, 332, 336, 337, 340, 341, 341, 342, 346, 350, 355, 362, 362,
-    363, 363, 364, 364, 365, 365, 366, 367, 367, 367, 367, 367, 367, 370,
-    370, 371, 371, 372, 372, 373, 378, 378, 378, 378, 378, 378, 378};
+    0,   174, 174, 174, 190, 196, 204, 204, 204, 206, 218, 224, 230, 238,
+    238, 239, 239, 239, 239, 242, 242, 243, 246, 246, 256, 256, 268, 278,
+    279, 282, 290, 291, 291, 292, 292, 293, 293, 293, 294, 294, 294, 294,
+    296, 297, 298, 300, 304, 308, 312, 316, 316, 317, 317, 318, 324, 330,
+    334, 338, 342, 346, 347, 350, 351, 351, 352, 356, 360, 365, 372, 372,
+    373, 373, 374, 374, 375, 375, 376, 377, 377, 377, 377, 377, 377, 380,
+    380, 381, 381, 382, 382, 383, 388, 388, 388, 388, 388, 388, 388};
 #endif
 
 #if YYDEBUG || YYERROR_VERBOSE || 0

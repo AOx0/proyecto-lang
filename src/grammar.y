@@ -32,13 +32,23 @@
         return res;
     }
 
-    void assert_sym_exists(Symbol * s) {
+    void add_reference_to_sym(Symbol * s) {
+        size_t * ref = vec_push(&s->refs);
+        *ref = linea;
+    }
+
+    void * assert_sym_exists(Symbol * s) {
         size_t orig_scope = s->scope;
         int found = 0;
-        for (size_t i = orig_scope; i >= 0; i--) {
+        Symbol * res = NULL;
+        
+        for (size_t i = orig_scope; i >= 0; i-=orig_scope) {
             s->scope = i;
+            printf("Looking %.*s in scope %zu\n", (int)s->name.len, s->name.ptr , i);
             if (hashset_contains(&tabla, s)) {
                 found = 1;
+                res = (Symbol *)hashset_get(&tabla, s);
+                add_reference_to_sym(res);
                 break;
             }
         }
@@ -54,7 +64,7 @@
             // printf("Existe %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
         }
         s->scope = orig_scope;
-        
+        return res;
     }
     
     void assert_not_sym_exists(Symbol * s) {
