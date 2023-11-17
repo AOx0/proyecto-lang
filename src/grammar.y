@@ -17,9 +17,9 @@
     HashSet tabla;
     String wrn_buff;
 
-    void add_reference_to_sym(Symbol * s) {
+    void add_reference_to_sym(Symbol * s, size_t line) {
         size_t * ref = vec_push(&s->refs);
-        *ref = linea;
+        *ref = line;
     }
 
     void * assert_sym_exists(Symbol * s) {
@@ -35,7 +35,7 @@
             if (hashset_contains(&tabla, s)) {
                 found = 1;
                 res = (Symbol *)hashset_get(&tabla, s);
-                add_reference_to_sym(res);
+                add_reference_to_sym(res, s->line);
                 break;
             }
         }
@@ -44,7 +44,7 @@
             str_clear(&wrn_buff);
 			nchar = s->nchar;
             char lit[] = "Simbolo no declarado en el scope actual: ";
-            printf("Scope: %zu\n", scope);
+            // printf("Scope: %zu\n", scope);
             str_push_n(&wrn_buff, &lit[0], strlen(&lit[0]));
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
             yyerror(str_as_ref(&wrn_buff));
@@ -393,5 +393,13 @@ llamado_funcion : IDENT '(' expresion_lista ')' {
     printf("Llamando funcion: %.*s\n", (int)s.name.len, s.name.ptr);
     assert_sym_exists(&s);
 };
-factor: IDENT | IDENT '[' expresion ']' | llamado_funcion | CONST_ENTERA | CONST_REAL | ADDOP factor | '(' expresion ')';
+factor: IDENT {
+	Symbol s = $1;
+    assert_sym_exists(&s);
+}; 
+factor: IDENT '[' expresion ']' {
+	Symbol s = $1;
+	assert_sym_exists(&s);
+};
+factor: llamado_funcion | CONST_ENTERA | CONST_REAL | ADDOP factor | '(' expresion ')';
 %%

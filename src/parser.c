@@ -83,9 +83,9 @@
     HashSet tabla;
     String wrn_buff;
 
-    void add_reference_to_sym(Symbol * s) {
+    void add_reference_to_sym(Symbol * s, size_t line) {
         size_t * ref = vec_push(&s->refs);
-        *ref = linea;
+        *ref = line;
     }
 
     void * assert_sym_exists(Symbol * s) {
@@ -101,7 +101,7 @@
             if (hashset_contains(&tabla, s)) {
                 found = 1;
                 res = (Symbol *)hashset_get(&tabla, s);
-                add_reference_to_sym(res);
+                add_reference_to_sym(res, s->line);
                 break;
             }
         }
@@ -110,7 +110,7 @@
             str_clear(&wrn_buff);
 			nchar = s->nchar;
             char lit[] = "Simbolo no declarado en el scope actual: ";
-            printf("Scope: %zu\n", scope);
+            // printf("Scope: %zu\n", scope);
             str_push_n(&wrn_buff, &lit[0], strlen(&lit[0]));
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
             yyerror(str_as_ref(&wrn_buff));
@@ -658,7 +658,7 @@ static const yytype_int16 yyrline[] =
      355,   358,   359,   359,   360,   364,   368,   373,   380,   380,
      381,   381,   382,   382,   383,   383,   384,   385,   385,   385,
      385,   385,   385,   385,   385,   388,   388,   389,   389,   390,
-     390,   391,   396,   396,   396,   396,   396,   396,   396
+     390,   391,   396,   400,   404,   404,   404,   404,   404
 };
 #endif
 
@@ -1664,6 +1664,20 @@ yyreduce:
     Symbol s = (yyvsp[-3].symbol);
     printf("Llamando funcion: %.*s\n", (int)s.name.len, s.name.ptr);
     assert_sym_exists(&s);
+}
+    break;
+
+  case 92: /* factor: IDENT  */
+              {
+	Symbol s = (yyvsp[0].symbol);
+    assert_sym_exists(&s);
+}
+    break;
+
+  case 93: /* factor: IDENT '[' expresion ']'  */
+                                {
+	Symbol s = (yyvsp[-3].symbol);
+	assert_sym_exists(&s);
 }
     break;
 
