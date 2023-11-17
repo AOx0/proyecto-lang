@@ -14,7 +14,8 @@
 	
     HashSet tabla;
     String wrn_buff;
-    
+
+   
     HashIdx hash_symbol(void * s) {
         HashIdx res;
         res.idx = 0;
@@ -94,8 +95,17 @@
     #include "hashset.h"
     #include "str.h"
 
+    enum SymbolType {
+        Function,
+        Variable,
+        Constant,
+        Procedure,
+    };
+    typedef enum SymbolType SymbolType;
+
     struct Symbol {
         StrSlice name;
+        SymbolType type;
         size_t scope;
         size_t line;
         size_t nchar;
@@ -104,6 +114,7 @@
     typedef struct Symbol Symbol;
 
     extern FILE *yyin, *yyout;
+
 
     enum RelOp {
         And,
@@ -184,6 +195,7 @@ programa: {
     for (size_t i=0; i < $5.len; i++) {
         Symbol * s = vec_get(&$5, i);
         assert_not_sym_exists(s);
+        s->type = Variable;
         hashset_insert(&tabla, s);
         printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
     }
@@ -211,6 +223,7 @@ decl_var: decl KW_VAR ident_lista ':' tipo ';' {
     printf("Declarando variables: %zu\n", $3.len);
     for (size_t i=0; i < $3.len; i++) {
         Symbol * s = vec_get(&$3, i);
+        s->type = Variable;
         assert_not_sym_exists(s);
         hashset_insert(&tabla, s);
         printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
@@ -222,18 +235,21 @@ decl_var: decl KW_VAR ident_lista ':' tipo ';' {
 decl_const: decl KW_CONST IDENT '=' CONST_ENTERA ';' {
     printf("Declarando constante: %lld\n", $5);
     Symbol s = $3;
+    s.type = Constant;
     assert_not_sym_exists(&s);
     hashset_insert(&tabla, &s);
 };
 decl_const: decl KW_CONST IDENT '=' CONST_REAL ';' {
     printf("Declarando constante: %f\n", $5);
     Symbol s = $3;
+    s.type = Constant;
     assert_not_sym_exists(&s);
     hashset_insert(&tabla, &s);
 };
 decl_const: decl KW_CONST IDENT '=' CONST_CADENA ';' {
     printf("Declarando constante: %.*s\n", $5.len, $5.ptr);
     Symbol s = $3;
+    s.type = Constant;
     assert_not_sym_exists(&s);
     hashset_insert(&tabla, &s);
 };
@@ -250,6 +266,7 @@ subprograma_declaracion: subprograma_encabezado decl subprograma_decl instruccio
 subprograma_encabezado: KW_FUNC IDENT {
     printf("Declarando funcion %.*s\n", (int)$2.name.len, $2.name.ptr);
 	Symbol s = $2;
+    s.type = Function;
 	assert_not_sym_exists(&s);
 	hashset_insert(&tabla, &s);
     fun_id++;
@@ -260,6 +277,7 @@ subprograma_encabezado: KW_FUNC IDENT {
 subprograma_encabezado: KW_PROCEDURE IDENT {
     printf("Declarando procedure %.*s\n", (int)$2.name.len, $2.name.ptr);
 	Symbol s = $2;
+    s.type = Procedure;
 	assert_not_sym_exists(&s);
 	hashset_insert(&tabla, &s);
     fun_id++;
@@ -273,6 +291,7 @@ argumentos: '(' parametros_lista ')' {
     printf("Argumentos: %zu\n", $2.len);
     for (size_t i=0; i < $2.len; i++) {
         Symbol * s = (Symbol *)vec_get(&$2, i);
+        s->type = Constant;
         assert_not_sym_exists(s);
         hashset_insert(&tabla, s);
 		printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
