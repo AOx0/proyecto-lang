@@ -27,6 +27,7 @@ zig_lib: out_dir
 		src/hashset.c \
 		src/parser.c \
 		src/lexer.c \
+		src/symbol.c \
 		-lc --cache-dir zig-cache \
 		--global-cache-dir $(HOME)/.cache/zig \
 		--name lnglib -static

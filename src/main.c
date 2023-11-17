@@ -2,6 +2,7 @@
 #include "parser.h"
 #include "str.h"
 #include "vector.h"
+#include "symbol.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -55,7 +56,9 @@ int main(int argc, char *argv[]) {
             Vec *arr = (Vec *)vec_get(&tabla.values, j);
             for (size_t h = 0; h < arr->len; h++) {
                 Symbol *s = (Symbol *)vec_get(arr, h);
-                printf(" - Simbolo %d (%zu,%zu) %zu:%zu(%zu) refs: { ", (int)s->type,  j, h,
+                printf(" - Simbolo ");
+				sym_type_display(s->type);
+				printf(" (%zu,%zu) %zu:%zu(%zu) refs: { ", j, h,
                        s->line, s->nchar, s->scope);
                 for (size_t i = 0; i < s->refs.len; i++) {
                     size_t *ref = (size_t *)vec_get(&s->refs, i);

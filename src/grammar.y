@@ -2,6 +2,7 @@
     #include "hashset.h"
     #include "str.h"
     #include "parser.h"
+	#include "symbol.h"
 
     extern int yylex(void);
     extern int main(void);
@@ -14,24 +15,6 @@
 	
     HashSet tabla;
     String wrn_buff;
-
-   
-    HashIdx hash_symbol(void * s) {
-        HashIdx res;
-        res.idx = 0;
-
-        Symbol *sy = (Symbol *)s;
-
-        for (size_t i=0; i<sy->name.len && i < 5; i++) {
-            res.idx += sy->name.ptr[i] * (i + 1);
-        }
-
-        res.idx *= sy->scope + 1;
-
-        // printf("HASH: %zu FROM: %zu(%zu): %.*s\n", res.idx, sy->line, sy->scope, (int)sy->name.len, sy->name.ptr);
-        
-        return res;
-    }
 
     void add_reference_to_sym(Symbol * s) {
         size_t * ref = vec_push(&s->refs);
@@ -93,28 +76,10 @@
     #include <inttypes.h>
     #include "vector.h"
     #include "hashset.h"
+	#include "symbol.h"
     #include "str.h"
 
-    enum SymbolType {
-        Function,
-        Variable,
-        Constant,
-        Procedure,
-    };
-    typedef enum SymbolType SymbolType;
-
-    struct Symbol {
-        StrSlice name;
-        SymbolType type;
-        size_t scope;
-        size_t line;
-        size_t nchar;
-        Vec refs;
-    };
-    typedef struct Symbol Symbol;
-
     extern FILE *yyin, *yyout;
-
 
     enum RelOp {
         And,
@@ -291,7 +256,7 @@ argumentos: '(' parametros_lista ')' {
     printf("Argumentos: %zu\n", $2.len);
     for (size_t i=0; i < $2.len; i++) {
         Symbol * s = (Symbol *)vec_get(&$2, i);
-        s->type = Constant;
+        s->type = Variable;
         assert_not_sym_exists(s);
         hashset_insert(&tabla, s);
 		printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
