@@ -80,7 +80,7 @@ pub fn build(b: *std.Build) void {
         b.installArtifact(lng);
         lng.linkLibC();
         lng.linkLibrary(lnglib);
-        lng.addCSourceFiles(&.{ "test/main.c", "test/str_test.c", "test/vec_test.c", "test/hash_test.c" }, &flags);
+        lng.addCSourceFiles(&.{ "test/main.c", "test/str_test.c", "test/vec_test.c", "test/hash_test.c", "test/tree_test.c" }, &flags);
 
         const run_cmd = b.addRunArtifact(lng);
         run_cmd.step.dependOn(b.getInstallStep());
