@@ -16,6 +16,8 @@ extern int yyparse(void);
 extern HashSet tabla;
 extern String wrn_buff;
 extern size_t linea;
+extern size_t nchar;
+char *path;
 
 int main(int argc, char *argv[]);
 void parse_file(char *path);
@@ -40,8 +42,8 @@ int main(int argc, char *argv[]) {
     --argc;
 
     if (argc == 1) {
-        char *path = argv[0];
-        printf("Ejecutado archivo: %s\n", path);
+        path = argv[0];
+        printf("Traduciendo archivo: %s\n", path);
         parse_file(path);
     } else {
         printf("The lng compiler, translate PASCAL to C code\n\nUsage: lng "
@@ -85,5 +87,5 @@ int main(int argc, char *argv[]) {
 
 void yyerror(char *s) {
     err = 1;
-    fprintf(stderr, "Line %zu: %s\n", linea, s);
+    fprintf(stderr, "Error %s:%zu:%zu: %s\n", path, linea, nchar, s);
 }

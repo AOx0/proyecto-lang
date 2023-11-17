@@ -4,7 +4,7 @@ Tiene tres funciones
 *)
 program principal(input, output);
     
-    var a,b,c,d: integer;
+    var a,b,c,d,c: integer;
 
     (* Suma numeros *)
     function Add(a: integer; b: integer) : integer;

@@ -75,6 +75,7 @@
     extern void yyerror(char *s);
     extern size_t linea;
     extern size_t nchar;
+	size_t tnchar;
     extern size_t yyleng;
     size_t scope = 0;
 	size_t fun_id = 0;
@@ -88,13 +89,15 @@
     }
 
     void * assert_sym_exists(Symbol * s) {
+		tnchar = nchar;
         size_t orig_scope = s->scope;
         int found = 0;
+		nchar = s->nchar;
         Symbol * res = NULL;
         
         for (size_t i = orig_scope; i >= 0; i-=orig_scope) {
             s->scope = i;
-            printf("Looking %.*s in scope %zu\n", (int)s->name.len, s->name.ptr , i);
+            //printf("Looking %.*s in scope %zu\n", (int)s->name.len, s->name.ptr , i);
             if (hashset_contains(&tabla, s)) {
                 found = 1;
                 res = (Symbol *)hashset_get(&tabla, s);
@@ -105,7 +108,8 @@
 
         if (!found) {
             str_clear(&wrn_buff);
-            char lit[] = "Error: Simbolo no declarado en el scope actual: ";
+			nchar = s->nchar;
+            char lit[] = "Simbolo no declarado en el scope actual: ";
             printf("Scope: %zu\n", scope);
             str_push_n(&wrn_buff, &lit[0], strlen(&lit[0]));
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
@@ -114,19 +118,23 @@
             // printf("Existe %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
         }
         s->scope = orig_scope;
+		nchar = tnchar;
         return res;
     }
     
     void assert_not_sym_exists(Symbol * s) {
+		tnchar = nchar;
+		nchar = s->nchar;
         if (hashset_contains(&tabla, s)) {
             str_clear(&wrn_buff);
-            char lit[] = "Error: Simbolo ya declarado en el mismo scope: ";
+            char lit[] = "Simbolo ya declarado en el mismo scope: ";
             str_push_n(&wrn_buff, &lit[0], strlen(&lit[0]));
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
             yyerror(str_as_ref(&wrn_buff));
         } else {
             // printf("No existe %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
         }
+		nchar = tnchar;
     }
 
 
@@ -641,16 +649,16 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   152,   152,   152,   171,   177,   185,   185,   185,   187,
-     200,   207,   214,   223,   223,   224,   224,   224,   224,   227,
-     227,   228,   231,   231,   242,   242,   255,   266,   267,   270,
-     278,   279,   279,   280,   280,   281,   281,   281,   282,   282,
-     282,   282,   284,   285,   286,   288,   292,   296,   300,   304,
-     304,   305,   305,   306,   312,   318,   322,   326,   330,   334,
-     335,   338,   339,   339,   340,   344,   348,   353,   360,   360,
-     361,   361,   362,   362,   363,   363,   364,   365,   365,   365,
-     365,   365,   365,   365,   365,   368,   368,   369,   369,   370,
-     370,   371,   376,   376,   376,   376,   376,   376,   376
+       0,   172,   172,   172,   191,   197,   205,   205,   205,   207,
+     220,   227,   234,   243,   243,   244,   244,   244,   244,   247,
+     247,   248,   251,   251,   262,   262,   275,   286,   287,   290,
+     298,   299,   299,   300,   300,   301,   301,   301,   302,   302,
+     302,   302,   304,   305,   306,   308,   312,   316,   320,   324,
+     324,   325,   325,   326,   332,   338,   342,   346,   350,   354,
+     355,   358,   359,   359,   360,   364,   368,   373,   380,   380,
+     381,   381,   382,   382,   383,   383,   384,   385,   385,   385,
+     385,   385,   385,   385,   385,   388,   388,   389,   389,   390,
+     390,   391,   396,   396,   396,   396,   396,   396,   396
 };
 #endif
 
@@ -1100,6 +1108,12 @@ yydestruct (const char *yymsg,
             { 
     printf("Dropping ident_lista:  ");
     vec_debug_verbose(&((*yyvaluep).idents));
+	
+	for (size_t i=0; i < ((*yyvaluep).idents).len; i++) {
+        Symbol * s = vec_get(&((*yyvaluep).idents), i);
+        vec_drop(&s->refs);
+    }
+	
     vec_drop(&((*yyvaluep).idents));
 }
         break;
@@ -1108,6 +1122,12 @@ yydestruct (const char *yymsg,
             { 
     printf("Dropping parametros_lista:  ");
     vec_debug_verbose(&((*yyvaluep).idents));
+	
+	for (size_t i=0; i < ((*yyvaluep).idents).len; i++) {
+        Symbol * s = vec_get(&((*yyvaluep).idents), i);
+        vec_drop(&s->refs);
+    }
+	
     vec_drop(&((*yyvaluep).idents));
 }
         break;

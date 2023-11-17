@@ -9,6 +9,7 @@
     extern void yyerror(char *s);
     extern size_t linea;
     extern size_t nchar;
+	size_t tnchar;
     extern size_t yyleng;
     size_t scope = 0;
 	size_t fun_id = 0;
@@ -22,13 +23,15 @@
     }
 
     void * assert_sym_exists(Symbol * s) {
+		tnchar = nchar;
         size_t orig_scope = s->scope;
         int found = 0;
+		nchar = s->nchar;
         Symbol * res = NULL;
         
         for (size_t i = orig_scope; i >= 0; i-=orig_scope) {
             s->scope = i;
-            printf("Looking %.*s in scope %zu\n", (int)s->name.len, s->name.ptr , i);
+            //printf("Looking %.*s in scope %zu\n", (int)s->name.len, s->name.ptr , i);
             if (hashset_contains(&tabla, s)) {
                 found = 1;
                 res = (Symbol *)hashset_get(&tabla, s);
@@ -39,7 +42,8 @@
 
         if (!found) {
             str_clear(&wrn_buff);
-            char lit[] = "Error: Simbolo no declarado en el scope actual: ";
+			nchar = s->nchar;
+            char lit[] = "Simbolo no declarado en el scope actual: ";
             printf("Scope: %zu\n", scope);
             str_push_n(&wrn_buff, &lit[0], strlen(&lit[0]));
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
@@ -48,19 +52,23 @@
             // printf("Existe %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
         }
         s->scope = orig_scope;
+		nchar = tnchar;
         return res;
     }
     
     void assert_not_sym_exists(Symbol * s) {
+		tnchar = nchar;
+		nchar = s->nchar;
         if (hashset_contains(&tabla, s)) {
             str_clear(&wrn_buff);
-            char lit[] = "Error: Simbolo ya declarado en el mismo scope: ";
+            char lit[] = "Simbolo ya declarado en el mismo scope: ";
             str_push_n(&wrn_buff, &lit[0], strlen(&lit[0]));
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
             yyerror(str_as_ref(&wrn_buff));
         } else {
             // printf("No existe %zu(%zu):  %.*s\n", s->line, s->scope, (int)s->name.len, s->name.ptr);
         }
+		nchar = tnchar;
     }
 }
 
@@ -137,12 +145,24 @@
 %destructor { 
     printf("Dropping ident_lista:  ");
     vec_debug_verbose(&$$);
+	
+	for (size_t i=0; i < $$.len; i++) {
+        Symbol * s = vec_get(&$$, i);
+        vec_drop(&s->refs);
+    }
+	
     vec_drop(&$$);
 } ident_lista;
 
 %destructor { 
     printf("Dropping parametros_lista:  ");
     vec_debug_verbose(&$$);
+	
+	for (size_t i=0; i < $$.len; i++) {
+        Symbol * s = vec_get(&$$, i);
+        vec_drop(&s->refs);
+    }
+	
     vec_drop(&$$);
 } parametros_lista;
 
