@@ -117,6 +117,7 @@
     double fnum;
     char * ident;
     StrSlice slice;
+    DataType type;
     Symbol symbol;
     Vec idents;
     RelOp relop;
@@ -141,10 +142,11 @@
 
 %type <idents> ident_lista;
 %type <idents> parametros_lista;
+%type <type> estandard_tipo;
 
 %destructor { 
-    printf("Dropping ident_lista:  ");
-    vec_debug_verbose(&$$);
+    // printf("Dropping ident_lista:  ");
+    // vec_debug_verbose(&$$);
 	
 	for (size_t i=0; i < $$.len; i++) {
         Symbol * s = vec_get(&$$, i);
@@ -155,8 +157,8 @@
 } ident_lista;
 
 %destructor { 
-    printf("Dropping parametros_lista:  ");
-    vec_debug_verbose(&$$);
+    // printf("Dropping parametros_lista:  ");
+    // vec_debug_verbose(&$$);
 	
 	for (size_t i=0; i < $$.len; i++) {
         Symbol * s = vec_get(&$$, i);
@@ -175,8 +177,11 @@ programa: {
     puts("Init warning buffer");
     str_init(&wrn_buff);
 } KW_PROG  IDENT '(' ident_lista ')' ';' decl subprograma_decl instruccion_compuesta '.' {
-    printf("Programa: %.*s\n", (int)$3.name.len, $3.name.ptr);
-    printf("Entradas: %zu\n", $5.len);
+    // printf("Programa: %.*s\n", (int)$3.name.len, $3.name.ptr);
+        $3.type = Function;
+        assert_not_sym_exists(&$3);
+        hashset_insert(&tabla, &$3);
+    // printf("Entradas: %zu\n", $5.len);
     for (size_t i=0; i < $5.len; i++) {
         Symbol * s = vec_get(&$5, i);
         assert_not_sym_exists(s);
@@ -241,7 +246,10 @@ decl_const: decl KW_CONST IDENT '=' CONST_CADENA ';' {
 
  /* Tipo */
 tipo: estandard_tipo | KW_ARRAY '[' CONST_ENTERA '.' '.' CONST_ENTERA ']' KW_OF estandard_tipo;
-estandard_tipo: T_INT | T_REAL | T_STR | T_BOOL;
+estandard_tipo: T_INT { $$ = Int; };
+estandard_tipo: T_REAL { $$ = Real; };
+estandard_tipo: T_STR { $$ = Str;  };
+estandard_tipo: T_BOOL { $$ = Bool; };
 
  /* Subprograma */
 subprograma_decl: subprograma_decl subprograma_declaracion ';' | ;
@@ -257,6 +265,8 @@ subprograma_encabezado: KW_FUNC IDENT {
     fun_id++;
 	scope+=fun_id;
 } argumentos ':' estandard_tipo ';' {
+	Symbol * s = (Symbol *)hashset_get(&tabla, &$2);
+    s->info.fun = (FunctionInfo) { .return_type = $6 };
     printf("Declarada %.*s\n", (int)$2.name.len, $2.name.ptr);
 } ;
 subprograma_encabezado: KW_PROCEDURE IDENT {
@@ -361,7 +371,7 @@ variable: IDENT {
     Symbol s = $1;
     assert_sym_exists(&s);
 };
-variable: IDENT '[' expresion ']' {
+variable: IDENT '[' CONST_ENTERA ']' {
     Symbol s = $1;
     assert_sym_exists(&s);
 };

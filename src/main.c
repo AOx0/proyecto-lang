@@ -1,8 +1,8 @@
 #include "hashset.h"
 #include "parser.h"
 #include "str.h"
-#include "vector.h"
 #include "symbol.h"
+#include "vector.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -59,9 +59,11 @@ int main(int argc, char *argv[]) {
             for (size_t h = 0; h < arr->len; h++) {
                 Symbol *s = (Symbol *)vec_get(arr, h);
                 printf(" - Simbolo ");
-				sym_type_display(s->type);
-				printf(" (%zu,%zu) %zu:%zu(%zu) refs: { ", j, h,
-                       s->line, s->nchar, s->scope);
+                sym_type_display(s->type);
+                printf(" (%.2zu,%.2zu) name: %7.*s, location: %2zu:%-2zu, "
+                       "scope: %zu, refs: { ",
+                       j, h, (int)s->name.len, s->name.ptr, s->line, s->nchar,
+                       s->scope);
                 for (size_t i = 0; i < s->refs.len; i++) {
                     size_t *ref = (size_t *)vec_get(&s->refs, i);
                     printf("%zu", *ref);
@@ -69,7 +71,34 @@ int main(int argc, char *argv[]) {
                         printf(", ");
                     }
                 }
-                printf(" }: %.*s\n", (int)s->name.len, s->name.ptr);
+                printf(" }");
+
+                printf(" info: ");
+
+                switch (s->type) {
+                case Function: {
+                    fun_info_debug(&s->info.fun);
+                    break;
+                }
+                case Variable: {
+                    var_info_debug(&s->info.var);
+                    break;
+                }
+                case Constant: {
+                    printf("None");
+                    break;
+                }
+                case Procedure: {
+                    printf("None");
+                    break;
+                }
+                default: {
+                    puts("Panic: Invalid SymbolType");
+                    exit(1);
+                }
+                }
+
+                puts("");
                 i += 1;
                 vec_drop(&s->refs);
             }

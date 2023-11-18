@@ -73,8 +73,8 @@ int test_tree() {
         printf("Nuevo de ID %zu a %zu con valor %d\n", idx, cidx, i);
         tree_new_relation(&t, idx, cidx);
 
-        vec_debug_verbose(&t.values);
-        vec_debug_verbose(&t.relations);
+        // vec_debug_verbose(&t.values);
+        // vec_debug_verbose(&t.relations);
     }
 
     v = (uint8_t *)tree_last_node(&t, &idx);
@@ -87,8 +87,8 @@ int test_tree() {
         printf("Nuevo de ID %zu a %zu con valor %d\n", idx, cidx, i);
         tree_new_relation(&t, idx, cidx);
 
-        vec_debug_verbose(&t.values);
-        vec_debug_verbose(&t.relations);
+        // vec_debug_verbose(&t.values);
+        // vec_debug_verbose(&t.relations);
     }
 
     for (size_t i = 0; i < t.values.len; i++) {
