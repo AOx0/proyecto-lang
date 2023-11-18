@@ -172,22 +172,18 @@
 
 %%
 programa: { 
-    // puts("Init symbol table");
     hashset_init(&tabla, sizeof(Symbol), hash_symbol); 
-    // puts("Init warning buffer");
     str_init(&wrn_buff);
 } KW_PROG  IDENT '(' ident_lista ')' ';' decl subprograma_decl instruccion_compuesta '.' {
-    // printf("Programa: %.*s\n", (int)$3.name.len, $3.name.ptr);
-        $3.type = Function;
-        assert_not_sym_exists(&$3);
-        hashset_insert(&tabla, &$3);
-    // printf("Entradas: %zu\n", $5.len);
+    $3.type = Function;
+    assert_not_sym_exists(&$3);
+    hashset_insert(&tabla, &$3);
+
     for (size_t i=0; i < $5.len; i++) {
         Symbol * s = vec_get(&$5, i);
         assert_not_sym_exists(s);
         s->type = Variable;
         hashset_insert(&tabla, s);
-        // printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
     }
 	
 	vec_drop(&$5);
@@ -195,13 +191,11 @@ programa: {
 
 ident_lista: IDENT ',' ident_lista {
     $$ = $3;
-    // vec_debug_verbose(&$$);
     Symbol *s = vec_push(&$$);
     *s = $1;
 };
 ident_lista: IDENT {
     $$ = vec_new(sizeof(Symbol));
-    // vec_debug_verbose(&$$);
     Symbol *s = vec_push(&$$);
     *s = $1;
 };
@@ -210,76 +204,58 @@ ident_lista: IDENT {
 decl: decl_var | decl_const | ;
 
 decl_var: decl KW_VAR ident_lista ':' tipo ';' {
-    // printf("Declarando variables: %zu\n", $3.len);
     for (size_t i=0; i < $3.len; i++) {
         Symbol * s = vec_get(&$3, i);
         s->type = Variable;
         assert_not_sym_exists(s);
         hashset_insert(&tabla, s);
-        // printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
     }
-	
+
 	vec_drop(&$3);
 };
 
 decl_const: decl KW_CONST IDENT '=' CONST_ENTERA ';' {
-    // printf("Declarando constante: %lld\n", $5);
-    Symbol s = $3;
-    s.type = Constant;
-    assert_not_sym_exists(&s);
-    hashset_insert(&tabla, &s);
+    $3.type = Constant;
+    assert_not_sym_exists(&$3);
+    hashset_insert(&tabla, &$3);
 };
 decl_const: decl KW_CONST IDENT '=' CONST_REAL ';' {
-    // printf("Declarando constante: %f\n", $5);
-    Symbol s = $3;
-    s.type = Constant;
-    assert_not_sym_exists(&s);
-    hashset_insert(&tabla, &s);
+    $3.type = Constant;
+    assert_not_sym_exists(&$3);
+    hashset_insert(&tabla, &$3);
 };
 decl_const: decl KW_CONST IDENT '=' CONST_CADENA ';' {
-    // printf("Declarando constante: %.*s\n", $5.len, $5.ptr);
-    Symbol s = $3;
-    s.type = Constant;
-    assert_not_sym_exists(&s);
-    hashset_insert(&tabla, &s);
+    $3.type = Constant;
+    assert_not_sym_exists(&$3);
+    hashset_insert(&tabla, &$3);
 };
 
  /* Tipo */
 tipo: estandard_tipo | KW_ARRAY '[' CONST_ENTERA '.' '.' CONST_ENTERA ']' KW_OF estandard_tipo;
-estandard_tipo: T_INT { $$ = Int; };
-estandard_tipo: T_REAL { $$ = Real; };
-estandard_tipo: T_STR { $$ = Str;  };
-estandard_tipo: T_BOOL { $$ = Bool; };
+estandard_tipo: T_INT { $$ = Int; } | T_REAL { $$ = Real; } | T_STR { $$ = Str; } | T_BOOL { $$ = Bool; };
 
  /* Subprograma */
 subprograma_decl: subprograma_decl subprograma_declaracion ';' | ;
 subprograma_declaracion: subprograma_encabezado decl subprograma_decl instruccion_compuesta {
-    scope-=fun_id;
+    scope-= fun_id;
 };
 subprograma_encabezado: KW_FUNC IDENT {
-    // printf("Declarando funcion %.*s\n", (int)$2.name.len, $2.name.ptr);
-	Symbol s = $2;
-    s.type = Function;
-	assert_not_sym_exists(&s);
-	hashset_insert(&tabla, &s);
+    $2.type = Function;
+	assert_not_sym_exists(&$2);
+	hashset_insert(&tabla, &$2);
     fun_id++;
 	scope+=fun_id;
 } argumentos ':' estandard_tipo ';' {
 	Symbol * s = (Symbol *)hashset_get(&tabla, &$2);
     s->info.fun = (FunctionInfo) { .return_type = $6 };
-    // printf("Declarada %.*s\n", (int)$2.name.len, $2.name.ptr);
 } ;
 subprograma_encabezado: KW_PROCEDURE IDENT {
-    // printf("Declarando procedure %.*s\n", (int)$2.name.len, $2.name.ptr);
-	Symbol s = $2;
-    s.type = Procedure;
-	assert_not_sym_exists(&s);
-	hashset_insert(&tabla, &s);
+    $2.type = Procedure;
+	assert_not_sym_exists(&$2);
+	hashset_insert(&tabla, &$2);
     fun_id++;
-	scope+=fun_id;
-} argumentos ';' {
-    // printf("Declarada %.*s\n", (int)$2.name.len, $2.name.ptr);
-};
+	scope += fun_id;
+} argumentos ';' ;
 
 /* Argumentos */
 argumentos: '(' parametros_lista ')' {
@@ -316,50 +292,38 @@ repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones
 	| KW_FOR for_asignacion KW_DOWNTO expresion KW_DO instrucciones
 ;
 lectura_instruccion: KW_READ '(' IDENT ')' {
-    Symbol s = $3;
-    assert_sym_exists(&s);
+    assert_sym_exists(&$3);
 }; 
 lectura_instruccion: KW_READLN '(' IDENT ')' { 
-    Symbol s = $3;
-    assert_sym_exists(&s);
+    assert_sym_exists(&$3);
 };
 escritura_instruccion: KW_WRITE '(' CONST_CADENA ',' IDENT ')' {
-    Symbol s = $5;
-    assert_sym_exists(&s);
+    assert_sym_exists(&$5);
 };
 escritura_instruccion: KW_WRITELN '(' CONST_CADENA ',' IDENT ')' {
-    Symbol s = $5;
-    assert_sym_exists(&s);
+    assert_sym_exists(&$5);
 };
 escritura_instruccion: KW_WRITE '(' CONST_CADENA  ')' | KW_WRITELN '(' CONST_CADENA  ')'
 	| KW_WRITE '(' CONST_CADENA ',' expresion ')' | KW_WRITELN '(' CONST_CADENA ',' expresion ')';
 escritura_instruccion: KW_WRITE '(' IDENT ',' IDENT ')' {
-    Symbol s = $3;
-    Symbol s1 = $5;
-    assert_sym_exists(&s);
-    assert_sym_exists(&s1);
+    assert_sym_exists(&$3);
+    assert_sym_exists(&$5);
 }
 escritura_instruccion: KW_WRITELN '(' IDENT ',' IDENT ')' {
-    Symbol s = $3;
-    Symbol s1 = $5;
-    assert_sym_exists(&s);
-    assert_sym_exists(&s1);
+    assert_sym_exists(&$3);
+    assert_sym_exists(&$5);
 };
 escritura_instruccion: KW_WRITE '(' IDENT  ')' {
-    Symbol s = $3;
-    assert_sym_exists(&s);
+    assert_sym_exists(&$3);
 };
 escritura_instruccion: KW_WRITELN '(' IDENT  ')' {
-    Symbol s = $3;
-    assert_sym_exists(&s);
+    assert_sym_exists(&$3);
 };
 escritura_instruccion: KW_WRITE '(' IDENT ',' expresion ')' {
-    Symbol s = $3;
-    assert_sym_exists(&s);
+    assert_sym_exists(&$3);
 };
 escritura_instruccion: KW_WRITELN '(' IDENT ',' expresion ')' {
-    Symbol s = $3;
-    assert_sym_exists(&s);
+    assert_sym_exists(&$3);
 };
 if_instruccion: KW_IF relop_expresion KW_THEN instrucciones
     | KW_IF relop_expresion KW_THEN instrucciones KW_ELSE instrucciones;
@@ -368,22 +332,16 @@ if_instruccion: KW_IF relop_expresion KW_THEN instrucciones
 variable_asignacion: variable OP_ASIGN expresion; 
 for_asignacion: variable_asignacion | variable;
 variable: IDENT {
-    Symbol s = $1;
-    assert_sym_exists(&s);
+    assert_sym_exists(&$1);
 };
 variable: IDENT '[' CONST_ENTERA ']' {
-    Symbol s = $1;
-    assert_sym_exists(&s);
+    assert_sym_exists(&$1);
 };
 procedure_instruccion : IDENT {
-    Symbol s = $1;
-    // printf("Llamando procedimiento: %.*s\n", (int)s.name.len, s.name.ptr);
-    assert_sym_exists(&s);
+    assert_sym_exists(&$1);
 };
 procedure_instruccion : IDENT '(' expresion_lista ')' {
-    Symbol s = $1;
-    // printf("Llamando procedimiento: %.*s\n", (int)s.name.len, s.name.ptr);
-    assert_sym_exists(&s);
+    assert_sym_exists(&$1);
 };
 
  /* Relop */
@@ -399,17 +357,13 @@ expresion_lista: expresion | expresion_lista ',' expresion;
 expresion: termino | expresion ADDOP termino;
 termino: factor | termino MULOP factor;
 llamado_funcion : IDENT '(' expresion_lista ')' {
-    Symbol s = $1;
-    // printf("Llamando funcion: %.*s\n", (int)s.name.len, s.name.ptr);
-    assert_sym_exists(&s);
+    assert_sym_exists(&$1);
 };
 factor: IDENT {
-	Symbol s = $1;
-    assert_sym_exists(&s);
+    assert_sym_exists(&$1);
 }; 
 factor: IDENT '[' expresion ']' {
-	Symbol s = $1;
-	assert_sym_exists(&s);
+	assert_sym_exists(&$1);
 };
 factor: llamado_funcion | CONST_ENTERA | CONST_REAL | ADDOP factor | '(' expresion ')';
 %%
