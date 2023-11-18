@@ -1547,9 +1547,9 @@ yyreduce:
     case 2:
 
     {
-        puts("Init symbol table");
+        // puts("Init symbol table");
         hashset_init(&tabla, sizeof(Symbol), hash_symbol);
-        puts("Init warning buffer");
+        // puts("Init warning buffer");
         str_init(&wrn_buff);
         ;
     } break;
@@ -1567,7 +1567,7 @@ yyreduce:
             assert_not_sym_exists(s);
             s->type = Variable;
             hashset_insert(&tabla, s);
-            printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
+            // printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
         }
 
         vec_drop(&(yyvsp[(5) - (11)].idents));
@@ -1597,13 +1597,13 @@ yyreduce:
     case 9:
 
     {
-        printf("Declarando variables: %zu\n", (yyvsp[(3) - (6)].idents).len);
+        // printf("Declarando variables: %zu\n", $3.len);
         for (size_t i = 0; i < (yyvsp[(3) - (6)].idents).len; i++) {
             Symbol *s = vec_get(&(yyvsp[(3) - (6)].idents), i);
             s->type = Variable;
             assert_not_sym_exists(s);
             hashset_insert(&tabla, s);
-            printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
+            // printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
         }
 
         vec_drop(&(yyvsp[(3) - (6)].idents));
@@ -1613,7 +1613,7 @@ yyreduce:
     case 10:
 
     {
-        printf("Declarando constante: %lld\n", (yyvsp[(5) - (6)].snum));
+        // printf("Declarando constante: %lld\n", $5);
         Symbol s = (yyvsp[(3) - (6)].symbol);
         s.type = Constant;
         assert_not_sym_exists(&s);
@@ -1624,7 +1624,7 @@ yyreduce:
     case 11:
 
     {
-        printf("Declarando constante: %f\n", (yyvsp[(5) - (6)].fnum));
+        // printf("Declarando constante: %f\n", $5);
         Symbol s = (yyvsp[(3) - (6)].symbol);
         s.type = Constant;
         assert_not_sym_exists(&s);
@@ -1635,8 +1635,7 @@ yyreduce:
     case 12:
 
     {
-        printf("Declarando constante: %.*s\n", (yyvsp[(5) - (6)].slice).len,
-               (yyvsp[(5) - (6)].slice).ptr);
+        // printf("Declarando constante: %.*s\n", $5.len, $5.ptr);
         Symbol s = (yyvsp[(3) - (6)].symbol);
         s.type = Constant;
         assert_not_sym_exists(&s);
@@ -1682,9 +1681,7 @@ yyreduce:
     case 22:
 
     {
-        printf("Declarando funcion %.*s\n",
-               (int)(yyvsp[(2) - (2)].symbol).name.len,
-               (yyvsp[(2) - (2)].symbol).name.ptr);
+        // printf("Declarando funcion %.*s\n", (int)$2.name.len, $2.name.ptr);
         Symbol s = (yyvsp[(2) - (2)].symbol);
         s.type = Function;
         assert_not_sym_exists(&s);
@@ -1699,17 +1696,14 @@ yyreduce:
     {
         Symbol *s = (Symbol *)hashset_get(&tabla, &(yyvsp[(2) - (7)].symbol));
         s->info.fun = (FunctionInfo){.return_type = (yyvsp[(6) - (7)].type)};
-        printf("Declarada %.*s\n", (int)(yyvsp[(2) - (7)].symbol).name.len,
-               (yyvsp[(2) - (7)].symbol).name.ptr);
+        // printf("Declarada %.*s\n", (int)$2.name.len, $2.name.ptr);
         ;
     } break;
 
     case 24:
 
     {
-        printf("Declarando procedure %.*s\n",
-               (int)(yyvsp[(2) - (2)].symbol).name.len,
-               (yyvsp[(2) - (2)].symbol).name.ptr);
+        // printf("Declarando procedure %.*s\n", (int)$2.name.len, $2.name.ptr);
         Symbol s = (yyvsp[(2) - (2)].symbol);
         s.type = Procedure;
         assert_not_sym_exists(&s);
@@ -1722,21 +1716,20 @@ yyreduce:
     case 25:
 
     {
-        printf("Declarada %.*s\n", (int)(yyvsp[(2) - (5)].symbol).name.len,
-               (yyvsp[(2) - (5)].symbol).name.ptr);
+        // printf("Declarada %.*s\n", (int)$2.name.len, $2.name.ptr);
         ;
     } break;
 
     case 26:
 
     {
-        printf("Argumentos: %zu\n", (yyvsp[(2) - (3)].idents).len);
+        // printf("Argumentos: %zu\n", $2.len);
         for (size_t i = 0; i < (yyvsp[(2) - (3)].idents).len; i++) {
             Symbol *s = (Symbol *)vec_get(&(yyvsp[(2) - (3)].idents), i);
             s->type = Variable;
             assert_not_sym_exists(s);
             hashset_insert(&tabla, s);
-            printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
+            // printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
         }
 
         vec_drop(&(yyvsp[(2) - (3)].idents));
@@ -1863,7 +1856,8 @@ yyreduce:
 
     {
         Symbol s = (yyvsp[(1) - (1)].symbol);
-        printf("Llamando procedimiento: %.*s\n", (int)s.name.len, s.name.ptr);
+        // printf("Llamando procedimiento: %.*s\n", (int)s.name.len,
+        // s.name.ptr);
         assert_sym_exists(&s);
         ;
     } break;
@@ -1872,7 +1866,8 @@ yyreduce:
 
     {
         Symbol s = (yyvsp[(1) - (4)].symbol);
-        printf("Llamando procedimiento: %.*s\n", (int)s.name.len, s.name.ptr);
+        // printf("Llamando procedimiento: %.*s\n", (int)s.name.len,
+        // s.name.ptr);
         assert_sym_exists(&s);
         ;
     } break;
@@ -1881,7 +1876,7 @@ yyreduce:
 
     {
         Symbol s = (yyvsp[(1) - (4)].symbol);
-        printf("Llamando funcion: %.*s\n", (int)s.name.len, s.name.ptr);
+        // printf("Llamando funcion: %.*s\n", (int)s.name.len, s.name.ptr);
         assert_sym_exists(&s);
         ;
     } break;

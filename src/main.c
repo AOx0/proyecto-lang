@@ -58,9 +58,9 @@ int main(int argc, char *argv[]) {
             Vec *arr = (Vec *)vec_get(&tabla.values, j);
             for (size_t h = 0; h < arr->len; h++) {
                 Symbol *s = (Symbol *)vec_get(arr, h);
-                printf(" - Simbolo ");
+                printf("    - ");
                 sym_type_display(s->type);
-                printf(" (%.2zu,%.2zu) name: %7.*s, location: %2zu:%-2zu, "
+                printf(" (%.2zu,%.2zu), name: %10.*s, location: %2zu:%-2zu, "
                        "scope: %zu, refs: { ",
                        j, h, (int)s->name.len, s->name.ptr, s->line, s->nchar,
                        s->scope);
@@ -71,9 +71,7 @@ int main(int argc, char *argv[]) {
                         printf(", ");
                     }
                 }
-                printf(" }");
-
-                printf(" info: ");
+                printf(" }, info: ");
 
                 switch (s->type) {
                 case Function: {
