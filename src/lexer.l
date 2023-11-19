@@ -94,6 +94,7 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
 "to" { nchar += yyleng; return KW_TO; }
 "downto" { nchar += yyleng; return KW_DOWNTO; }
 "if" { nchar += yyleng; return KW_IF; }
+".." { nchar += yyleng; return KW_DOTS; }
 "then" { nchar += yyleng; return KW_THEN; }
 "else" { nchar += yyleng; return KW_ELSE; }
 "and" { nchar += yyleng; return RELOP_AND; }

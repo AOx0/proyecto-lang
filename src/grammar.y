@@ -134,7 +134,7 @@
 %token <fnum> CONST_REAL <snum> CONST_ENTERA <slice> CONST_CADENA <relop> RELOP <addop> ADDOP <mulop> MULOP;
 
 /* Keywords */ 
-%token OP_ASIGN KW_PROCEDURE KW_PROG KW_CONST KW_VAR KW_ARRAY KW_OF KW_FUNC KW_BEGIN KW_END KW_READ KW_READLN KW_WRITE KW_WRITELN KW_WHILE KW_FOR KW_DO KW_TO KW_DOWNTO KW_IF KW_THEN KW_ELSE;
+%token OP_ASIGN KW_PROCEDURE KW_PROG KW_CONST KW_VAR KW_ARRAY KW_OF KW_FUNC KW_BEGIN KW_END KW_READ KW_READLN KW_WRITE KW_WRITELN KW_WHILE KW_FOR KW_DO KW_TO KW_DOWNTO KW_IF KW_THEN KW_ELSE KW_DOTS;
 
 /* OPs */
 %token RELOP_EQ RELOP_NEQ RELOP_BT RELOP_LT RELOP_EBT RELOP_ELT RELOP_AND RELOP_NOT RELOP_OR;
@@ -212,6 +212,7 @@ decl_var: decl KW_VAR ident_lista ':' tipo ';' {
         Symbol * s = vec_get(&$3, i);
         s->type = Variable;
         s->info.var = (VariableInfo) { .type = $5, .addr = addr };
+        addr += data_type_size(&$5);
         assert_not_sym_exists(s);
         hashset_insert(&tabla, s);
     }
@@ -221,27 +222,30 @@ decl_var: decl KW_VAR ident_lista ':' tipo ';' {
 
 decl_const: decl KW_CONST IDENT '=' CONST_ENTERA ';' {
     $3.type = Constant;
-    $3.info.cons = (ConstantInfo) { .type = (DataType) { .type = Int, .size = 4 }, .addr = 0 };
+    $3.info.cons = (ConstantInfo) { .type = (DataType) { .type = Int, .size = 4 }, .addr = addr };
+    addr += 4;
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
 };
 decl_const: decl KW_CONST IDENT '=' CONST_REAL ';' {
     $3.type = Constant;
-    $3.info.cons = (ConstantInfo) { .type = (DataType) { .type = Real, .size = 4 }, .addr = 0 };
+    $3.info.cons = (ConstantInfo) { .type = (DataType) { .type = Real, .size = 4 }, .addr = addr };
+    addr += 4;
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
 };
 decl_const: decl KW_CONST IDENT '=' CONST_CADENA ';' {
     $3.type = Constant;
-    $3.info.cons = (ConstantInfo) { .type = (DataType) { .type = Str, .size = 1 }, .addr = 0 };
+    $3.info.cons = (ConstantInfo) { .type = (DataType) { .type = Str, .size = 1 }, .addr = addr };
+    addr += 1;
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
 };
 
  /* Tipo */
 tipo: estandard_tipo { $$ = $1; } 
-    | KW_ARRAY '[' CONST_ENTERA '.' '.' CONST_ENTERA ']' KW_OF estandard_tipo {
-    $$ = $9;
+    | KW_ARRAY '[' CONST_ENTERA KW_DOTS CONST_ENTERA ']' KW_OF estandard_tipo {
+    $$ = $8;
     $$.size = $$.size * 4;
 };
 estandard_tipo: T_INT { $$ = (DataType) { .type = Int, .size = 1 }; } 
@@ -290,6 +294,7 @@ parametros_lista: ident_lista ':' tipo {
         Symbol * s = (Symbol *)vec_get(&$1, i);
         s->type = Variable;
         s->info.var = (VariableInfo) { .type = $3, .addr = addr };
+        addr += data_type_size(&$3);
 		// printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
     }
     $$ = $1;
@@ -301,6 +306,7 @@ parametros_lista: parametros_lista ';' ident_lista ':' tipo {
         Symbol * s = (Symbol *)vec_get(&$3, i);
         s->type = Variable;
         s->info.var = (VariableInfo) { .type = $5, .addr = addr };
+        addr += data_type_size(&$5);
 		// printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
     }
 

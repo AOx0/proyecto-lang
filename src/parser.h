@@ -1,10 +1,8 @@
+/* A Bison parser, made by GNU Bison 2.7.12-4996.  */
 
-/* A Bison parser, made by GNU Bison 2.4.1.  */
+/* Bison interface for Yacc-like parsers in C
 
-/* Skeleton interface for Bison's Yacc-like parsers in C
-
-      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
+      Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -32,6 +30,15 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
+#ifndef YY_YY_GRAMMAR_TAB_H_INCLUDED
+#define YY_YY_GRAMMAR_TAB_H_INCLUDED
+/* Enabling traces.  */
+#ifndef YYDEBUG
+#define YYDEBUG 0
+#endif
+#if YYDEBUG
+extern int yydebug;
+#endif
 /* "%code requires" blocks.  */
 
 #ifndef LNG_PARSERH
@@ -94,19 +101,20 @@ enum yytokentype {
     KW_IF = 284,
     KW_THEN = 285,
     KW_ELSE = 286,
-    RELOP_EQ = 287,
-    RELOP_NEQ = 288,
-    RELOP_BT = 289,
-    RELOP_LT = 290,
-    RELOP_EBT = 291,
-    RELOP_ELT = 292,
-    RELOP_AND = 293,
-    RELOP_NOT = 294,
-    RELOP_OR = 295,
-    T_INT = 296,
-    T_REAL = 297,
-    T_STR = 298,
-    T_BOOL = 299
+    KW_DOTS = 287,
+    RELOP_EQ = 288,
+    RELOP_NEQ = 289,
+    RELOP_BT = 290,
+    RELOP_LT = 291,
+    RELOP_EBT = 292,
+    RELOP_ELT = 293,
+    RELOP_AND = 294,
+    RELOP_NOT = 295,
+    RELOP_OR = 296,
+    T_INT = 297,
+    T_REAL = 298,
+    T_STR = 299,
+    T_BOOL = 300
 };
 #endif
 
@@ -132,3 +140,19 @@ typedef union YYSTYPE {
 #endif
 
 extern YYSTYPE yylval;
+
+#ifdef YYPARSE_PARAM
+#if defined __STDC__ || defined __cplusplus
+int yyparse(void *YYPARSE_PARAM);
+#else
+int yyparse();
+#endif
+#else /* ! YYPARSE_PARAM */
+#if defined __STDC__ || defined __cplusplus
+int yyparse(void);
+#else
+int yyparse();
+#endif
+#endif /* ! YYPARSE_PARAM */
+
+#endif /* !YY_YY_GRAMMAR_TAB_H_INCLUDED  */
