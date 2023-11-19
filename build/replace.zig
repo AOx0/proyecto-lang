@@ -22,10 +22,25 @@ pub const ReplaceInFileStep = struct {
         _ = prog_node;
         const self = @fieldParentPtr(ReplaceInFileStep, "step", step);
 
-        for (self.from, self.into) |from, into| {
-            std.fs.cwd().rename(from, into) catch {
-                std.log.err("Failed to move {s} to {s}", .{ self.from, self.into });
-            };
+        for (self.paths) |path| {
+            var file = try std.fs.cwd().openFile(path, .{ .mode = .read_only });
+
+            const file_size = (try file.stat()).size;
+            var buffer = try self.step.owner.allocator.alloc(u8, file_size);
+            defer self.step.owner.allocator.free(buffer);
+
+            var buffer2 = try self.step.owner.allocator.alloc(u8, file_size * 2);
+            defer self.step.owner.allocator.free(buffer2);
+
+            try file.reader().readNoEof(buffer);
+            file.close();
+
+            const n = replace(buffer, buffer2, self.from, self.into);
+
+            file = try std.fs.cwd().createFile(path, .{ .truncate = true });
+            defer file.close();
+
+            try file.writeAll(buffer2[0..n]);
         }
     }
 };

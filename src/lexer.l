@@ -33,7 +33,7 @@ SIGNO [+-]?
 ENTERO {NZDIGIT}{DIGIT}*
 CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"|";"|"["|"]"|","|"."|"#"
 %%
-<COMENTARIO>. { nchar += 1; }
+<COMENTARIO>[^\(\*\n]* { nchar += 1; }
 <COMENTARIO>\n { yyleng=2; yytext = "\\n"; linea++; nchar = 1; }
 <INITIAL,COMENTARIO>"(*" {
     nchar += yyleng;
@@ -46,11 +46,11 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
 }
 <COMENTARIO>"*)"  { 
     nchar += yyleng;
-   if (--comentarios_abiertos == 0) {
-       BEGIN(INITIAL); /*printf("%s\n", yytext); */
-   } else {
-       // ECHO;
-   }
+    if (--comentarios_abiertos == 0) {
+        BEGIN(INITIAL); /*printf("%s\n", yytext); */
+    } else {
+        // ECHO;
+    }
 }
 {SPACE}+ { nchar += yyleng; }/* Nah */
 \n { linea++; nchar = 1; }

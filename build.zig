@@ -1,5 +1,6 @@
 const std = @import("std");
 const Move = @import("build/move.zig").MoveFileStep;
+const Repl = @import("build/replace.zig").ReplaceInFileStep;
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -26,7 +27,7 @@ pub fn build(b: *std.Build) void {
     mv_flex.step.dependOn(&b.addSystemCommand(&.{ "flex", if (debug_gen or debug_flex) "-Ld" else "-L", "src/lexer.l" }).step);
 
     const mv_bison = Move.create(b, &.{ "./grammar.tab.c", "./grammar.tab.h" }, &.{ "./src/parser.c", "./src/parser.h" });
-    mv_bison.step.dependOn(&b.addSystemCommand(&.{ "bison", if (debug_gen or debug_bison) "-ld" else "-ldt", "src/grammar.y" }).step);
+    mv_bison.step.dependOn(&b.addSystemCommand(&.{ "bison", if (debug_gen or debug_bison) "-ldt" else "-ld", "src/grammar.y" }).step);
 
     const gen_step = b.step("gen", "Generar lexer.{c,h}, parser.{c, h}");
     gen_step.dependOn(&mv_flex.step);
@@ -45,7 +46,19 @@ pub fn build(b: *std.Build) void {
     lnglib.addCSourceFiles(&.{ "src/str.c", "src/vector.c", "src/hashset.c", "src/parser.c", "src/lexer.c", "src/symbol.c" }, &flags);
 
     if (!no_flex and !no_gen) lnglib.step.dependOn(&mv_flex.step);
-    if (!no_bison and !no_gen) lnglib.step.dependOn(&mv_bison.step);
+    if (!no_bison and !no_gen) {
+        if (debug_bison or debug_gen) {
+            const en_debug = Repl.create(b, &.{"src/parser.c"}, &.{ "int yydebug;", "grammar.tab.h" }, &.{ "int yydebug = 1;", "parser.h" });
+            const en_debug2 = Repl.create(b, &.{"src/parser.c"}, &.{"extern int yydebug = 1;"}, &.{"extern int yydebug;"});
+            en_debug.step.dependOn(&mv_bison.step);
+            en_debug2.step.dependOn(&en_debug.step);
+            lnglib.step.dependOn(&en_debug2.step);
+        } else {
+            const repl = Repl.create(b, &.{ "src/parser.c", "src/parser.h" }, &.{"grammar.tab.h"}, &.{"parser.h"});
+            repl.step.dependOn(&mv_bison.step);
+            lnglib.step.dependOn(&repl.step);
+        }
+    }
 
     {
         const lng = b.addExecutable(.{
