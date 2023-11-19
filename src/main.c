@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
                     break;
                 }
                 case Constant: {
-                    printf("None");
+                    const_info_debug(&s->info.cons);
                     break;
                 }
                 case Procedure: {

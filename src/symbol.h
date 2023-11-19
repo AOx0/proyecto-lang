@@ -14,14 +14,20 @@ enum SymbolType {
 };
 typedef enum SymbolType SymbolType;
 
-enum DataType {
+enum DataTypeE {
     Int,
     Real,
     Str,
     Bool,
     Ukw,
 };
-typedef enum DataType DataType;
+typedef enum DataTypeE DataTypeE;
+
+struct DataType {
+        DataTypeE type;
+        size_t size;
+};
+typedef struct DataType DataType;
 
 struct FunctionInfo {
         DataType return_type;
@@ -30,16 +36,27 @@ typedef struct FunctionInfo FunctionInfo;
 
 struct VariableInfo {
         DataType type;
+        size_t addr;
 };
 typedef struct VariableInfo VariableInfo;
+
+struct ConstantInfo {
+        DataType type;
+        size_t addr;
+};
+typedef struct ConstantInfo ConstantInfo;
 
 union SymbolInfo {
         FunctionInfo fun;
         VariableInfo var;
+        ConstantInfo cons;
 };
 typedef union SymbolInfo SymbolInfo;
 
 void data_type_debug(DataType *d);
+size_t data_type_size(DataType *d);
+size_t data_type_e_size(DataTypeE *d);
+void const_info_debug(ConstantInfo *f);
 void fun_info_debug(FunctionInfo *f);
 void var_info_debug(VariableInfo *f);
 void sym_type_display(SymbolType st);

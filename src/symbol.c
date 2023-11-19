@@ -19,7 +19,7 @@ HashIdx hash_symbol(void *s) {
     return res;
 }
 
-void data_type_debug(DataType *d) {
+void data_type_e_debug(DataTypeE *d) {
     switch (*d) {
     case Int: {
         printf("Int");
@@ -38,10 +38,43 @@ void data_type_debug(DataType *d) {
         break;
     }
     case Ukw: {
-        printf("Ukw");
+        puts("Panic: Invalid DataType");
+        exit(1);
+    }
+    }
+}
+
+void data_type_debug(DataType *d) {
+    printf("DataType { type: ");
+    data_type_e_debug(&d->type);
+    printf(", num: %zu }", d->size);
+}
+
+size_t data_type_size(DataType *d) {
+    size_t size;
+    switch (d->type) {
+    case Int: {
+        size = 4;
         break;
     }
+    case Real: {
+        size = 4;
+        break;
     }
+    case Str: {
+        size = 1;
+        break;
+    }
+    case Bool: {
+        size = 1;
+        break;
+    }
+    case Ukw: {
+        puts("Panic: Invalid DataType");
+        exit(1);
+    }
+    }
+    return size * d->size;
 }
 
 void fun_info_debug(FunctionInfo *f) {
@@ -53,7 +86,13 @@ void fun_info_debug(FunctionInfo *f) {
 void var_info_debug(VariableInfo *f) {
     printf("VariableInfo { type: ");
     data_type_debug(&f->type);
-    printf(" }");
+    printf(", size: %zu, addr: %zu }", data_type_size(&f->type), f->addr);
+}
+
+void const_info_debug(ConstantInfo *f) {
+    printf("ConstantInfo { type: ");
+    data_type_debug(&f->type);
+    printf(", size: %zu, addr: %zu }", data_type_size(&f->type), f->addr);
 }
 
 void sym_type_display(SymbolType st) {

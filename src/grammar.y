@@ -13,6 +13,7 @@
     extern size_t yyleng;
     size_t scope = 0;
 	size_t fun_id = 0;
+    size_t addr = 0;
 	
     HashSet tabla;
     String wrn_buff;
@@ -144,6 +145,7 @@
 %type <idents> ident_lista;
 %type <idents> parametros_lista;
 %type <type> estandard_tipo;
+%type <type> tipo;
 
 %destructor { 
     // printf("Dropping ident_lista:  ");
@@ -184,6 +186,7 @@ programa: {
         Symbol * s = vec_get(&$5, i);
         assert_not_sym_exists(s);
         s->type = Variable;
+        s->info.var = (VariableInfo) { .type = {}, .addr = addr };
         hashset_insert(&tabla, s);
     }
 	
@@ -208,6 +211,7 @@ decl_var: decl KW_VAR ident_lista ':' tipo ';' {
     for (size_t i=0; i < $3.len; i++) {
         Symbol * s = vec_get(&$3, i);
         s->type = Variable;
+        s->info.var = (VariableInfo) { .type = $5, .addr = addr };
         assert_not_sym_exists(s);
         hashset_insert(&tabla, s);
     }
@@ -217,23 +221,33 @@ decl_var: decl KW_VAR ident_lista ':' tipo ';' {
 
 decl_const: decl KW_CONST IDENT '=' CONST_ENTERA ';' {
     $3.type = Constant;
+    $3.info.cons = (ConstantInfo) { .type = (DataType) { .type = Int, .size = 4 }, .addr = 0 };
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
 };
 decl_const: decl KW_CONST IDENT '=' CONST_REAL ';' {
     $3.type = Constant;
+    $3.info.cons = (ConstantInfo) { .type = (DataType) { .type = Real, .size = 4 }, .addr = 0 };
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
 };
 decl_const: decl KW_CONST IDENT '=' CONST_CADENA ';' {
     $3.type = Constant;
+    $3.info.cons = (ConstantInfo) { .type = (DataType) { .type = Str, .size = 1 }, .addr = 0 };
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
 };
 
  /* Tipo */
-tipo: estandard_tipo | KW_ARRAY '[' CONST_ENTERA '.' '.' CONST_ENTERA ']' KW_OF estandard_tipo;
-estandard_tipo: T_INT { $$ = Int; } | T_REAL { $$ = Real; } | T_STR { $$ = Str; } | T_BOOL { $$ = Bool; };
+tipo: estandard_tipo { $$ = $1; } 
+    | KW_ARRAY '[' CONST_ENTERA '.' '.' CONST_ENTERA ']' KW_OF estandard_tipo {
+    $$ = $9;
+    $$.size = $$.size * 4;
+};
+estandard_tipo: T_INT { $$ = (DataType) { .type = Int, .size = 1 }; } 
+              | T_REAL { $$ = (DataType) { .type = Real, .size = 1 }; } 
+              | T_STR { $$ = (DataType) { .type = Str, .size = 1 }; } 
+              | T_BOOL { $$ = (DataType) { .type = Bool, .size = 1 }; };
 
  /* Subprograma */
 subprograma_decl: subprograma_decl subprograma_declaracion ';' | ;
@@ -272,10 +286,24 @@ argumentos: '(' parametros_lista ')' {
 	vec_drop(&$2);
 } | ;
 parametros_lista: ident_lista ':' tipo {
+    for (size_t i=0; i < $1.len; i++) {
+        Symbol * s = (Symbol *)vec_get(&$1, i);
+        s->type = Variable;
+        s->info.var = (VariableInfo) { .type = $3, .addr = addr };
+		// printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
+    }
     $$ = $1;
 };
 parametros_lista: parametros_lista ';' ident_lista ':' tipo {
     $$ = $1;
+
+    for (size_t i=0; i < $3.len; i++) {
+        Symbol * s = (Symbol *)vec_get(&$3, i);
+        s->type = Variable;
+        s->info.var = (VariableInfo) { .type = $5, .addr = addr };
+		// printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
+    }
+
     vec_extend(&$$, &$3);
     vec_drop(&$3);  
 }; 
