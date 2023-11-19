@@ -25,6 +25,6 @@ begin
     multadd;
     while (a and b) do
       b := b + 1;
-    writeln("c");
-    writeln("d")
+    writeln(c);
+    writeln(d)
 end.

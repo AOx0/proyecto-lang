@@ -31,13 +31,14 @@
         
         for (size_t i = orig_scope; i >= 0; i-=orig_scope) {
             s->scope = i;
-            //printf("Looking %.*s in scope %zu\n", (int)s->name.len, s->name.ptr , i);
+            // printf("Looking %.*s in scope %zu\n", (int)s->name.len, s->name.ptr , i);
             if (hashset_contains(&tabla, s)) {
                 found = 1;
                 res = (Symbol *)hashset_get(&tabla, s);
                 add_reference_to_sym(res, s->line);
                 break;
             }
+            if (i == 0) break;
         }
 
         if (!found) {
