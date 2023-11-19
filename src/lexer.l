@@ -112,7 +112,15 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
 "mod" { yylval.mulop = Mod; return MULOP; }
 {LETRA}({LETRA}|{DIGIT})* {
  StrSlice name = (StrSlice) { .ptr = yytext, .len = yyleng };
- yylval.symbol = (Symbol) { .name = name, .type = Ukw, .info = (SymbolInfo) {}, .scope = scope, .line = linea, .nchar = nchar, .refs = vec_new(sizeof(size_t)) }; 
+ yylval.symbol = (Symbol) { 
+   .name = name, 
+   .type = Ukw, 
+   .info = (SymbolInfo) {}, 
+   .scope = scope, 
+   .line = linea, 
+   .nchar = nchar, 
+   .refs = vec_new(sizeof(size_t)) 
+ }; 
  nchar += yyleng;
  return IDENT;
 }

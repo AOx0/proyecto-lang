@@ -1096,7 +1096,7 @@ YY_DECL {
                                              .scope = scope,
                                              .line = linea,
                                              .nchar = nchar,
-                                             .refs = vec_new(sizeof(size_t)) };
+                                             .refs = vec_new(sizeof(size_t))  };
                     nchar += yyleng;
                     return IDENT;
                 }
