@@ -161,7 +161,7 @@
 %type <idents>decl_const;
 %type <idents>decl_var;
 %type <subtree>expresion;
-%type <expr>factor;
+%type <subtree>factor;
 %type <function_call>llamado_funcion;
 
 %destructor {
@@ -210,7 +210,7 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
     $3.type = Function;
     $3.info.fun = (FunctionInfo) {
         .args = $5,
-        .return_type = Void
+        .return_type = (DataType) { .type = Void, .size = 0 }
     };
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
@@ -220,7 +220,6 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
     *node = (Node) {
         .node_type = NVoid,
         .id = idx,
-        .value = {}
     };
 
     size_t child_idx;
@@ -533,7 +532,7 @@ relop : RELOP_AND | RELOP_OR | RELOP_BT | RELOP_LT | RELOP_EBT | RELOP_ELT |
         RELOP_EQ | RELOP_NEQ;
 
 /* Expresion */
-expresion_lista : expresion | expresion_lista ',' expresion;
+expresion_lista : expresion | expresion_lista ',' expresion |;
 expresion : termino | expresion ADDOP termino;
 termino : factor | termino MULOP factor;
 llamado_funcion : IDENT '(' expresion_lista ')' { 
@@ -545,23 +544,42 @@ llamado_funcion : IDENT '(' expresion_lista ')' {
         yyerror(str_as_ref(&wrn_buff));
     }
 
+    printf("Llamando a funcion %.*s que retorna ", (int)s->name.len, s->name.ptr);
+    data_type_e_display(stdout, &s->info.fun.return_type.type);
+    printf("\n");
+
     $$ = (FunctionCall) {
         .symbol = $1,
         .args = vec_new(sizeof(ExprNode))
     };
 };
 factor : IDENT { 
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
     assert_sym_exists(&$1);
-    $$ = (ExprNode) {
-        .type = ESymbol,
-        .value.symbol = $1
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .value.expr = (ExprNode) {
+            .type = ESymbol,
+            .value.symbol = $1,
+            .asoc_type = $1.info.var.type.type
+        },
+        .asoc_type = $1.info.var.type.type
     };
+
+    $$ = t;
 };
 factor : IDENT '[' CONST_ENTERA ']' { 
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
     Symbol * s = (Symbol *)assert_sym_exists(&$1); 
 
     size_t arr_size = s->info.var.type.size;
-    if (arr_size < $3 || $3 < 0) {
+    if ((int64_t)arr_size < $3 || $3 < 0) {
         str_clear(&wrn_buff);
         str_push(&wrn_buff, "Indice fuera de rango: ");
         str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
@@ -572,51 +590,99 @@ factor : IDENT '[' CONST_ENTERA ']' {
         yyerror(str_as_ref(&wrn_buff));
     }
 
-    $$ = (ExprNode) {
-        .type = ESymbolIdx,
-        .value.symbol_idx = (IndexedSymbol) {
-            .symbol = $1,
-            .index = $3
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .value.expr = (ExprNode) {
+            .type = ESymbolIdx,
+            .value.symbol_idx = (IndexedSymbol) {
+                .symbol = $1,
+                .index = $3
+            }
         }
     };
+
+    $$ = t;
 };
 factor : llamado_funcion {
-    $$ = (ExprNode) {
-        .type = EFunctionCall,
-        .value.function_call = $1,
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .value.expr = (ExprNode) {
+            .type = EFunctionCall,
+            .value.function_call = $1,
+            .asoc_type = $1.symbol.info.fun.return_type.type
+        },
         .asoc_type = $1.symbol.info.fun.return_type.type
     };
+
+    if ($1.symbol.info.fun.return_type.type == Void) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Se intento usar una funcion que devuelve () como expresion: ");
+        str_push_n(&wrn_buff, $1.symbol.name.ptr, $1.symbol.name.len);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    $$ = t;
 };
 factor : CONST_ENTERA {
-    $$ = (ExprNode) {
-        .type = EIntValue,
-        .value.int_value = $1,
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .value.expr = (ExprNode) {
+            .type = EIntValue,
+            .value.int_value = $1,
+            .asoc_type = Int
+        },
         .asoc_type = Int
     };
+
+    $$ = t;
 };
 factor : CONST_REAL {
-    $$ = (ExprNode) {
-        .type = ERealValue,
-        .value.real_value = $1,
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .value.expr = (ExprNode) {
+            .type = ERealValue,
+            .value.real_value = $1,
+            .asoc_type = Real
+        },
         .asoc_type = Real
     };
+
+    $$ = t;
 };
 factor : ADDOP factor {
-    $$ = $2;
-    switch ($1) {
-        case Add: {
-            $$.value.int_value = $$.value.int_value * +1;
-            break;
+    Tree t;
+
+    tree_init(&t, sizeof(Node));
+
+    Node * past_root = (Node *)vec_get(&$2.values, 0);
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .asoc_type = past_root->asoc_type,
+        .value.expr = (ExprNode){
+            .type = EUnaryOp,
+            .asoc_type = past_root->asoc_type,
+            .value.op = $1,
         }
-        case Sub: {
-            $$.value.int_value = $$.value.int_value * -1;
-            break;
-        }
-        default: {
-            puts("Panic: Invalid AddOp");
-            exit(1);
-        }
-    }
+    };
+
+    tree_extend(&t, &$2, 0);
+
+    $$ = t;
 };
 factor : '(' expresion ')' {
     

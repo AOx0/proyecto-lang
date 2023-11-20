@@ -16,7 +16,8 @@ typedef enum NodeType {
     NConst,
     NAssign,
     NFunction,
-    NFunctionSign
+    NFunctionSign,
+    NExpr
 } NodeType;
 
 typedef struct FunctionNode {
@@ -41,6 +42,8 @@ typedef enum ExprType {
     ESymbol,
     ESymbolIdx,
     EFunctionCall,
+    EOp,
+    EUnaryOp,
 } ExprType;
 
 typedef struct FunctionCall {
@@ -52,15 +55,6 @@ typedef struct IndexedSymbol {
         Symbol symbol;
         size_t index;
 } IndexedSymbol;
-
-typedef union ExprValue {
-        int64_t int_value;
-        double real_value;
-        StrSlice string_value;
-        Symbol symbol;
-        IndexedSymbol symbol_idx;
-        FunctionCall function_call;
-} ExprValue;
 
 typedef enum OpType {
     OpAnd,
@@ -79,6 +73,17 @@ typedef enum OpType {
     OpMod,
 } OpType;
 
+typedef union ExprValue {
+        int64_t int_value;
+        double real_value;
+        StrSlice string_value;
+        Symbol symbol;
+        IndexedSymbol symbol_idx;
+        FunctionCall function_call;
+        OpType op;
+} ExprValue;
+
+
 typedef struct OpNode {
         OpType type;
 } OpNode;
@@ -94,12 +99,15 @@ typedef union NodeValue {
         FunctionNode fun;
         VarNode var;
         ConstNode cons;
+        ExprNode expr;
+        OpNode op;
 } NodeValue;
 
 typedef struct Node {
         NodeType node_type;
         NodeValue value;
         size_t id;
+        DataTypeE asoc_type;
 } Node;
 
 void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla);
