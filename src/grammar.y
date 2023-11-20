@@ -146,6 +146,7 @@
 
 %type<idents> ident_lista;
 %type<idents> parametros_lista;
+%type<idents> argumentos;
 %type<type> estandard_tipo;
 %type<type> tipo;
 
@@ -187,15 +188,19 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
 
+
     for (size_t i = 0; i < $5.len; i++) {
         Symbol *s = vec_get(&$5, i);
         assert_not_sym_exists(s);
         s->type = Variable;
-        s->info.var = (VariableInfo){.type = {}, .addr = addr};
+        s->info.var = (VariableInfo){.type = (DataType){ .type = Int, .size=1 }, .addr = addr};
         hashset_insert(&tabla, s);
     }
 
-    vec_drop(&$5);
+    size_t idx;
+    Node * node = (Node *)tree_new_node(&ast, &idx);
+    node->node_type = NProgram;
+    node->value.fun = (FunctionNode) { .name = $3.name, .args = $5 };
 
 
     size_t i = 0;
@@ -221,38 +226,27 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
                 printf(" }, info: ");
 
                 switch (s->type) {
-                case Function: {
-                    fun_info_debug(&s->info.fun);
-                    break;
-                }
-                case Variable: {
-                    var_info_debug(&s->info.var);
-                    break;
-                }
-                case Constant: {
-                    const_info_debug(&s->info.cons);
-                    break;
-                }
-                case Procedure: {
-                    printf("None");
-                    break;
-                }
-                default: {
-                    puts("Panic: Invalid SymbolType");
-                    exit(1);
-                }
+                    case Function: { fun_info_debug(&s->info.fun); break; }
+                    case Variable: { var_info_debug(&s->info.var); break; }
+                    case Constant: { const_info_debug(&s->info.cons); break; }
+                    case Procedure: { fun_info_debug(&s->info.fun); break; }
+                    default: { puts("Panic: Invalid SymbolType"); exit(1); } 
                 }
 
                 puts("");
                 i += 1;
-                vec_drop(&s->refs);
+                // vec_drop(&s->refs);
             }
         }
     }
 
+    node_display(node, stdout, &ast, &tabla);
+
     // Al final liberamos la tabla de hashes de memoria
+    vec_drop(&$5);
     hashset_drop(&tabla);
     str_drop(&wrn_buff);
+    tree_drop(&ast);
 };
 
 ident_lista : IDENT ',' ident_lista {
@@ -333,7 +327,7 @@ subprograma_encabezado : KW_FUNC IDENT {
 }
 argumentos ':' estandard_tipo ';' {
     Symbol *s = (Symbol *)hashset_get(&tabla, &$2);
-    s->info.fun = (FunctionInfo){.return_type = $6};
+    s->info.fun = (FunctionInfo){.return_type = $6, .args=$4};
 };
 subprograma_encabezado : KW_PROCEDURE IDENT {
     $2.type = Procedure;
@@ -342,7 +336,10 @@ subprograma_encabezado : KW_PROCEDURE IDENT {
     fun_id++;
     scope += fun_id;
 }
-argumentos ';';
+argumentos ';'{
+    Symbol *s = (Symbol *)hashset_get(&tabla, &$2);
+    s->info.fun = (FunctionInfo){ .return_type = (DataType) { .type = Void, .size = 0 }, .args=$4};
+};
 
 /* Argumentos */
 argumentos : '(' parametros_lista ')' {
@@ -355,7 +352,8 @@ argumentos : '(' parametros_lista ')' {
         // printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
     }
 
-    vec_drop(&$2);
+    // vec_drop(&$2);
+    $$ = $2;
 }
 | ;
 parametros_lista : ident_lista ':' tipo {
@@ -380,7 +378,7 @@ parametros_lista : parametros_lista ';' ident_lista ':' tipo {
     }
 
     vec_extend(&$$, &$3);
-    vec_drop(&$3);
+    // vec_drop(&$3);
 };
 
 /* Instrucciones */

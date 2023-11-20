@@ -8,9 +8,9 @@
 
 enum SymbolType {
     Function,
+    Procedure,
     Variable,
     Constant,
-    Procedure,
 };
 typedef enum SymbolType SymbolType;
 
@@ -19,6 +19,7 @@ enum DataTypeE {
     Real,
     Str,
     Bool,
+    Void,
     Ukw,
 };
 typedef enum DataTypeE DataTypeE;
@@ -30,6 +31,7 @@ struct DataType {
 typedef struct DataType DataType;
 
 struct FunctionInfo {
+        Vec args;
         DataType return_type;
 };
 typedef struct FunctionInfo FunctionInfo;
@@ -56,6 +58,7 @@ typedef union SymbolInfo SymbolInfo;
 void data_type_debug(DataType *d);
 size_t data_type_size(DataType *d);
 size_t data_type_e_size(DataTypeE *d);
+void data_type_e_display(DataTypeE *d); 
 void const_info_debug(ConstantInfo *f);
 void fun_info_debug(FunctionInfo *f);
 void var_info_debug(VariableInfo *f);

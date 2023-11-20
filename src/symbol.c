@@ -37,6 +37,39 @@ void data_type_e_debug(DataTypeE *d) {
         printf("Bool");
         break;
     }
+    case Void: {
+        printf("Void");
+        break;
+    }
+    case Ukw: {
+        puts("Panic: Invalid DataType");
+        exit(1);
+    }
+    }
+}
+
+void data_type_e_display(DataTypeE *d) {
+    switch (*d) {
+    case Int: {
+        printf("int");
+        break;
+    }
+    case Real: {
+        printf("real");
+        break;
+    }
+    case Str: {
+        printf("str");
+        break;
+    }
+    case Bool: {
+        printf("bool");
+        break;
+    }
+    case Void: {
+        printf("void");
+        break;
+    }
     case Ukw: {
         puts("Panic: Invalid DataType");
         exit(1);

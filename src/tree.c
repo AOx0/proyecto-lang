@@ -1,8 +1,6 @@
 #include "tree.h"
 
 void *tree_iter_next(TreeIter *ti) {
-    if (ti->tree->relations.len == 0)
-        return NULL;
     if (ti->parents.len == 0)
         return NULL;
 
@@ -15,15 +13,17 @@ void *tree_iter_next(TreeIter *ti) {
 
     vec_pop(&ti->parents);
 
-    // Agregamos todos los hijos
-    for (size_t child = max_child - 1; child >= 0; child--) {
-        TreeEntry *te = (TreeEntry *)vec_get(&ti->tree->relations, child);
+    if (ti->tree->relations.len != 0) {
+        // Agregamos todos los hijos
+        for (size_t child = max_child - 1; child >= 0; child--) {
+            TreeEntry *te = (TreeEntry *)vec_get(&ti->tree->relations, child);
 
-        if (curr == te->from)
-            *(size_t *)vec_push(&ti->parents) = te->to;
+            if (curr == te->from)
+                *(size_t *)vec_push(&ti->parents) = te->to;
 
-        if (child == 0)
-            break;
+            if (child == 0)
+                break;
+        }
     }
 
     return temp;
@@ -66,6 +66,40 @@ TreeEntry *tree_new_relation(Tree *t, size_t from, size_t to) {
     TreeEntry *te = (TreeEntry *)vec_push(&t->relations);
     te->from = from;
     te->to = to;
+    return te;
+}
+
+TreeEntry *tree_new_rel(Tree *t, void * from, void * to) {
+    size_t from_idx = 0;
+    size_t to_idx = 0;
+    int found_from_idx = 0;
+    int found_to_idx = 0;
+
+    for (size_t i = 0; i < t->values.len; i++) {
+        if (vec_get(&t->values, i) == from) { 
+            from_idx = i;
+            found_from_idx = 1;
+            break;
+        }
+    }
+    for (size_t i = 0; i < t->values.len; i++) {
+        if (vec_get(&t->values, i) == to) { 
+            to_idx = i;
+            found_to_idx = 1;
+            break;
+        }
+    }
+
+    if (!found_from_idx) {
+        printf("Panic: Not existing `from` element %p", from);
+    }
+    if (!found_to_idx) {
+        printf("Panic: Not existing `to` element %p", to);
+    }
+    
+    TreeEntry *te = (TreeEntry *)vec_push(&t->relations);
+    te->from = from_idx;
+    te->to = to_idx;
     return te;
 }
 
