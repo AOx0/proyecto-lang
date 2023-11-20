@@ -162,6 +162,7 @@
 %type <idents>decl_var;
 %type <subtree>expresion;
 %type <subtree>factor;
+%type <subtree>termino;
 %type <function_call>llamado_funcion;
 
 %destructor {
@@ -533,8 +534,76 @@ relop : RELOP_AND | RELOP_OR | RELOP_BT | RELOP_LT | RELOP_EBT | RELOP_ELT |
 
 /* Expresion */
 expresion_lista : expresion | expresion_lista ',' expresion |;
-expresion : termino | expresion ADDOP termino;
-termino : factor | termino MULOP factor;
+expresion: termino {
+    $$ = $1;
+} | expresion ADDOP termino {
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * past_root = (Node *)vec_get(&$1.values, 0);
+    Node * curr_root = (Node *)vec_get(&$3.values, 0);
+    
+    if (past_root->asoc_type != curr_root->asoc_type) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Se intento sumar dos expresiones de tipos distintos: ");
+        str_push(&wrn_buff, "El primer operando es de tipo ");
+        data_type_e_display(&wrn_buff, &past_root->asoc_type);
+        str_push(&wrn_buff, " y el segundo es de tipo ");
+        data_type_e_display(&wrn_buff, &curr_root->asoc_type);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .asoc_type = past_root->asoc_type,
+        .value.expr = (ExprNode){
+            .type = EOp,
+            .asoc_type = past_root->asoc_type,
+            .value.op = $2,
+        }
+    };
+
+    tree_extend(&t, &$1, 0);
+    tree_extend(&t, &$3, 0);
+
+    $$ = t;
+};
+termino : factor {
+    $$ = $1;
+} | termino MULOP factor {
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * past_root = (Node *)vec_get(&$1.values, 0);
+    Node * curr_root = (Node *)vec_get(&$3.values, 0);
+
+    if (past_root->asoc_type != curr_root->asoc_type) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Se intento sumar dos expresiones de tipos distintos: ");
+        str_push(&wrn_buff, "El primer operando es de tipo ");
+        data_type_e_display(&wrn_buff, &past_root->asoc_type);
+        str_push(&wrn_buff, " y el segundo es de tipo ");
+        data_type_e_display(&wrn_buff, &curr_root->asoc_type);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .asoc_type = past_root->asoc_type,
+        .value.expr = (ExprNode){
+            .type = EOp,
+            .asoc_type = past_root->asoc_type,
+            .value.op = $2,
+        }
+    };
+
+    tree_extend(&t, &$1, 0);
+    tree_extend(&t, &$3, 0);
+
+    $$ = t;
+};
 llamado_funcion : IDENT '(' expresion_lista ')' { 
     Symbol * s = (Symbol *)assert_sym_exists(&$1);
     if (s->type != Function) {

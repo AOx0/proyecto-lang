@@ -663,16 +663,16 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   194,   194,   194,   304,   309,   316,   318,   320,   322,
-     336,   353,   370,   390,   391,   395,   396,   397,   398,   401,
-     401,   403,   406,   406,   417,   417,   430,   443,   446,   456,
-     472,   473,   473,   474,   474,   476,   477,   477,   477,   478,
-     478,   478,   480,   481,   482,   483,   484,   485,   488,   491,
-     492,   493,   494,   495,   499,   503,   504,   505,   508,   512,
-     513,   516,   517,   517,   518,   519,   520,   521,   526,   526,
-     527,   527,   528,   528,   529,   529,   530,   531,   531,   531,
-     531,   531,   531,   532,   532,   535,   535,   535,   536,   536,
-     537,   537,   538,   556,   575,   607,   631,   648,   665,   687
+       0,   195,   195,   195,   305,   310,   317,   319,   321,   323,
+     337,   354,   371,   391,   392,   396,   397,   398,   399,   402,
+     402,   404,   407,   407,   418,   418,   431,   444,   447,   457,
+     473,   474,   474,   475,   475,   477,   478,   478,   478,   479,
+     479,   479,   481,   482,   483,   484,   485,   486,   489,   492,
+     493,   494,   495,   496,   500,   504,   505,   506,   509,   513,
+     514,   517,   518,   518,   519,   520,   521,   522,   527,   527,
+     528,   528,   529,   529,   530,   530,   531,   532,   532,   532,
+     532,   532,   532,   533,   533,   536,   536,   536,   537,   539,
+     572,   574,   607,   625,   644,   676,   700,   717,   734,   756
 };
 #endif
 
@@ -2187,6 +2187,94 @@ yyreduce:
 
     {
     assert_sym_exists(&(yyvsp[(1) - (4)].symbol));
+}
+    break;
+
+  case 88:
+
+    {
+    (yyval.subtree) = (yyvsp[(1) - (1)].subtree);
+}
+    break;
+
+  case 89:
+
+    {
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * past_root = (Node *)vec_get(&(yyvsp[(1) - (3)].subtree).values, 0);
+    Node * curr_root = (Node *)vec_get(&(yyvsp[(3) - (3)].subtree).values, 0);
+    
+    if (past_root->asoc_type != curr_root->asoc_type) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Se intento sumar dos expresiones de tipos distintos: ");
+        str_push(&wrn_buff, "El primer operando es de tipo ");
+        data_type_e_display(&wrn_buff, &past_root->asoc_type);
+        str_push(&wrn_buff, " y el segundo es de tipo ");
+        data_type_e_display(&wrn_buff, &curr_root->asoc_type);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .asoc_type = past_root->asoc_type,
+        .value.expr = (ExprNode){
+            .type = EOp,
+            .asoc_type = past_root->asoc_type,
+            .value.op = (yyvsp[(2) - (3)].addop),
+        }
+    };
+
+    tree_extend(&t, &(yyvsp[(1) - (3)].subtree), 0);
+    tree_extend(&t, &(yyvsp[(3) - (3)].subtree), 0);
+
+    (yyval.subtree) = t;
+}
+    break;
+
+  case 90:
+
+    {
+    (yyval.subtree) = (yyvsp[(1) - (1)].subtree);
+}
+    break;
+
+  case 91:
+
+    {
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * past_root = (Node *)vec_get(&(yyvsp[(1) - (3)].subtree).values, 0);
+    Node * curr_root = (Node *)vec_get(&(yyvsp[(3) - (3)].subtree).values, 0);
+
+    if (past_root->asoc_type != curr_root->asoc_type) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Se intento sumar dos expresiones de tipos distintos: ");
+        str_push(&wrn_buff, "El primer operando es de tipo ");
+        data_type_e_display(&wrn_buff, &past_root->asoc_type);
+        str_push(&wrn_buff, " y el segundo es de tipo ");
+        data_type_e_display(&wrn_buff, &curr_root->asoc_type);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .asoc_type = past_root->asoc_type,
+        .value.expr = (ExprNode){
+            .type = EOp,
+            .asoc_type = past_root->asoc_type,
+            .value.op = (yyvsp[(2) - (3)].mulop),
+        }
+    };
+
+    tree_extend(&t, &(yyvsp[(1) - (3)].subtree), 0);
+    tree_extend(&t, &(yyvsp[(3) - (3)].subtree), 0);
+
+    (yyval.subtree) = t;
 }
     break;
 

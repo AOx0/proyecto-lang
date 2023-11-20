@@ -1,4 +1,5 @@
 #include "node.h"
+#include "hashset.h"
 #include "symbol.h"
 #include "tree.h"
 #include "vector.h"
@@ -59,6 +60,102 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
     // printf("\n");
 
     switch (n->node_type) {
+    case NExpr: {
+        switch (n->value.expr.type) {
+            case EIntValue: {
+                fprintf(f, "%lld", n->value.expr.value.int_value);
+                break;
+            }
+            case ERealValue: {
+                fprintf(f, "%lf", n->value.expr.value.real_value);
+                break;
+            }
+            case EStringValue: {
+                fprintf(f, "\"%.*s\"", (int)n->value.expr.value.string_value.len,
+                        n->value.expr.value.string_value.ptr);
+                break;
+            }
+            case ESymbol: {
+                Symbol *s = (Symbol *)hashset_get(tabla,
+                                              &n->value.expr.value.symbol);
+                if (s == NULL) {
+                    printf("Panic: Symbol not found\n");
+                    exit(1);
+                }
+                fprintf(f, "%.*s", (int)s->name.len, s->name.ptr);
+                break;
+            }
+            case ESymbolIdx: {
+                Symbol *s = (Symbol *)hashset_get(tabla,
+                                              &n->value.expr.value.symbol);
+                if (s == NULL) {  
+                    printf("Panic: Symbol not found\n");
+                    exit(1);
+                }
+                fprintf(f, "%.*s[%zu]", (int)s->name.len, s->name.ptr, n->value.expr.value.symbol_idx.index);
+                break;
+            }
+            case EFunctionCall: {
+                Symbol *s = (Symbol *)hashset_get(tabla,
+                                              &n->value.expr.value.function_call.symbol);
+                if (s == NULL) {
+                    printf("Panic: Symbol not found\n");
+                    exit(1);
+                }
+                fprintf(f, "%.*s(", (int)s->name.len, s->name.ptr);
+                Vec args = n->value.expr.value.function_call.args;
+                for (size_t i = 0; i < args.len; i++) {
+                    size_t *id = (size_t *)vec_get(&args, i);
+                    Node *v = (Node *)vec_get(&t->values, *id);
+                    node_display_id(v->id, f, t, tabla);
+                    if (i + 1 != args.len) {
+                        fprintf(f, ", ");
+                    }
+                }
+                fprintf(f, ")");
+                break;
+            }
+            case EOp: {
+                // Primero mostramos la derecha
+                Vec hijos = tree_get_childs(t, n->id);
+
+                if (hijos.len != 2) {
+                    printf("Panic: Invalid number of childs\n");
+                    exit(1);
+                }
+
+                Node * derecha = (Node *)vec_get(&t->values, *(size_t *)vec_get(&hijos, 1));
+                node_display_id(derecha->id, f, t, tabla);
+            
+                // Luego el operador
+                fprintf(f, " %c ", n->value.expr.value.op);
+
+                // Y por ultimo la izquierda
+                Node * izquierda = (Node *)vec_get(&t->values, *(size_t *)vec_get(&hijos, 0));
+                node_display_id(izquierda->id, f, t, tabla);
+
+                break;
+            }
+            case EUnaryOp: {
+                // Mostramos el operador
+                fprintf(f, "%c(", n->value.expr.value.op);
+                
+                // El valor
+                Vec hijos = tree_get_childs(t, n->id);
+
+                if (hijos.len != 1) {
+                    printf("Panic: Invalid number of childs\n");
+                    exit(1);
+                }
+
+                Node * derecha = (Node *)vec_get(&t->values, *(size_t *)vec_get(&hijos, 0));
+                node_display_id(derecha->id, f, t, tabla);
+                fprintf(f, ")");
+                break;
+            }
+        }
+        break;
+    }
     case NVoid: {
         fprintf(f, "#include <stdint.h>\n");
         fprintf(f, "#include <stdio.h>\n");

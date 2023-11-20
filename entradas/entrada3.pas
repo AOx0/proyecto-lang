@@ -44,6 +44,7 @@ program principal(input, output, entrada);
 begin
     a := 5;
     b := arr[9];
+    b := 3 + 1.0;
     (*b := multadd();*)
     multadd();
     while (a > b) do
