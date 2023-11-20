@@ -82,6 +82,11 @@ size_t tree_num_child(Tree *t, size_t root) {
 
 Vec tree_get_childs(Tree *t, size_t parent_id) {
     Vec res;
+
+    if (t->relations.len == 0 || parent_id >= t->values.len ||
+        tree_num_child(t, 0) == 0)
+        return res;
+
     size_t nchild = tree_num_child(t, parent_id);
 
     if (nchild > 0) {
