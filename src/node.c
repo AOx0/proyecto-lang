@@ -34,11 +34,14 @@ void node_display(Node * n, FILE * f, Tree * t, HashSet * tabla) {
                   Symbol *s = (Symbol *)vec_get(arr, h);
                   switch (s->type) {
                       case Function: case Procedure: {  
-                        Node n = (Node) { .node_type = NFunctionSign, .value.fun = (FunctionNode) {
-                          .args = s->info.fun.args, 
-                          .return_type = s->info.fun.return_type.type, 
-                          .name = s->name 
-                        }};
+                        Node n = (Node) { 
+                          .node_type = NFunctionSign, 
+                          .value.fun = (FunctionNode){
+                            .args = s->info.fun.args, 
+                            .return_type = s->info.fun.return_type.type, 
+                            .name = s->name 
+                          }
+                        };
                         node_display(&n, f, t, tabla);
                         break; 
                       }

@@ -1950,7 +1950,7 @@ yyreduce:
 
     {
     Symbol *s = (Symbol *)hashset_get(&tabla, &(yyvsp[(2) - (5)].symbol));
-    s->info.fun = (FunctionInfo){ .return_type =  (DataType) { .type = Void, .size = 0 }, .args=(yyvsp[(4) - (5)].idents)};
+    s->info.fun = (FunctionInfo){ .return_type = (DataType) { .type = Void, .size = 0 }, .args=(yyvsp[(4) - (5)].idents)};
 }
     break;
 
