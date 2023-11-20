@@ -1,8 +1,8 @@
-% {
-#include "parser.h"
-#include "str.h"
-#include <stdio.h>
-#include <stdlib.h>
+%{
+    #include "parser.h"
+    #include "str.h"
+    #include <stdio.h>
+    #include <stdlib.h>
 
     size_t comentarios_abiertos = 0;
     // Su scanner tiene un contador tanto de lineas como de columnasº
@@ -17,8 +17,7 @@
     size_t linea = 1;
     size_t nchar = 1;
     extern size_t scope;
-    %
-}
+%}
 
 %option prefix="yy"
 %option noyywrap
@@ -45,20 +44,11 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
     nchar = 1; }
 <INITIAL,COMENTARIO>"(*" {
     nchar += yyleng;
-    if (++comentarios_abiertos == 1) {
-        BEGIN(COMENTARIO);
-        // printf("   Comentario: %s", yytext);
-    } else {
-        // ECHO;
-    }
+    if (++comentarios_abiertos == 1) BEGIN(COMENTARIO);
 }
-<COMENTARIO>"*)"  {
+<COMENTARIO>"*)" {
     nchar += yyleng;
-    if (--comentarios_abiertos == 0) {
-        BEGIN(INITIAL); /*printf("%s\n", yytext); */
-    } else {
-        // ECHO;
-    }
+    if (--comentarios_abiertos == 0) BEGIN(INITIAL);
 }
 {SPACE}+ {
     nchar += yyleng; }/* Nah */
@@ -75,8 +65,7 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
     yylval.snum = atoll(yytext);
     return CONST_ENTERA;
 }
-{SIGNO}{
-    ENTERO}"."{ENTERO} {
+{SIGNO}{ENTERO}"."{ENTERO} {
     nchar += yyleng;
     yylval.fnum = atof(yytext);
     return CONST_REAL;

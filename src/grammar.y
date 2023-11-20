@@ -1,4 +1,4 @@
-% code top {
+%code top {
 #include "hashset.h"
 #include "parser.h"
 #include "str.h"
@@ -81,75 +81,75 @@
     }
 }
 
-%
-    code requires {
+%code requires {
 
-#ifndef LNG_PARSERH
-#define LNG_PARSERH
+    #ifndef LNG_PARSERH
+    #define LNG_PARSERH
 
-#include "hashset.h"
-#include "vector.h"
-#include <inttypes.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "symbol.h"
-#include "node.h"
-#include "str.h"
-#include "tree.h"
-        extern FILE *yyin, *yyout;
+    #include "hashset.h"
+    #include "vector.h"
+    #include <inttypes.h>
+    #include <stdint.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include "symbol.h"
+    #include "node.h"
+    #include "str.h"
+    #include "tree.h"
 
-        enum RelOp { And, Or };
-        typedef enum RelOp RelOp;
+    extern FILE *yyin, *yyout;
 
-        enum AddOp { Add, Sub };
-        typedef enum AddOp AddOp;
+    enum RelOp { And, Or };
+    typedef enum RelOp RelOp;
 
-        enum MulOp { Div, Mod, Mul };
-        typedef enum MulOp MulOp;
+    enum AddOp { Add, Sub };
+    typedef enum AddOp AddOp;
 
-#endif
-    }
+    enum MulOp { Div, Mod, Mul };
+    typedef enum MulOp MulOp;
 
-    % union {
-        int64_t snum;
-        uint64_t unum;
-        double fnum;
-        char *ident;
-        StrSlice slice;
-        DataType type;
-        Symbol symbol;
-        Vec idents;
-        RelOp relop;
-        AddOp addop;
-        MulOp mulop;
+    #endif
 }
 
-    /* Ident */
-    % token<symbol> IDENT;
+%union {
+    int64_t snum;
+    uint64_t unum;
+    double fnum;
+    char *ident;
+    StrSlice slice;
+    DataType type;
+    Symbol symbol;
+    Vec idents;
+    RelOp relop;
+    AddOp addop;
+    MulOp mulop;
+}
+
+/* Ident */
+%token<symbol> IDENT;
 
 /* Par */
-% token<fnum> CONST_REAL<snum> CONST_ENTERA<slice> CONST_CADENA<relop>
+%token<fnum> CONST_REAL<snum> CONST_ENTERA<slice> CONST_CADENA<relop>
         RELOP<addop> ADDOP<mulop> MULOP;
 
 /* Keywords */
-% token OP_ASIGN KW_PROCEDURE KW_PROG KW_CONST KW_VAR KW_ARRAY KW_OF KW_FUNC
+%token OP_ASIGN KW_PROCEDURE KW_PROG KW_CONST KW_VAR KW_ARRAY KW_OF KW_FUNC
         KW_BEGIN KW_END KW_READ KW_READLN KW_WRITE KW_WRITELN KW_WHILE KW_FOR
             KW_DO KW_TO KW_DOWNTO KW_IF KW_THEN KW_ELSE KW_DOTS;
 
 /* OPs */
-% token RELOP_EQ RELOP_NEQ RELOP_BT RELOP_LT RELOP_EBT RELOP_ELT RELOP_AND
+%token RELOP_EQ RELOP_NEQ RELOP_BT RELOP_LT RELOP_EBT RELOP_ELT RELOP_AND
         RELOP_NOT RELOP_OR;
 
 /* Types */
-% token T_INT T_REAL T_STR T_BOOL;
+%token T_INT T_REAL T_STR T_BOOL;
 
-% type<idents> ident_lista;
-% type<idents> parametros_lista;
-% type<type> estandard_tipo;
-% type<type> tipo;
+%type<idents> ident_lista;
+%type<idents> parametros_lista;
+%type<type> estandard_tipo;
+%type<type> tipo;
 
-% destructor {
+%destructor {
     // printf("Dropping ident_lista:  ");
     // vec_debug_verbose(&$$);
 
@@ -159,10 +159,9 @@
     }
 
     vec_drop(&$$);
-}
-ident_lista;
+} ident_lista;
 
-% destructor {
+%destructor {
     // printf("Dropping parametros_lista:  ");
     // vec_debug_verbose(&$$);
 
@@ -172,12 +171,12 @@ ident_lista;
     }
 
     vec_drop(&$$);
-}
-parametros_lista;
+} parametros_lista;
 
-% start programa;
+%start programa;
 
-% % programa : {
+%% 
+programa : {
     hashset_init(&tabla, sizeof(Symbol), hash_symbol);
     str_init(&wrn_buff);
     tree_init(&ast, sizeof(Node));
@@ -399,4 +398,4 @@ factor : IDENT { assert_sym_exists(&$1); };
 factor : IDENT '[' expresion ']' { assert_sym_exists(&$1); };
 factor : llamado_funcion | CONST_ENTERA | CONST_REAL | ADDOP factor |
          '(' expresion ')';
-% %
+%%
