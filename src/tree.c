@@ -39,7 +39,8 @@ size_t tree_num_child(Tree *t, size_t root) {
         for (size_t child = t->relations.len - 1; child >= 0; child--) {
             TreeEntry *te = (TreeEntry *)vec_get(&t->relations, child);
 
-            if (root == te->from) num++;
+            if (root == te->from)
+                num++;
 
             if (child == 0)
                 break;
@@ -48,7 +49,6 @@ size_t tree_num_child(Tree *t, size_t root) {
 
     return num;
 }
-
 
 Vec tree_get_childs(Tree *t, size_t parent_id) {
     Vec res;
@@ -59,14 +59,14 @@ Vec tree_get_childs(Tree *t, size_t parent_id) {
     } else {
         vec_init(&res, sizeof(size_t));
     }
-    
+
     if (t->relations.len >= 0) {
         for (size_t i = 0; i < t->relations.len; i++) {
             size_t child = t->relations.len - i - 1;
             TreeEntry *te = (TreeEntry *)vec_get(&t->relations, child);
 
             if (parent_id == te->from) {
-                size_t * val = (size_t *)vec_push(&res);
+                size_t *val = (size_t *)vec_push(&res);
                 *val = te->to;
             }
         }

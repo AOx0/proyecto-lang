@@ -18,7 +18,7 @@ extern String wrn_buff;
 extern size_t line;
 extern size_t nchar;
 char *path;
-FILE * OUT_FILE;
+FILE *OUT_FILE;
 
 int main(int argc, char *argv[]);
 void parse_file(char *path);
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 
     if (!err)
         printf("Successfull compilation\n");
-    else 
+    else
         printf("There was one or more errors\n");
     return err;
 }

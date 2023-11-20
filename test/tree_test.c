@@ -67,15 +67,15 @@ int test_tree() {
 
     ti = tree_iter_new(&t, 9);
 
-        // if (tree_num_child(t, n->id) > 0) {
-        //     size_t i = 0;
-        //     Vec child = tree_get_childs(t, n->id);
-        //     for (size_t i = 0; i<child.len; i++ ) {
-        //         Node * v = (Node *)vec_get(&child, i);
-        //         node_display_id(v->id, f, t, tabla);
-        //     }
-        //     vec_drop(&child);
-        // }
+    // if (tree_num_child(t, n->id) > 0) {
+    //     size_t i = 0;
+    //     Vec child = tree_get_childs(t, n->id);
+    //     for (size_t i = 0; i<child.len; i++ ) {
+    //         Node * v = (Node *)vec_get(&child, i);
+    //         node_display_id(v->id, f, t, tabla);
+    //     }
+    //     vec_drop(&child);
+    // }
 
     tree_drop(&t);
 

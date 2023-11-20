@@ -62,10 +62,10 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
     case NVoid: {
         fprintf(f, "#include <stdint.h>\n\n");
         Vec child = tree_get_childs(t, n->id);
-        for (size_t i = 0; i<child.len; i++ ) {
-            size_t * id = (size_t *)vec_get(&child, i);
+        for (size_t i = 0; i < child.len; i++) {
+            size_t *id = (size_t *)vec_get(&child, i);
             // printf("%zu\n", *id);
-            Node * v = (Node *)vec_get(&t->values, *id);
+            Node *v = (Node *)vec_get(&t->values, *id);
             node_display_id(v->id, f, t, tabla);
         }
         vec_drop(&child);
@@ -153,10 +153,10 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         fprintf(f, ") {\n");
 
         Vec child = tree_get_childs(t, n->id);
-        for (size_t i = 0; i<child.len; i++ ) {
-            size_t * id = (size_t *)vec_get(&child, i);
+        for (size_t i = 0; i < child.len; i++) {
+            size_t *id = (size_t *)vec_get(&child, i);
             printf("%zu\n", *id);
-            Node * v = (Node *)vec_get(&t->values, *id);
+            Node *v = (Node *)vec_get(&t->values, *id);
             node_display_id(v->id, f, t, tabla);
         }
         vec_drop(&child);

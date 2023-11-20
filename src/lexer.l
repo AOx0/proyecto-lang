@@ -26,13 +26,6 @@ SIGNO [+-]?
 ENTERO 0|{NZDIGIT}{DIGIT}*
 CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"|";"|"["|"]"|","|"."|"#"
 %%
-<COMENTARIO>[^\(\*\n]* {
-    nchar += 1; }
-<COMENTARIO>\n {
-    yyleng = 2;
-    yytext = "\\n";
-    line++;
-    nchar = 1; }
 <INITIAL,COMENTARIO>"(*" {
     nchar += yyleng;
     if (++comentarios_abiertos == 1) BEGIN(COMENTARIO);
@@ -41,6 +34,9 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
     nchar += yyleng;
     if (--comentarios_abiertos == 0) BEGIN(INITIAL);
 }
+<COMENTARIO>[a-zA-Z0-9 \t]* { nchar += yyleng; }
+<COMENTARIO>. { nchar += 1; }
+<COMENTARIO>\n { line++; nchar = 1; }
 {SPACE}+ {
     nchar += yyleng; }/* Nah */
 \n {

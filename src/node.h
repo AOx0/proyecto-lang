@@ -29,7 +29,6 @@ typedef struct VarNode {
         Symbol symbol;
 } VarNode;
 
-
 typedef struct ConstNode {
         Symbol symbol;
         ConstValue value;
