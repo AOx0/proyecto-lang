@@ -1,5 +1,5 @@
-#ifndef LNG_SYMBOLH
-#define LNG_SYMBOLH
+#ifndef LNG_TREEH
+#define LNG_TREEH
 
 #include "vector.h"
 #include <stdint.h>

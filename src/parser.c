@@ -64,6 +64,8 @@
 #include "hashset.h"
 #include "str.h"
 #include "symbol.h"
+#include "node.h"
+#include "tree.h"
 
 extern int yylex(void);
 extern int main(void);
@@ -76,6 +78,7 @@ size_t scope = 0;
 size_t fun_id = 0;
 size_t addr = 0;
 
+Tree ast;
 HashSet tabla;
 String wrn_buff;
 
@@ -179,7 +182,9 @@ extern int yydebug;
 #include <stdio.h>
 #include <stdlib.h>
 #include "symbol.h"
+#include "node.h"
 #include "str.h"
+#include "tree.h"
 
 extern FILE *yyin, *yyout;
 
@@ -583,13 +588,13 @@ static const yytype_int8 yyrhs[] = {
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] = {
-    0,   177, 177, 177, 196, 201, 208, 208, 208, 210, 223, 230, 237, 246, 247,
-    251, 252, 253, 254, 257, 257, 258, 261, 261, 271, 271, 280, 291, 292, 302,
-    319, 320, 320, 321, 321, 322, 322, 322, 323, 323, 323, 323, 325, 326, 327,
-    329, 332, 335, 338, 341, 341, 342, 342, 343, 347, 351, 354, 357, 360, 363,
-    364, 367, 368, 368, 369, 372, 375, 378, 383, 383, 384, 384, 385, 385, 386,
-    386, 387, 388, 388, 388, 388, 388, 388, 388, 388, 391, 391, 392, 392, 393,
-    393, 394, 397, 400, 403, 403, 403, 403, 403};
+    0,   182, 182, 182, 202, 207, 214, 214, 214, 216, 229, 236, 243, 252, 253,
+    257, 258, 259, 260, 263, 263, 264, 267, 267, 277, 277, 286, 297, 298, 308,
+    325, 326, 326, 327, 327, 328, 328, 328, 329, 329, 329, 329, 331, 332, 333,
+    335, 338, 341, 344, 347, 347, 348, 348, 349, 353, 357, 360, 363, 366, 369,
+    370, 373, 374, 374, 375, 378, 381, 384, 389, 389, 390, 390, 391, 391, 392,
+    392, 393, 394, 394, 394, 394, 394, 394, 394, 394, 397, 397, 398, 398, 399,
+    399, 400, 403, 406, 409, 409, 409, 409, 409};
 #endif
 
 #if YYDEBUG || YYERROR_VERBOSE || 0
@@ -1589,6 +1594,7 @@ yyreduce:
     {
         hashset_init(&tabla, sizeof(Symbol), hash_symbol);
         str_init(&wrn_buff);
+        tree_init(&ast, sizeof(Node));
     } break;
 
     case 3:
@@ -1668,8 +1674,10 @@ yyreduce:
     {
         (yyvsp[(3) - (6)].symbol).type = Constant;
         (yyvsp[(3) - (6)].symbol).info.cons = (ConstantInfo){
-            .type = (DataType){.type = Str, .size = 1}, .addr = addr};
-        addr += 1;
+            .type =
+                (DataType){.type = Str, .size = (yyvsp[(5) - (6)].slice).len},
+            .addr = addr};
+        addr += 1 * (yyvsp[(5) - (6)].slice).len;
         assert_not_sym_exists(&(yyvsp[(3) - (6)].symbol));
         hashset_insert(&tabla, &(yyvsp[(3) - (6)].symbol));
     } break;
@@ -1684,7 +1692,8 @@ yyreduce:
 
     {
         (yyval.type) = (yyvsp[(8) - (8)].type);
-        (yyval.type).size = (yyval.type).size * 4;
+        (yyval.type).size = (yyval.type).size *
+                            ((yyvsp[(5) - (8)].snum) - (yyvsp[(3) - (8)].snum));
     } break;
 
     case 15:

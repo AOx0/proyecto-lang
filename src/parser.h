@@ -51,7 +51,9 @@ extern int yydebug;
 #include <stdio.h>
 #include <stdlib.h>
 #include "symbol.h"
+#include "node.h"
 #include "str.h"
+#include "tree.h"
 
 extern FILE *yyin, *yyout;
 
