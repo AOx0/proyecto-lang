@@ -128,6 +128,9 @@
     RelOp relop;
     AddOp addop;
     MulOp mulop;
+    Tree subtree;
+    ExprNode expr;
+    FunctionCall function_call;
 }
 
 /* Ident */
@@ -157,6 +160,9 @@
 %type <idents>decl;
 %type <idents>decl_const;
 %type <idents>decl_var;
+%type <subtree>expresion;
+%type <expr>factor;
+%type <function_call>llamado_funcion;
 
 %destructor {
     // printf("Dropping ident_lista:  ");
@@ -530,9 +536,89 @@ relop : RELOP_AND | RELOP_OR | RELOP_BT | RELOP_LT | RELOP_EBT | RELOP_ELT |
 expresion_lista : expresion | expresion_lista ',' expresion;
 expresion : termino | expresion ADDOP termino;
 termino : factor | termino MULOP factor;
-llamado_funcion : IDENT '(' expresion_lista ')' { assert_sym_exists(&$1); };
-factor : IDENT { assert_sym_exists(&$1); };
-factor : IDENT '[' expresion ']' { assert_sym_exists(&$1); };
-factor : llamado_funcion | CONST_ENTERA | CONST_REAL | ADDOP factor |
-         '(' expresion ')';
+llamado_funcion : IDENT '(' expresion_lista ')' { 
+    Symbol * s = (Symbol *)assert_sym_exists(&$1);
+    if (s->type != Function) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Se intento llamar a una variable como si fuera una funcion: ");
+        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    $$ = (FunctionCall) {
+        .symbol = $1,
+        .args = vec_new(sizeof(ExprNode))
+    };
+};
+factor : IDENT { 
+    assert_sym_exists(&$1);
+    $$ = (ExprNode) {
+        .type = ESymbol,
+        .value.symbol = $1
+    };
+};
+factor : IDENT '[' CONST_ENTERA ']' { 
+    Symbol * s = (Symbol *)assert_sym_exists(&$1); 
+
+    size_t arr_size = s->info.var.type.size;
+    if (arr_size < $3 || $3 < 0) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Indice fuera de rango: ");
+        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
+        str_push(&wrn_buff, ", el arreglo tiene un tamaño de ");
+        str_push_sizet(&wrn_buff, arr_size);
+        str_push(&wrn_buff, " y se intento acceder a la posicion ");
+        str_push_sizet(&wrn_buff, $3);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    $$ = (ExprNode) {
+        .type = ESymbolIdx,
+        .value.symbol_idx = (IndexedSymbol) {
+            .symbol = $1,
+            .index = $3
+        }
+    };
+};
+factor : llamado_funcion {
+    $$ = (ExprNode) {
+        .type = EFunctionCall,
+        .value.function_call = $1,
+        .asoc_type = $1.symbol.info.fun.return_type.type
+    };
+};
+factor : CONST_ENTERA {
+    $$ = (ExprNode) {
+        .type = EIntValue,
+        .value.int_value = $1,
+        .asoc_type = Int
+    };
+};
+factor : CONST_REAL {
+    $$ = (ExprNode) {
+        .type = ERealValue,
+        .value.real_value = $1,
+        .asoc_type = Real
+    };
+};
+factor : ADDOP factor {
+    $$ = $2;
+    switch ($1) {
+        case Add: {
+            $$.value.int_value = $$.value.int_value * +1;
+            break;
+        }
+        case Sub: {
+            $$.value.int_value = $$.value.int_value * -1;
+            break;
+        }
+        default: {
+            puts("Panic: Invalid AddOp");
+            exit(1);
+        }
+    }
+};
+factor : '(' expresion ')' {
+    
+};
 %%

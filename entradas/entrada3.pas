@@ -43,7 +43,7 @@ program principal(input, output, entrada);
 *)
 begin
     a := 5;
-    b := 3;
+    b := arr[9];
     multadd;
     while (a > b) do
       b := b + 1;

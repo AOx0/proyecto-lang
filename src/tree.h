@@ -24,6 +24,7 @@ struct TreeIter {
 typedef struct TreeIter TreeIter;
 
 void *tree_iter_next(TreeIter *ti);
+void tree_extend(Tree *t, Tree *o, size_t childs_of);
 Vec tree_get_childs(Tree *t, size_t parent_id);
 TreeIter tree_iter_new(Tree *t, size_t root);
 size_t tree_num_child(Tree *t, size_t root);

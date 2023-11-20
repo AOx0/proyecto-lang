@@ -52,6 +52,8 @@ void str_debug(String *s);
 void str_debug_verbose(String *s);
 void str_clear(String *s);
 void str_push(String *s, char *str);
+void str_push_sizet(String *s, size_t val);
+void str_push_int(String *s, int64_t val);
 void str_push_n(String *s, char *str, size_t len);
 void str_drop(String *s);
 void str_push_slice(String *s, StrSlice *sl);

@@ -2,6 +2,34 @@
 #include "vector.h"
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
+
+void tree_extend(Tree *t, Tree *o, size_t childs_of) {
+    size_t offset = t->values.len;
+    // Copuamos todos los valores
+    for (size_t i = 0; i < o->values.len; i++) {
+        printf("Copiando valor %zu ahora es %zu\n", i, offset + i);
+        void *value = vec_push(&t->values);
+        memcpy(value, vec_get(&o->values, i), t->values.t_size);
+    }
+
+    // Copiamos todas las relaciones
+    for (size_t i = 0; i < o->relations.len; i++) {
+        TreeEntry *te = (TreeEntry *)vec_get(&o->relations, i);
+        TreeEntry *new_te = (TreeEntry *)vec_push(&t->relations);
+        new_te->from = te->from + offset;
+        new_te->to = te->to + offset;
+        printf("Copiando relacion %zu -> %zu ahora es %zu -> %zu\n", te->from,
+               te->to, new_te->from, new_te->to);
+    }
+
+    // Creamos la nueva relacion de la raiz (0) a childs_of
+    TreeEntry *new_te = (TreeEntry *)vec_push(&t->relations);
+    new_te->from = childs_of;
+    new_te->to = offset;
+    printf("Creando relacion %zu -> %zu ahora es %zu -> %zu\n", childs_of,
+           offset, new_te->from, new_te->to);
+}
 
 void *tree_iter_next(TreeIter *ti) {
     if (ti->parents.len == 0)

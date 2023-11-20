@@ -155,6 +155,18 @@ void str_push(String *s, char *str) {
     str_push_n(s, str, len);
 }
 
+void str_push_sizet(String *s, size_t val) {
+    char buff[64] = {0};
+    sprintf(buff, "%zu", val);
+    str_push(s, buff);
+}
+
+void str_push_int(String *s, int64_t val) {
+    char buff[64] = {0};
+    sprintf(buff, "%lld", val);
+    str_push(s, buff);
+}
+
 void str_push_n(String *s, char *str, size_t len) {
     while (len) {
         if (s->cap > len + s->len) {
