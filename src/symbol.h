@@ -42,9 +42,17 @@ struct VariableInfo {
 };
 typedef struct VariableInfo VariableInfo;
 
+typedef union ConstValue {
+        StrSlice str;
+        int64_t snum;
+        double real;
+        int bool;
+} ConstValue;
+
 struct ConstantInfo {
         DataType type;
         size_t addr;
+        ConstValue value;
 };
 typedef struct ConstantInfo ConstantInfo;
 
@@ -60,6 +68,7 @@ size_t data_type_size(DataType *d);
 size_t data_type_e_size(DataTypeE *d);
 void data_type_e_display(FILE *f, DataTypeE *d);
 void data_type_display(FILE *f, int is_fun, StrSlice *name, DataType *d);
+void const_value_display(FILE *f, ConstValue *cv, DataType *d);
 void const_info_debug(ConstantInfo *f);
 void fun_info_debug(FunctionInfo *f);
 void var_info_debug(VariableInfo *f);

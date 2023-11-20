@@ -7,6 +7,7 @@ program principal(input, output);
     var a,b,c,d: integer;
     var arr: array [0..10] of integer;
     const NOMBRE = "Daniel";
+    const EDAD = 21;
 
     (* Suma numeros *)
     function Add(a: integer; b: integer) : integer;

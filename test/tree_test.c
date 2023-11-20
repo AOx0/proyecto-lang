@@ -65,7 +65,7 @@ int test_tree() {
 
     puts("DONE");
 
-    ti = tree_iter_new(&t, 0);
+    ti = tree_iter_new(&t, 9);
 
     while (1) {
         uint8_t *v = tree_iter_next_child(&ti, 0);

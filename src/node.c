@@ -1,6 +1,7 @@
 #include "node.h"
 #include "symbol.h"
 #include "tree.h"
+#include "vector.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -34,6 +35,10 @@ void node_type_debug(NodeType *nt) {
         printf("NFunctionSign");
         break;
     }
+    case NVoid: {
+        printf("NVoid");
+        break;
+    }
     default:
         puts("Panic: Invalid type");
         exit(1);
@@ -46,13 +51,44 @@ void node_display_id(size_t id, FILE *f, Tree *t, HashSet *tabla) {
 }
 
 void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
-    // node_type_debug(&n->node_type);
-    // printf("\n");
+    node_type_debug(&n->node_type);
+    printf("\n");
 
     switch (n->node_type) {
+    case NVoid: {
+        if (tree_num_child(t, n->id) > 0) {
+            TreeIter ti = tree_iter_new(t, n->id);
+            printf("SIZE: %zu\n", t->values.len);
+            size_t i = 0;
+
+            while (1) {
+                printf("I %zu \n", i);
+                Node *v = tree_iter_next_child(&ti, n->id);
+                if (v == NULL)
+                    break;
+                printf("ID %zu ", v->id);
+                node_type_debug(&v->node_type);
+                puts("");
+                node_display_id(v->id, f, t, tabla);
+            }
+
+            vec_drop(&ti.tmp);
+            vec_drop(&ti.parents);
+        }
+        break;
+    };
     case NVar: {
         VarNode node = n->value.var;
         data_type_display(f, 0, &node.symbol.name, &node.symbol.info.var.type);
+        fprintf(f, ";\n");
+        break;
+    }
+    case NConst: {
+        ConstNode node = n->value.cons;
+        data_type_display(f, 0, &node.symbol.name, &node.symbol.info.cons.type);
+        fprintf(f, " = ");
+        const_value_display(f, &node.symbol.info.cons.value,
+                            &node.symbol.info.cons.type);
         fprintf(f, ";\n");
         break;
     }
@@ -84,7 +120,6 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
     }
     case NProgram: {
         size_t i = 0;
-        puts("Contenidos de la tabla:");
         while (tabla->elements > i) {
             for (size_t j = 0; j < HASH_BUFF_SIZE; j++) {
                 Vec *arr = (Vec *)vec_get(&tabla->values, j);
@@ -112,7 +147,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             }
         }
 
-        fprintf(f, "void %.*s(", (int)n->value.fun.name.len,
+        fprintf(f, "\nvoid %.*s(", (int)n->value.fun.name.len,
                 n->value.fun.name.ptr);
         for (size_t i = 0; i < n->value.fun.args.len; i++) {
             StrSlice *sl = (StrSlice *)vec_get(&n->value.fun.args, i);
@@ -123,13 +158,15 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         }
         fprintf(f, ") {\n");
 
-        TreeIter ti = tree_iter_new(t, n->id);
-        while (1) {
-            Node *v = tree_iter_next_child(&ti, n->id);
-            if (v == NULL)
-                break;
-            fprintf(f, "    ");
-            node_display(v, f, t, tabla);
+        if (tree_num_child(t, n->id) > 0) {
+            TreeIter ti = tree_iter_new(t, n->id);
+            while (1) {
+                Node *v = tree_iter_next_child(&ti, n->id);
+                if (v == NULL)
+                    break;
+                fprintf(f, "    ");
+                node_display_id(v->id, f, t, tabla);
+            }
         }
 
         fprintf(f, "}\n");

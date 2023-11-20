@@ -187,39 +187,59 @@ programa : {
 }
 KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
     instruccion_compuesta '.' {
-    $3.type = Function;
-    assert_not_sym_exists(&$3);
-    hashset_insert(&tabla, &$3);
-
 
     for (size_t i = 0; i < $5.len; i++) {
         Symbol *s = vec_get(&$5, i);
         assert_not_sym_exists(s);
         s->type = Variable;
-        s->info.var = (VariableInfo){.type = (DataType){ .type = Int, .size=1 }, .addr = addr};
+        s->info.var = (VariableInfo){.type = (DataType){ .type = Str, .size=1 }, .addr = addr};
         hashset_insert(&tabla, s);
     }
 
+    $3.type = Function;
+    $3.info.fun = (FunctionInfo) {
+        .args = $5,
+        .return_type = Void
+    };
+    assert_not_sym_exists(&$3);
+    hashset_insert(&tabla, &$3);
+
     size_t idx;
-    size_t child_idx;
     Node * node = (Node *)tree_new_node(&ast, &idx);
     *node = (Node) {
-        .node_type = NProgram,
+        .node_type = NVoid,
         .id = idx,
-        .value.fun = (FunctionNode) { .name = $3.name, .args = $5 },
+        .value = {}
     };
 
+    size_t child_idx;
     for (size_t i = 0; i < $8.len; i++) {
         Symbol *s = vec_get(&$8, i);
-        printf("Name: %.*s\n", (int)s->name.len, s->name.ptr);
         node = (Node *)tree_new_node(&ast, &child_idx);
-        *node = (Node) {
-            .node_type = NVar,
-            .id = child_idx,
-            .value.var = (VarNode) { .symbol = *s }, 
-        };
+
+        if (s->type == Variable) { 
+            *node = (Node) {
+                .node_type = NVar,
+                .id = child_idx,
+                .value.var = (VarNode) { .symbol = *s }, 
+            };
+        } else {
+            *node = (Node) {
+                .node_type = NConst,
+                .id = child_idx,
+                .value.cons = (ConstNode) { .symbol = *s, .value.bool = 1 }, 
+            };
+        }
         tree_new_relation(&ast, idx, child_idx); 
     }
+
+    // node = (Node *)tree_new_node(&ast, &child_idx);
+    // *node = (Node) {
+    //     .node_type = NProgram,
+    //     .id = child_idx,
+    //     .value.fun = (FunctionNode) { .name = $3.name, .args = $5, .return_type = Void },
+    // };
+    // tree_new_relation(&ast, idx, child_idx); 
 
     size_t i = 0;
     puts("Contenidos de la tabla:");
@@ -301,8 +321,14 @@ decl_var : decl KW_VAR ident_lista ':' tipo ';' {
 
 decl_const : decl KW_CONST IDENT '=' CONST_ENTERA ';' {
     $3.type = Constant;
-    $3.info.cons = (ConstantInfo){.type = (DataType){.type = Int, .size = 4},
-                                  .addr = addr};
+    $3.info.cons = (ConstantInfo){
+        .type = (DataType){
+            .type = Int, 
+            .size = 1
+        },
+        .addr = addr,
+        .value.snum = $5
+    };
     addr += 4;
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
@@ -312,8 +338,14 @@ decl_const : decl KW_CONST IDENT '=' CONST_ENTERA ';' {
 };
 decl_const : decl KW_CONST IDENT '=' CONST_REAL ';' {
     $3.type = Constant;
-    $3.info.cons = (ConstantInfo){.type = (DataType){.type = Real, .size = 4},
-                                  .addr = addr};
+    $3.info.cons = (ConstantInfo){
+        .type = (DataType){
+            .type = Real, 
+            .size = 1
+        },
+        .addr = addr,
+        .value.real = $5
+    };
     addr += 4;
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
@@ -324,7 +356,13 @@ decl_const : decl KW_CONST IDENT '=' CONST_REAL ';' {
 decl_const : decl KW_CONST IDENT '=' CONST_CADENA ';' {
     $3.type = Constant;
     $3.info.cons = (ConstantInfo){
-        .type = (DataType){.type = Str, .size = $5.len}, .addr = addr};
+        .type = (DataType){
+            .type = Str, 
+            .size = $5.len
+        }, 
+        .addr = addr,
+        .value.str = $5
+    };
     addr += 1 * $5.len;
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);

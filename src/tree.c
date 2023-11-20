@@ -1,5 +1,6 @@
 #include "tree.h"
 #include "vector.h"
+#include <stdio.h>
 
 void *tree_iter_next(TreeIter *ti) {
     if (ti->parents.len == 0)
@@ -30,7 +31,27 @@ void *tree_iter_next(TreeIter *ti) {
     return temp;
 }
 
+size_t tree_num_child(Tree *t, size_t root) {
+    size_t num = 0;
+    if (t->relations.len != 0) {
+        // Agregamos todos los hijos
+        for (size_t child = t->relations.len - 1; child >= 0; child--) {
+            TreeEntry *te = (TreeEntry *)vec_get(&t->relations, child);
+
+            if (root == te->from) num++;
+
+            if (child == 0)
+                break;
+        }
+    }
+
+    return num;
+}
+
+
 void *tree_iter_next_child(TreeIter *ti, size_t parent_id) {
+    // printf("%p y %zu\n", ti, parent_id);
+            // return NULL;
     if (ti->parents.len == 0)
         return NULL;
 
@@ -44,7 +65,7 @@ void *tree_iter_next_child(TreeIter *ti, size_t parent_id) {
     vec_pop(&ti->parents);
 
     int pushed = 0;
-    if (ti->tree->relations.len != 0 && curr == parent_id) {
+    if (ti->tree->relations.len != 0 && curr == parent_id && tree_num_child(ti->tree, curr) > 0) {
         pushed = 1;
         // Agregamos todos los hijos
         for (size_t child = max_child - 1; child >= 0; child--) {
@@ -64,12 +85,15 @@ void *tree_iter_next_child(TreeIter *ti, size_t parent_id) {
             return NULL;
 
         size_t first = *(size_t *)vec_pop(&ti->parents);
+        // printf("FIRST: %zu", first);
+        printf("%zu -> %zu\n", parent_id, first);
         void *pt = vec_get(&ti->tree->values, first);
         void *temp = &ti->tmp.ptr;
         memcpy(temp, pt, ti->tree->values.t_size);
         return temp;
     }
 
+    printf("%zu -> %zu\n", parent_id, curr);
     return temp;
 }
 
@@ -109,6 +133,7 @@ void *tree_last_node(Tree *t, size_t *self_idx) {
 
 TreeEntry *tree_new_relation(Tree *t, size_t from, size_t to) {
     TreeEntry *te = (TreeEntry *)vec_push(&t->relations);
+    printf("NEW RELATION FROM %zu to %zu\n", from, to);
     te->from = from;
     te->to = to;
     return te;

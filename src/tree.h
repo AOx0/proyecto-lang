@@ -26,6 +26,7 @@ typedef struct TreeIter TreeIter;
 void *tree_iter_next(TreeIter *ti);
 void *tree_iter_next_child(TreeIter *ti, size_t parent_id);
 TreeIter tree_iter_new(Tree *t, size_t root);
+size_t tree_num_child(Tree *t, size_t root);
 void tree_iter_drop(TreeIter *ti);
 
 void tree_init(Tree *t, size_t t_size);

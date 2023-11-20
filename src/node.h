@@ -12,6 +12,8 @@ typedef enum NodeType {
     NWrite,
     NRead,
     NVar,
+    NVoid,
+    NConst,
     NAssign,
     NFunction,
     NFunctionSign
@@ -23,21 +25,19 @@ typedef struct FunctionNode {
         Vec args;
 } FunctionNode;
 
-typedef struct BlockNode {
-} BlockNode;
-
 typedef struct VarNode {
         Symbol symbol;
 } VarNode;
 
+
 typedef struct ConstNode {
         Symbol symbol;
+        ConstValue value;
 } ConstNode;
 
 typedef union NodeValue {
         StrSlice sl;
         FunctionNode fun;
-        BlockNode block;
         VarNode var;
         ConstNode cons;
 } NodeValue;

@@ -1,5 +1,6 @@
 #include "symbol.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 HashIdx hash_symbol(void *s) {
     HashIdx res;
@@ -91,6 +92,31 @@ void data_type_display(FILE *f, int is_fun, StrSlice *name, DataType *d) {
             fprintf(f, " %.*s", (int)name->len, name->ptr);
             fprintf(f, "[%zu]", d->size);
         }
+    }
+}
+
+void const_value_display(FILE *f, ConstValue *cv, DataType *d) {
+    switch (d->type) {
+    case Int: {
+        fprintf(f, "%ld", cv->snum);
+        break;
+    }
+    case Real: {
+        fprintf(f, "%lf", cv->real);
+        break;
+    }
+    case Str: {
+        fprintf(f, "\"%.*s\"", (int)cv->str.len, cv->str.ptr);
+        break;
+    }
+    case Bool: {
+        fprintf(f, "%d", cv->bool);
+        break;
+    }
+    default: {
+        puts("Panic: Invalid value");
+        exit(1);
+    }
     }
 }
 
