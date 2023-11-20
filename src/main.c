@@ -70,5 +70,5 @@ int main(int argc, char *argv[]) {
 
 void yyerror(char *s) {
     err = 1;
-    fprintf(stderr, "Error %s:%zu:%zu: %s\n", path, line, nchar, s);
+    fprintf(stderr, "%s:%zu:%zu: %s\n", path, line, nchar, s);
 }

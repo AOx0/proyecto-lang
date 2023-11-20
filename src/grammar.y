@@ -55,7 +55,7 @@
         if (!found) {
             str_clear(&wrn_buff);
             nchar = s->nchar;
-            char lit[] = "Simbolo no declarado en el scope actual: ";
+            char lit[] = "Error: Simbolo no declarado en el scope actual: ";
             // printf("Scope: %zu\n", scope);
             str_push_n(&wrn_buff, &lit[0], strlen(&lit[0]));
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
@@ -74,7 +74,7 @@
         nchar = s->nchar;
         if (hashset_contains(&tabla, s)) {
             str_clear(&wrn_buff);
-            char lit[] = "Simbolo ya declarado en el mismo scope: ";
+            char lit[] = "Error: Simbolo ya declarado en el mismo scope: ";
             str_push_n(&wrn_buff, &lit[0], strlen(&lit[0]));
             str_push_n(&wrn_buff, s->name.ptr, s->name.len);
             yyerror(str_as_ref(&wrn_buff));
@@ -545,11 +545,13 @@ expresion: termino {
     
     if (past_root->asoc_type != curr_root->asoc_type) {
         str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Se intento sumar dos expresiones de tipos distintos: ");
+        str_push(&wrn_buff, "Error: Se intento sumar dos expresiones de tipos distintos: ");
         str_push(&wrn_buff, "El primer operando es de tipo ");
-        data_type_e_display(&wrn_buff, &past_root->asoc_type);
+        char * tipo = data_type_e_display_return(&past_root->asoc_type);
+        str_push(&wrn_buff, tipo);
         str_push(&wrn_buff, " y el segundo es de tipo ");
-        data_type_e_display(&wrn_buff, &curr_root->asoc_type);
+        tipo = data_type_e_display_return(&curr_root->asoc_type);
+        str_push(&wrn_buff, tipo);
         yyerror(str_as_ref(&wrn_buff));
     }
 
@@ -580,11 +582,13 @@ termino : factor {
 
     if (past_root->asoc_type != curr_root->asoc_type) {
         str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Se intento sumar dos expresiones de tipos distintos: ");
+        str_push(&wrn_buff, "Error: Se intento sumar dos expresiones de tipos distintos: ");
         str_push(&wrn_buff, "El primer operando es de tipo ");
-        data_type_e_display(&wrn_buff, &past_root->asoc_type);
+        char * tipo = data_type_e_display_return(&past_root->asoc_type);
+        str_push(&wrn_buff, tipo);
         str_push(&wrn_buff, " y el segundo es de tipo ");
-        data_type_e_display(&wrn_buff, &curr_root->asoc_type);
+        tipo = data_type_e_display_return(&curr_root->asoc_type);
+        str_push(&wrn_buff, tipo);
         yyerror(str_as_ref(&wrn_buff));
     }
 
@@ -608,14 +612,14 @@ llamado_funcion : IDENT '(' expresion_lista ')' {
     Symbol * s = (Symbol *)assert_sym_exists(&$1);
     if (s->type != Function) {
         str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Se intento llamar a una variable como si fuera una funcion: ");
+        str_push(&wrn_buff, "Error: Se intento llamar a una variable como si fuera una funcion: ");
         str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
         yyerror(str_as_ref(&wrn_buff));
     }
 
-    printf("Llamando a funcion %.*s que retorna ", (int)s->name.len, s->name.ptr);
-    data_type_e_display(stdout, &s->info.fun.return_type.type);
-    printf("\n");
+    // printf("Llamando a funcion %.*s que retorna ", (int)s->name.len, s->name.ptr);
+    // data_type_e_display(stdout, &s->info.fun.return_type.type);
+    // printf("\n");
 
     $$ = (FunctionCall) {
         .symbol = $1,
@@ -650,7 +654,7 @@ factor : IDENT '[' CONST_ENTERA ']' {
     size_t arr_size = s->info.var.type.size;
     if ((int64_t)arr_size < $3 || $3 < 0) {
         str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Indice fuera de rango: ");
+        str_push(&wrn_buff, "Error: Indice fuera de rango: ");
         str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
         str_push(&wrn_buff, ", el arreglo tiene un tamaño de ");
         str_push_sizet(&wrn_buff, arr_size);
@@ -690,7 +694,7 @@ factor : llamado_funcion {
 
     if ($1.symbol.info.fun.return_type.type == Void) {
         str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Se intento usar una funcion que devuelve () como expresion: ");
+        str_push(&wrn_buff, "Error: Se intento usar una funcion que devuelve () como expresion: ");
         str_push_n(&wrn_buff, $1.symbol.name.ptr, $1.symbol.name.len);
         yyerror(str_as_ref(&wrn_buff));
     }

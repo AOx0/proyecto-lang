@@ -78,6 +78,30 @@ void data_type_e_display(FILE *f, DataTypeE *d) {
     }
 }
 
+char *data_type_e_display_return(DataTypeE *d) {
+    switch (*d) {
+    case Int: {
+        return "int32_t";
+    }
+    case Real: {
+        return "float";
+    }
+    case Str: {
+        return "char *";
+    }
+    case Bool: {
+        return "bool";
+    }
+    case Void: {
+        return "void";
+    }
+    case Ukw: {
+        puts("Panic: Invalid DataType");
+        exit(1);
+    }
+    }
+}
+
 void data_type_display(FILE *f, int is_fun, StrSlice *name, DataType *d) {
     if (d->size == 1 || d->type == Str) {
         data_type_e_display(f, &d->type);
