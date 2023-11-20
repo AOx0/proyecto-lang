@@ -161,9 +161,11 @@
 %type <idents>decl_const;
 %type <idents>decl_var;
 %type <subtree>expresion;
+%type <subtree>expresion_lista;
 %type <subtree>factor;
 %type <subtree>termino;
 %type <function_call>llamado_funcion;
+%type <function_call>procedure_instruccion;
 
 %destructor {
     // printf("Dropping ident_lista:  ");
@@ -518,9 +520,44 @@ variable_asignacion : variable OP_ASIGN expresion;
 for_asignacion : variable_asignacion | variable;
 variable : IDENT { assert_sym_exists(&$1); };
 variable : IDENT '[' CONST_ENTERA ']' { assert_sym_exists(&$1); };
-procedure_instruccion : IDENT { assert_sym_exists(&$1); };
+procedure_instruccion : IDENT { 
+    Symbol * s = (Symbol *)assert_sym_exists(&$1);
+    if (s->type != Procedure) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Error: Se intento llamar a una variable como si fuera una funcion: ");
+        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    if (s->info.fun.args.len != 0) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Error: Se intento llamar a una funcion con argumentos sin pasarle argumentos: ");
+        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+    
+    Tree t;
+    tree_init(&t, sizeof(Tree));
+    $$ = (FunctionCall) {
+        .symbol = $1,
+        .args = t
+    };
+};
 procedure_instruccion : IDENT '(' expresion_lista ')' {
-    assert_sym_exists(&$1);
+    Symbol * s = (Symbol *)assert_sym_exists(&$1);
+    if (s->type != Procedure) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Error: Se intento llamar a una variable como si fuera una funcion: ");
+        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    size_t num_args = $3.values.len;
+
+    $$ = (FunctionCall) {
+        .symbol = $1,
+        .args = $3
+    };
 };
 
 /* Relop */
@@ -533,7 +570,28 @@ relop : RELOP_AND | RELOP_OR | RELOP_BT | RELOP_LT | RELOP_EBT | RELOP_ELT |
         RELOP_EQ | RELOP_NEQ;
 
 /* Expresion */
-expresion_lista : expresion | expresion_lista ',' expresion |;
+expresion_lista : expresion {
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * void_root = (Node *)tree_new_node(&t, NULL);
+    *void_root = (Node) {
+        .node_type = NVoid,
+        .id = 0,
+    };
+
+    tree_extend(&t, &$1, 0);
+
+    $$ = t;
+} | expresion_lista ',' expresion {
+    $$ = $1;
+    tree_extend(&$$, &$3, 0);
+} | {
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    $$ = t;
+};
 expresion: termino {
     $$ = $1;
 } | expresion ADDOP termino {
@@ -547,11 +605,9 @@ expresion: termino {
         str_clear(&wrn_buff);
         str_push(&wrn_buff, "Error: Se intento sumar dos expresiones de tipos distintos: ");
         str_push(&wrn_buff, "El primer operando es de tipo ");
-        char * tipo = data_type_e_display_return(&past_root->asoc_type);
-        str_push(&wrn_buff, tipo);
+        str_push(&wrn_buff, data_type_e_display_return(&past_root->asoc_type));
         str_push(&wrn_buff, " y el segundo es de tipo ");
-        tipo = data_type_e_display_return(&curr_root->asoc_type);
-        str_push(&wrn_buff, tipo);
+        str_push(&wrn_buff, data_type_e_display_return(&curr_root->asoc_type));
         yyerror(str_as_ref(&wrn_buff));
     }
 
@@ -584,11 +640,9 @@ termino : factor {
         str_clear(&wrn_buff);
         str_push(&wrn_buff, "Error: Se intento sumar dos expresiones de tipos distintos: ");
         str_push(&wrn_buff, "El primer operando es de tipo ");
-        char * tipo = data_type_e_display_return(&past_root->asoc_type);
-        str_push(&wrn_buff, tipo);
+        str_push(&wrn_buff, data_type_e_display_return(&past_root->asoc_type));
         str_push(&wrn_buff, " y el segundo es de tipo ");
-        tipo = data_type_e_display_return(&curr_root->asoc_type);
-        str_push(&wrn_buff, tipo);
+        str_push(&wrn_buff, data_type_e_display_return(&curr_root->asoc_type));
         yyerror(str_as_ref(&wrn_buff));
     }
 

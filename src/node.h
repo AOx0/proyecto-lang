@@ -48,7 +48,7 @@ typedef enum ExprType {
 
 typedef struct FunctionCall {
         Symbol symbol;
-        Vec args;
+        Tree args;
 } FunctionCall;
 
 typedef struct IndexedSymbol {

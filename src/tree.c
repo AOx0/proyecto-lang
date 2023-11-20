@@ -31,6 +31,8 @@ void tree_extend(Tree *t, Tree *o, size_t childs_of) {
     // offset, new_te->from, new_te->to);
 }
 
+int tree_iter_has_next(TreeIter *ti) { return ti->parents.len != 0; }
+
 void *tree_iter_next(TreeIter *ti) {
     if (ti->parents.len == 0)
         return NULL;

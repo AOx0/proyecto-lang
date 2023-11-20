@@ -104,12 +104,16 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
                 exit(1);
             }
             fprintf(f, "%.*s(", (int)s->name.len, s->name.ptr);
-            Vec args = n->value.expr.value.function_call.args;
-            for (size_t i = 0; i < args.len; i++) {
-                size_t *id = (size_t *)vec_get(&args, i);
-                Node *v = (Node *)vec_get(&t->values, *id);
-                node_display_id(v->id, f, t, tabla);
-                if (i + 1 != args.len) {
+            Tree args = n->value.expr.value.function_call.args;
+            TreeIter ti = tree_iter_new(&args, 0);
+            while (1) {
+                size_t *id = tree_iter_next(&ti);
+                if (id == NULL) {
+                    break;
+                }
+                Node *n = (Node *)vec_get(&args.values, *id);
+                node_display(n, f, &args, tabla);
+                if (tree_iter_has_next(&ti)) {
                     fprintf(f, ", ");
                 }
             }
