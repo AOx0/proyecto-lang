@@ -671,13 +671,51 @@ llamado_funcion : IDENT '(' expresion_lista ')' {
         yyerror(str_as_ref(&wrn_buff));
     }
 
-    // printf("Llamando a funcion %.*s que retorna ", (int)s->name.len, s->name.ptr);
-    // data_type_e_display(stdout, &s->info.fun.return_type.type);
-    // printf("\n");
+    Vec children = tree_get_childs(&$3, 0);
+    Node * void_root = (Node *)vec_get(&$3.values, 0);
+
+    if (void_root->node_type != NVoid) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Error: Se intento llamar a una funcion con argumentos sin pasarle argumentos: ");
+        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    // Checamos que los tipos de datos de los argumentos hacen match con los del simbolo 
+    if (s->info.fun.args.len != children.len) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Error: Se intento llamar a una funcion con una cantidad de argumentos distinta a la declarada: ");
+        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
+        str_push(&wrn_buff, ", se esperaban ");
+        str_push_sizet(&wrn_buff, s->info.fun.args.len);
+        str_push(&wrn_buff, " argumentos y se pasaron ");
+        str_push_sizet(&wrn_buff, children.len);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    for (size_t n_arg = 0; n_arg < children.len; n_arg++) {
+        Node * arg = (Node *)vec_get(&$3.values, *(size_t *)vec_get(&children, n_arg));
+        Symbol * arg_sym = (Symbol *)vec_get(&s->info.fun.args, n_arg);
+
+        if (arg->asoc_type != arg_sym->info.var.type.type) {
+            str_clear(&wrn_buff);
+            str_push(&wrn_buff, "Error: Se intento llamar a una funcion con argumentos de tipos distintos a los declarados: ");
+            str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
+            str_push(&wrn_buff, ", el argumento ");
+            str_push_sizet(&wrn_buff, n_arg + 1);
+            str_push(&wrn_buff, " se esperaba de tipo ");
+            str_push(&wrn_buff, data_type_e_display_return(&arg_sym->info.var.type.type));
+            str_push(&wrn_buff, " y se paso de tipo ");
+            str_push(&wrn_buff, data_type_e_display_return(&arg->asoc_type));
+            yyerror(str_as_ref(&wrn_buff));
+        }
+    }
+
+    vec_drop(&children);
 
     $$ = (FunctionCall) {
         .symbol = $1,
-        .args = vec_new(sizeof(ExprNode))
+        .args = $3
     };
 };
 factor : IDENT { 

@@ -602,7 +602,7 @@ static const yytype_uint16 yyrline[] = {
     486, 487, 488, 491, 494, 495, 496, 497, 498, 502, 506, 507, 508, 511, 515,
     516, 519, 520, 520, 521, 522, 523, 546, 564, 564, 565, 565, 566, 566, 567,
     567, 568, 569, 569, 569, 569, 569, 569, 570, 570, 573, 586, 589, 595, 597,
-    630, 632, 665, 683, 702, 734, 758, 775, 792, 814};
+    630, 632, 665, 721, 740, 772, 796, 813, 830, 852};
 #endif
 
 #if YYDEBUG || YYERROR_VERBOSE || 0
@@ -2221,13 +2221,64 @@ yyreduce:
             yyerror(str_as_ref(&wrn_buff));
         }
 
-        // printf("Llamando a funcion %.*s que retorna ", (int)s->name.len,
-        // s->name.ptr); data_type_e_display(stdout,
-        // &s->info.fun.return_type.type); printf("\n");
+        Vec children = tree_get_childs(&(yyvsp[(3) - (4)].subtree), 0);
+        Node *void_root =
+            (Node *)vec_get(&(yyvsp[(3) - (4)].subtree).values, 0);
+
+        if (void_root->node_type != NVoid) {
+            str_clear(&wrn_buff);
+            str_push(&wrn_buff, "Error: Se intento llamar a una funcion con "
+                                "argumentos sin pasarle argumentos: ");
+            str_push_n(&wrn_buff, (yyvsp[(1) - (4)].symbol).name.ptr,
+                       (yyvsp[(1) - (4)].symbol).name.len);
+            yyerror(str_as_ref(&wrn_buff));
+        }
+
+        // Checamos que los tipos de datos de los argumentos hacen match con los
+        // del simbolo
+        if (s->info.fun.args.len != children.len) {
+            str_clear(&wrn_buff);
+            str_push(&wrn_buff,
+                     "Error: Se intento llamar a una funcion con una cantidad "
+                     "de argumentos distinta a la declarada: ");
+            str_push_n(&wrn_buff, (yyvsp[(1) - (4)].symbol).name.ptr,
+                       (yyvsp[(1) - (4)].symbol).name.len);
+            str_push(&wrn_buff, ", se esperaban ");
+            str_push_sizet(&wrn_buff, s->info.fun.args.len);
+            str_push(&wrn_buff, " argumentos y se pasaron ");
+            str_push_sizet(&wrn_buff, children.len);
+            yyerror(str_as_ref(&wrn_buff));
+        }
+
+        for (size_t n_arg = 0; n_arg < children.len; n_arg++) {
+            Node *arg = (Node *)vec_get(&(yyvsp[(3) - (4)].subtree).values,
+                                        *(size_t *)vec_get(&children, n_arg));
+            Symbol *arg_sym = (Symbol *)vec_get(&s->info.fun.args, n_arg);
+
+            if (arg->asoc_type != arg_sym->info.var.type.type) {
+                str_clear(&wrn_buff);
+                str_push(&wrn_buff,
+                         "Error: Se intento llamar a una funcion con "
+                         "argumentos de tipos distintos a los declarados: ");
+                str_push_n(&wrn_buff, (yyvsp[(1) - (4)].symbol).name.ptr,
+                           (yyvsp[(1) - (4)].symbol).name.len);
+                str_push(&wrn_buff, ", el argumento ");
+                str_push_sizet(&wrn_buff, n_arg + 1);
+                str_push(&wrn_buff, " se esperaba de tipo ");
+                str_push(&wrn_buff, data_type_e_display_return(
+                                        &arg_sym->info.var.type.type));
+                str_push(&wrn_buff, " y se paso de tipo ");
+                str_push(&wrn_buff,
+                         data_type_e_display_return(&arg->asoc_type));
+                yyerror(str_as_ref(&wrn_buff));
+            }
+        }
+
+        vec_drop(&children);
 
         (yyval.function_call) =
             (FunctionCall){.symbol = (yyvsp[(1) - (4)].symbol),
-                           .args = vec_new(sizeof(ExprNode))};
+                           .args = (yyvsp[(3) - (4)].subtree)};
     } break;
 
     case 93:
