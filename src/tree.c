@@ -1,4 +1,5 @@
 #include "tree.h"
+#include "vector.h"
 
 void *tree_iter_next(TreeIter *ti) {
     if (ti->parents.len == 0)
@@ -29,6 +30,49 @@ void *tree_iter_next(TreeIter *ti) {
     return temp;
 }
 
+void *tree_iter_next_child(TreeIter *ti, size_t parent_id) {
+    if (ti->parents.len == 0)
+        return NULL;
+
+    size_t max_child = ti->tree->relations.len;
+    size_t curr = *(size_t *)vec_last(&ti->parents);
+
+    void *pt = vec_get(&ti->tree->values, curr);
+    void *temp = &ti->tmp.ptr;
+    memcpy(temp, pt, ti->tree->values.t_size);
+
+    vec_pop(&ti->parents);
+
+    int pushed = 0;
+    if (ti->tree->relations.len != 0 && curr == parent_id) {
+        pushed = 1;
+        // Agregamos todos los hijos
+        for (size_t child = max_child - 1; child >= 0; child--) {
+            TreeEntry *te = (TreeEntry *)vec_get(&ti->tree->relations, child);
+
+            if (curr == te->from)
+                *(size_t *)vec_push(&ti->parents) = te->to;
+
+            if (child == 0)
+                break;
+        }
+    }
+
+    if (curr == parent_id) {
+        // Check if there are actually children to explore
+        if (ti->parents.len == 0)
+            return NULL;
+
+        size_t first = *(size_t *)vec_pop(&ti->parents);
+        void *pt = vec_get(&ti->tree->values, first);
+        void *temp = &ti->tmp.ptr;
+        memcpy(temp, pt, ti->tree->values.t_size);
+        return temp;
+    }
+
+    return temp;
+}
+
 TreeIter tree_iter_new(Tree *t, size_t root) {
     TreeIter res;
     res.parents = vec_new(sizeof(size_t));
@@ -47,7 +91,8 @@ void tree_init(Tree *t, size_t t_size) {
 }
 
 void *tree_new_node(Tree *t, size_t *self_idx) {
-    *self_idx = t->values.len;
+    if (self_idx != NULL)
+        *self_idx = t->values.len;
     void *node = vec_push(&t->values);
     return node;
 }

@@ -149,6 +149,9 @@
 %type<idents> argumentos;
 %type<type> estandard_tipo;
 %type<type> tipo;
+%type<idents> decl;
+%type<idents> decl_const;
+%type<idents> decl_var;
 
 %destructor {
     // printf("Dropping ident_lista:  ");
@@ -198,10 +201,25 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
     }
 
     size_t idx;
+    size_t child_idx;
     Node * node = (Node *)tree_new_node(&ast, &idx);
-    node->node_type = NProgram;
-    node->value.fun = (FunctionNode) { .name = $3.name, .args = $5 };
+    *node = (Node) {
+        .node_type = NProgram,
+        .id = idx,
+        .value.fun = (FunctionNode) { .name = $3.name, .args = $5 },
+    };
 
+    for (size_t i = 0; i < $8.len; i++) {
+        Symbol *s = vec_get(&$8, i);
+        printf("Name: %.*s\n", (int)s->name.len, s->name.ptr);
+        node = (Node *)tree_new_node(&ast, &child_idx);
+        *node = (Node) {
+            .node_type = NVar,
+            .id = child_idx,
+            .value.var = (VarNode) { .symbol = *s }, 
+        };
+        tree_new_relation(&ast, idx, child_idx); 
+    }
 
     size_t i = 0;
     puts("Contenidos de la tabla:");
@@ -229,7 +247,7 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
                     case Function: { fun_info_debug(&s->info.fun); break; }
                     case Variable: { var_info_debug(&s->info.var); break; }
                     case Constant: { const_info_debug(&s->info.cons); break; }
-                    case Procedure: { fun_info_debug(&s->info.fun); break; }
+                    case Procedure: { fun_info_debug(&s->info.fun); break; }
                     default: { puts("Panic: Invalid SymbolType"); exit(1); } 
                 }
 
@@ -240,7 +258,7 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
         }
     }
 
-    node_display(node, stdout, &ast, &tabla);
+    node_display_id(idx, stdout, &ast, &tabla);
 
     // Al final liberamos la tabla de hashes de memoria
     vec_drop(&$5);
@@ -261,7 +279,11 @@ ident_lista : IDENT {
 };
 
 /* Declaration of var and const */
-decl : decl_var | decl_const | ;
+decl : decl_var {
+    $$ = $1;
+} | decl_const {
+    $$ = $1;
+} | { $$ = vec_new(sizeof(Symbol)); };
 
 decl_var : decl KW_VAR ident_lista ':' tipo ';' {
     for (size_t i = 0; i < $3.len; i++) {
@@ -273,7 +295,8 @@ decl_var : decl KW_VAR ident_lista ':' tipo ';' {
         hashset_insert(&tabla, s);
     }
 
-    vec_drop(&$3);
+    $$ = $1;
+    vec_extend(&$$, &$3);
 };
 
 decl_const : decl KW_CONST IDENT '=' CONST_ENTERA ';' {
@@ -283,6 +306,9 @@ decl_const : decl KW_CONST IDENT '=' CONST_ENTERA ';' {
     addr += 4;
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
+    $$ = $1;
+    Symbol * s = (Symbol *)vec_push(&$$);
+    *s = $3;
 };
 decl_const : decl KW_CONST IDENT '=' CONST_REAL ';' {
     $3.type = Constant;
@@ -291,6 +317,9 @@ decl_const : decl KW_CONST IDENT '=' CONST_REAL ';' {
     addr += 4;
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
+    $$ = $1;
+    Symbol * s = (Symbol *)vec_push(&$$);
+    *s = $3;
 };
 decl_const : decl KW_CONST IDENT '=' CONST_CADENA ';' {
     $3.type = Constant;
@@ -299,6 +328,10 @@ decl_const : decl KW_CONST IDENT '=' CONST_CADENA ';' {
     addr += 1 * $5.len;
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
+   
+    $$ = $1;
+    Symbol * s = (Symbol *)vec_push(&$$);
+    *s = $3;
 };
 
 /* Tipo */

@@ -5,7 +5,7 @@ Tiene tres funciones
 program principal(input, output);
     
     var a,b,c,d: integer;
-    var arr: array [0..2] of integer;
+    var arr: array [0..10] of integer;
     const NOMBRE = "Daniel";
 
     (* Suma numeros *)

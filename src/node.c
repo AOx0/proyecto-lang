@@ -1,21 +1,75 @@
 #include "node.h"
 #include "symbol.h"
+#include "tree.h"
 #include <stdio.h>
+#include <stdlib.h>
+
+void node_type_debug(NodeType *nt) {
+    switch (*nt) {
+    case NProgram: {
+        printf("NProgram");
+        break;
+    }
+    case NWrite: {
+        printf("NWrite");
+        break;
+    }
+    case NRead: {
+        printf("NRead");
+        break;
+    }
+    case NVar: {
+        printf("NVar");
+        break;
+    }
+    case NAssign: {
+        printf("NAssign");
+        break;
+    }
+    case NFunction: {
+        printf("NFunction");
+        break;
+    }
+    case NFunctionSign: {
+        printf("NFunctionSign");
+        break;
+    }
+    default:
+        puts("Panic: Invalid type");
+        exit(1);
+    }
+}
+
+void node_display_id(size_t id, FILE *f, Tree *t, HashSet *tabla) {
+    Node *node = (Node *)vec_get(&t->values, id);
+    node_display(node, f, t, tabla);
+}
 
 void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
+    // node_type_debug(&n->node_type);
+    // printf("\n");
+
     switch (n->node_type) {
+    case NVar: {
+        VarNode node = n->value.var;
+        data_type_display(f, 0, &node.symbol.name, &node.symbol.info.var.type);
+        fprintf(f, ";\n");
+        break;
+    }
     case NFunction: {
         fprintf(f, "Function");
         break;
     }
     case NFunctionSign: {
-        data_type_e_display(&n->value.fun.return_type);
+        data_type_display(
+            f, 1, &n->value.fun.name,
+            &(DataType){.type = n->value.fun.return_type, .size = 1});
         fprintf(f, " %.*s(", (int)n->value.fun.name.len, n->value.fun.name.ptr);
 
         if (n->value.fun.args.len != 0) {
             for (size_t i = 0; i < n->value.fun.args.len; i++) {
                 Symbol *sl = (Symbol *)vec_get(&n->value.fun.args, i);
-                data_type_e_display(&sl->info.var.type.type);
+                data_type_e_display(f, &sl->info.var.type.type);
                 fprintf(f, " %.*s", (int)sl->name.len, sl->name.ptr);
                 if (i + 1 != n->value.fun.args.len) {
                     fprintf(f, ", ");
@@ -24,7 +78,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         } else {
             fprintf(f, "void");
         }
-        fprintf(f, ");\n");
+        fprintf(f, ")");
 
         break;
     }
@@ -46,6 +100,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
                                 .return_type = s->info.fun.return_type.type,
                                 .name = s->name}};
                         node_display(&n, f, t, tabla);
+                        fprintf(f, ";\n");
                         break;
                     }
                     default:
@@ -56,6 +111,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
                 }
             }
         }
+
         fprintf(f, "void %.*s(", (int)n->value.fun.name.len,
                 n->value.fun.name.ptr);
         for (size_t i = 0; i < n->value.fun.args.len; i++) {
@@ -66,6 +122,15 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             }
         }
         fprintf(f, ") {\n");
+
+        TreeIter ti = tree_iter_new(t, n->id);
+        while (1) {
+            Node *v = tree_iter_next_child(&ti, n->id);
+            if (v == NULL)
+                break;
+            fprintf(f, "    ");
+            node_display(v, f, t, tabla);
+        }
 
         fprintf(f, "}\n");
         break;

@@ -48,32 +48,49 @@ void data_type_e_debug(DataTypeE *d) {
     }
 }
 
-void data_type_e_display(DataTypeE *d) {
+void data_type_e_display(FILE *f, DataTypeE *d) {
     switch (*d) {
     case Int: {
-        printf("int");
+        fprintf(f, "int");
         break;
     }
     case Real: {
-        printf("real");
+        fprintf(f, "real");
         break;
     }
     case Str: {
-        printf("str");
+        fprintf(f, "char *");
         break;
     }
     case Bool: {
-        printf("bool");
+        fprintf(f, "bool");
         break;
     }
     case Void: {
-        printf("void");
+        fprintf(f, "void");
         break;
     }
     case Ukw: {
         puts("Panic: Invalid DataType");
         exit(1);
     }
+    }
+}
+
+void data_type_display(FILE *f, int is_fun, StrSlice *name, DataType *d) {
+    if (d->size == 1 || d->type == Str) {
+        data_type_e_display(f, &d->type);
+        if (!is_fun)
+            fprintf(f, " %.*s", (int)name->len, name->ptr);
+    } else {
+        if (is_fun) {
+            data_type_e_display(f, &d->type);
+            fprintf(f, " *");
+        } else {
+            data_type_e_display(f, &d->type);
+            fprintf(f, " %.*s", (int)name->len, name->ptr);
+            fprintf(f, "[%zu]", d->size);
+        }
     }
 }
 
@@ -102,7 +119,8 @@ size_t data_type_size(DataType *d) {
         size = 1;
         break;
     }
-    case Ukw: {
+    case Ukw:
+    case Void: {
         puts("Panic: Invalid DataType");
         exit(1);
     }

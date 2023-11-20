@@ -554,13 +554,13 @@ static const yytype_int8 yyrhs[] = {
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] = {
-    0,   180, 180, 180, 252, 257, 264, 264, 264, 266, 279, 287, 295, 305, 306,
-    310, 311, 312, 313, 316, 316, 318, 321, 321, 332, 332, 345, 358, 361, 371,
-    387, 388, 388, 389, 389, 391, 392, 392, 392, 393, 393, 393, 395, 396, 397,
-    398, 399, 400, 403, 406, 407, 408, 409, 410, 414, 418, 419, 420, 423, 427,
-    428, 431, 432, 432, 433, 434, 435, 436, 441, 441, 442, 442, 443, 443, 444,
-    444, 445, 446, 446, 446, 446, 446, 446, 447, 447, 450, 450, 451, 451, 452,
-    452, 453, 454, 455, 456, 456, 456, 456, 457};
+    0,   183, 183, 183, 270, 275, 282, 284, 286, 288, 302, 313, 324, 338, 339,
+    343, 344, 345, 346, 349, 349, 351, 354, 354, 365, 365, 378, 391, 394, 404,
+    420, 421, 421, 422, 422, 424, 425, 425, 425, 426, 426, 426, 428, 429, 430,
+    431, 432, 433, 436, 439, 440, 441, 442, 443, 447, 451, 452, 453, 456, 460,
+    461, 464, 465, 465, 466, 467, 468, 469, 474, 474, 475, 475, 476, 476, 477,
+    477, 478, 479, 479, 479, 479, 479, 479, 480, 480, 483, 483, 484, 484, 485,
+    485, 486, 487, 488, 489, 489, 489, 489, 490};
 #endif
 
 #if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
@@ -1581,11 +1581,26 @@ yyreduce:
         }
 
         size_t idx;
+        size_t child_idx;
         Node *node = (Node *)tree_new_node(&ast, &idx);
-        node->node_type = NProgram;
-        node->value.fun =
-            (FunctionNode){.name = (yyvsp[(3) - (11)].symbol).name,
-                           .args = (yyvsp[(5) - (11)].idents)};
+        *node = (Node){
+            .node_type = NProgram,
+            .id = idx,
+            .value.fun = (FunctionNode){.name = (yyvsp[(3) - (11)].symbol).name,
+                                        .args = (yyvsp[(5) - (11)].idents)},
+        };
+
+        for (size_t i = 0; i < (yyvsp[(8) - (11)].idents).len; i++) {
+            Symbol *s = vec_get(&(yyvsp[(8) - (11)].idents), i);
+            printf("Name: %.*s\n", (int)s->name.len, s->name.ptr);
+            node = (Node *)tree_new_node(&ast, &child_idx);
+            *node = (Node){
+                .node_type = NVar,
+                .id = child_idx,
+                .value.var = (VarNode){.symbol = *s},
+            };
+            tree_new_relation(&ast, idx, child_idx);
+        }
 
         size_t i = 0;
         puts("Contenidos de la tabla:");
@@ -1624,7 +1639,7 @@ yyreduce:
                         break;
                     }
                     case Procedure: {
-                         fun_info_debug(&s->info.fun);
+                        fun_info_debug(&s->info.fun);
                         break;
                     }
                     default: {
@@ -1640,7 +1655,7 @@ yyreduce:
             }
         }
 
-        node_display(node, stdout, &ast, &tabla);
+        node_display_id(idx, stdout, &ast, &tabla);
 
         // Al final liberamos la tabla de hashes de memoria
         vec_drop(&(yyvsp[(5) - (11)].idents));
@@ -1668,6 +1683,27 @@ yyreduce:
         ;
     } break;
 
+    case 6:
+
+    {
+        (yyval.idents) = (yyvsp[(1) - (1)].idents);
+        ;
+    } break;
+
+    case 7:
+
+    {
+        (yyval.idents) = (yyvsp[(1) - (1)].idents);
+        ;
+    } break;
+
+    case 8:
+
+    {
+        (yyval.idents) = vec_new(sizeof(Symbol));
+        ;
+    } break;
+
     case 9:
 
     {
@@ -1681,7 +1717,8 @@ yyreduce:
             hashset_insert(&tabla, s);
         }
 
-        vec_drop(&(yyvsp[(3) - (6)].idents));
+        (yyval.idents) = (yyvsp[(1) - (6)].idents);
+        vec_extend(&(yyval.idents), &(yyvsp[(3) - (6)].idents));
         ;
     } break;
 
@@ -1694,6 +1731,9 @@ yyreduce:
         addr += 4;
         assert_not_sym_exists(&(yyvsp[(3) - (6)].symbol));
         hashset_insert(&tabla, &(yyvsp[(3) - (6)].symbol));
+        (yyval.idents) = (yyvsp[(1) - (6)].idents);
+        Symbol *s = (Symbol *)vec_push(&(yyval.idents));
+        *s = (yyvsp[(3) - (6)].symbol);
         ;
     } break;
 
@@ -1706,6 +1746,9 @@ yyreduce:
         addr += 4;
         assert_not_sym_exists(&(yyvsp[(3) - (6)].symbol));
         hashset_insert(&tabla, &(yyvsp[(3) - (6)].symbol));
+        (yyval.idents) = (yyvsp[(1) - (6)].idents);
+        Symbol *s = (Symbol *)vec_push(&(yyval.idents));
+        *s = (yyvsp[(3) - (6)].symbol);
         ;
     } break;
 
@@ -1720,6 +1763,10 @@ yyreduce:
         addr += 1 * (yyvsp[(5) - (6)].slice).len;
         assert_not_sym_exists(&(yyvsp[(3) - (6)].symbol));
         hashset_insert(&tabla, &(yyvsp[(3) - (6)].symbol));
+
+        (yyval.idents) = (yyvsp[(1) - (6)].idents);
+        Symbol *s = (Symbol *)vec_push(&(yyval.idents));
+        *s = (yyvsp[(3) - (6)].symbol);
         ;
     } break;
 
