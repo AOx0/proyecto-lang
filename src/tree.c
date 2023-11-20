@@ -1,5 +1,6 @@
 #include "tree.h"
 #include "vector.h"
+#include <stddef.h>
 #include <stdio.h>
 
 void *tree_iter_next(TreeIter *ti) {
@@ -49,52 +50,29 @@ size_t tree_num_child(Tree *t, size_t root) {
 }
 
 
-void *tree_iter_next_child(TreeIter *ti, size_t parent_id) {
-    // printf("%p y %zu\n", ti, parent_id);
-            // return NULL;
-    if (ti->parents.len == 0)
-        return NULL;
+Vec tree_get_childs(Tree *t, size_t parent_id) {
+    Vec res;
+    size_t nchild = tree_num_child(t, parent_id);
 
-    size_t max_child = ti->tree->relations.len;
-    size_t curr = *(size_t *)vec_last(&ti->parents);
+    if (nchild > 0) {
+        vec_init_with_cap(&res, sizeof(size_t), nchild);
+    } else {
+        vec_init(&res, sizeof(size_t));
+    }
+    
+    if (t->relations.len >= 0) {
+        for (size_t i = 0; i < t->relations.len; i++) {
+            size_t child = t->relations.len - i - 1;
+            TreeEntry *te = (TreeEntry *)vec_get(&t->relations, child);
 
-    void *pt = vec_get(&ti->tree->values, curr);
-    void *temp = &ti->tmp.ptr;
-    memcpy(temp, pt, ti->tree->values.t_size);
-
-    vec_pop(&ti->parents);
-
-    int pushed = 0;
-    if (ti->tree->relations.len != 0 && curr == parent_id && tree_num_child(ti->tree, curr) > 0) {
-        pushed = 1;
-        // Agregamos todos los hijos
-        for (size_t child = max_child - 1; child >= 0; child--) {
-            TreeEntry *te = (TreeEntry *)vec_get(&ti->tree->relations, child);
-
-            if (curr == te->from)
-                *(size_t *)vec_push(&ti->parents) = te->to;
-
-            if (child == 0)
-                break;
+            if (parent_id == te->from) {
+                size_t * val = (size_t *)vec_push(&res);
+                *val = te->to;
+            }
         }
     }
 
-    if (curr == parent_id) {
-        // Check if there are actually children to explore
-        if (ti->parents.len == 0)
-            return NULL;
-
-        size_t first = *(size_t *)vec_pop(&ti->parents);
-        // printf("FIRST: %zu", first);
-        printf("%zu -> %zu\n", parent_id, first);
-        void *pt = vec_get(&ti->tree->values, first);
-        void *temp = &ti->tmp.ptr;
-        memcpy(temp, pt, ti->tree->values.t_size);
-        return temp;
-    }
-
-    printf("%zu -> %zu\n", parent_id, curr);
-    return temp;
+    return res;
 }
 
 TreeIter tree_iter_new(Tree *t, size_t root) {
@@ -133,7 +111,6 @@ void *tree_last_node(Tree *t, size_t *self_idx) {
 
 TreeEntry *tree_new_relation(Tree *t, size_t from, size_t to) {
     TreeEntry *te = (TreeEntry *)vec_push(&t->relations);
-    printf("NEW RELATION FROM %zu to %zu\n", from, to);
     te->from = from;
     te->to = to;
     return te;

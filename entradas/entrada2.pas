@@ -1,5 +1,5 @@
 (* Un comentario *)
-program HOLA (input, output);
+program HOLA (input, output, other);
     var numero, edad: integer;
     const NUMERO = "ass";
 

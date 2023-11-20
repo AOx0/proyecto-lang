@@ -80,9 +80,11 @@
     extern size_t nchar;
     size_t tnchar;
     extern size_t yyleng;
+    extern int err;
     size_t scope = 0;
     size_t fun_id = 0;
     size_t addr = 0;
+    extern FILE * OUT_FILE;
 
     Tree ast;
     HashSet tabla;
@@ -620,16 +622,16 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   183,   183,   183,   290,   295,   302,   304,   306,   308,
-     322,   339,   356,   376,   377,   381,   382,   383,   384,   387,
-     387,   389,   392,   392,   403,   403,   416,   429,   432,   442,
-     458,   459,   459,   460,   460,   462,   463,   463,   463,   464,
-     464,   464,   466,   467,   468,   469,   470,   471,   474,   477,
-     478,   479,   480,   481,   485,   489,   490,   491,   494,   498,
-     499,   502,   503,   503,   504,   505,   506,   507,   512,   512,
-     513,   513,   514,   514,   515,   515,   516,   517,   517,   517,
-     517,   517,   517,   518,   518,   521,   521,   522,   522,   523,
-     523,   524,   525,   526,   527,   527,   527,   527,   528
+       0,   185,   185,   185,   296,   301,   308,   310,   312,   314,
+     328,   345,   362,   382,   383,   387,   388,   389,   390,   393,
+     393,   395,   398,   398,   409,   409,   422,   435,   438,   448,
+     464,   465,   465,   466,   466,   468,   469,   469,   469,   470,
+     470,   470,   472,   473,   474,   475,   476,   477,   480,   483,
+     484,   485,   486,   487,   491,   495,   496,   497,   500,   504,
+     505,   508,   509,   509,   510,   511,   512,   513,   518,   518,
+     519,   519,   520,   520,   521,   521,   522,   523,   523,   523,
+     523,   523,   523,   524,   524,   527,   527,   528,   528,   529,
+     529,   530,   531,   532,   533,   533,   533,   533,   534
 };
 #endif
 
@@ -1741,6 +1743,14 @@ yyreduce:
     };
 
     size_t child_idx;
+    node = (Node *)tree_new_node(&ast, &child_idx);
+    *node = (Node) {
+        .node_type = NProgram,
+        .id = child_idx,
+        .value.fun = (FunctionNode) { .name = (yyvsp[(3) - (11)].symbol).name, .args = (yyvsp[(5) - (11)].idents), .return_type = Void },
+    };
+    tree_new_relation(&ast, idx, child_idx); 
+
     for (size_t i = 0; i < (yyvsp[(8) - (11)].idents).len; i++) {
         Symbol *s = vec_get(&(yyvsp[(8) - (11)].idents), i);
         node = (Node *)tree_new_node(&ast, &child_idx);
@@ -1761,52 +1771,48 @@ yyreduce:
         tree_new_relation(&ast, idx, child_idx); 
     }
 
-    // node = (Node *)tree_new_node(&ast, &child_idx);
-    // *node = (Node) {
-    //     .node_type = NProgram,
-    //     .id = child_idx,
-    //     .value.fun = (FunctionNode) { .name = $3.name, .args = $5, .return_type = Void },
-    // };
-    // tree_new_relation(&ast, idx, child_idx); 
 
     size_t i = 0;
-    puts("Contenidos de la tabla:");
     while (tabla.elements > i) {
         for (size_t j = 0; j < HASH_BUFF_SIZE; j++) {
             Vec *arr = (Vec *)vec_get(&tabla.values, j);
             for (size_t h = 0; h < arr->len; h++) {
                 Symbol *s = (Symbol *)vec_get(arr, h);
-                printf("    - ");
-                sym_type_display(s->type);
-                printf(" (%.2zu,%.2zu), name: %10.*s, location: %2zu:%-2zu, "
-                       "scope: %zu, refs: { ",
-                       j, h, (int)s->name.len, s->name.ptr, s->line, s->nchar,
-                       s->scope);
-                for (size_t i = 0; i < s->refs.len; i++) {
-                    size_t *ref = (size_t *)vec_get(&s->refs, i);
-                    printf("%zu", *ref);
-                    if (i + 1 != s->refs.len) {
-                        printf(", ");
+
+                #ifdef PRINT_TABLE
+                    sym_type_display(s->type);
+                    printf(" (%.2zu,%.2zu), name: %10.*s, location: %2zu:%-2zu, "
+                           "scope: %zu, refs: { ",
+                           j, h, (int)s->name.len, s->name.ptr, s->line, s->nchar,
+                           s->scope);
+                    for (size_t i = 0; i < s->refs.len; i++) {
+                        size_t *ref = (size_t *)vec_get(&s->refs, i);
+                        printf("%zu", *ref);
+                        if (i + 1 != s->refs.len) {
+                            printf(", ");
+                        }
                     }
-                }
-                printf(" }, info: ");
+                    printf(" }, info: ");
 
-                switch (s->type) {
-                    case Function: { fun_info_debug(&s->info.fun); break; }
-                    case Variable: { var_info_debug(&s->info.var); break; }
-                    case Constant: { const_info_debug(&s->info.cons); break; }
-                    case Procedure: { fun_info_debug(&s->info.fun); break; }
-                    default: { puts("Panic: Invalid SymbolType"); exit(1); } 
-                }
-
+                    switch (s->type) {
+                        case Function: { fun_info_debug(&s->info.fun); break; }
+                        case Variable: { var_info_debug(&s->info.var); break; }
+                        case Constant: { const_info_debug(&s->info.cons); break; }
+                        case Procedure: { fun_info_debug(&s->info.fun); break; }
+                        default: { puts("Panic: Invalid SymbolType"); exit(1); } 
+                    }
                 puts("");
+                #endif
                 i += 1;
                 // vec_drop(&s->refs);
             }
         }
     }
 
-    node_display_id(idx, stdout, &ast, &tabla);
+    if (err == 0) 
+        node_display_id(idx, OUT_FILE, &ast, &tabla);
+    
+
 
     // Al final liberamos la tabla de hashes de memoria
     vec_drop(&(yyvsp[(5) - (11)].idents));

@@ -52,11 +52,11 @@ void data_type_e_debug(DataTypeE *d) {
 void data_type_e_display(FILE *f, DataTypeE *d) {
     switch (*d) {
     case Int: {
-        fprintf(f, "int");
+        fprintf(f, "int32_t");
         break;
     }
     case Real: {
-        fprintf(f, "real");
+        fprintf(f, "float");
         break;
     }
     case Str: {

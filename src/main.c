@@ -18,6 +18,7 @@ extern String wrn_buff;
 extern size_t line;
 extern size_t nchar;
 char *path;
+FILE * OUT_FILE;
 
 int main(int argc, char *argv[]);
 void parse_file(char *path);
@@ -42,8 +43,17 @@ int main(int argc, char *argv[]) {
     --argc;
 
     if (argc == 1) {
+        OUT_FILE = stdout;
         path = argv[0];
-        printf("Traduciendo archivo: %s\n", path);
+        parse_file(path);
+    } else if (argc == 2) {
+        path = argv[0];
+        FILE *f = fopen(argv[1], "w+");
+        if (f == NULL) {
+            puts("Err: al abrir el archivo!!");
+            exit(1);
+        }
+        OUT_FILE = f;
         parse_file(path);
     } else {
         printf("The lng compiler, translate PASCAL to C code\n\nUsage: lng "
@@ -52,7 +62,9 @@ int main(int argc, char *argv[]) {
     }
 
     if (!err)
-        printf("Linea reconocida correctamente\n");
+        printf("Successfull compilation\n");
+    else 
+        printf("There was one or more errors\n");
     return err;
 }
 

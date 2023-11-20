@@ -23,6 +23,10 @@ void node_type_debug(NodeType *nt) {
         printf("NVar");
         break;
     }
+    case NConst: {
+        printf("NConst");
+        break;
+    }
     case NAssign: {
         printf("NAssign");
         break;
@@ -51,30 +55,20 @@ void node_display_id(size_t id, FILE *f, Tree *t, HashSet *tabla) {
 }
 
 void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
-    node_type_debug(&n->node_type);
-    printf("\n");
+    // node_type_debug(&n->node_type);
+    // printf("\n");
 
     switch (n->node_type) {
     case NVoid: {
-        if (tree_num_child(t, n->id) > 0) {
-            TreeIter ti = tree_iter_new(t, n->id);
-            printf("SIZE: %zu\n", t->values.len);
-            size_t i = 0;
-
-            while (1) {
-                printf("I %zu \n", i);
-                Node *v = tree_iter_next_child(&ti, n->id);
-                if (v == NULL)
-                    break;
-                printf("ID %zu ", v->id);
-                node_type_debug(&v->node_type);
-                puts("");
-                node_display_id(v->id, f, t, tabla);
-            }
-
-            vec_drop(&ti.tmp);
-            vec_drop(&ti.parents);
+        fprintf(f, "#include <stdint.h>\n\n");
+        Vec child = tree_get_childs(t, n->id);
+        for (size_t i = 0; i<child.len; i++ ) {
+            size_t * id = (size_t *)vec_get(&child, i);
+            // printf("%zu\n", *id);
+            Node * v = (Node *)vec_get(&t->values, *id);
+            node_display_id(v->id, f, t, tabla);
         }
+        vec_drop(&child);
         break;
     };
     case NVar: {
@@ -158,16 +152,14 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         }
         fprintf(f, ") {\n");
 
-        if (tree_num_child(t, n->id) > 0) {
-            TreeIter ti = tree_iter_new(t, n->id);
-            while (1) {
-                Node *v = tree_iter_next_child(&ti, n->id);
-                if (v == NULL)
-                    break;
-                fprintf(f, "    ");
-                node_display_id(v->id, f, t, tabla);
-            }
+        Vec child = tree_get_childs(t, n->id);
+        for (size_t i = 0; i<child.len; i++ ) {
+            size_t * id = (size_t *)vec_get(&child, i);
+            printf("%zu\n", *id);
+            Node * v = (Node *)vec_get(&t->values, *id);
+            node_display_id(v->id, f, t, tabla);
         }
+        vec_drop(&child);
 
         fprintf(f, "}\n");
         break;
