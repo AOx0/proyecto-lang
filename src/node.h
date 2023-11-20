@@ -1,13 +1,20 @@
 #ifndef LNG_NODEH
 #define LNG_NODEH
 
-#include "symbol.h"
-#include "vector.h"
-#include "str.h"
-#include "tree.h"
 #include "hashset.h"
+#include "str.h"
+#include "symbol.h"
+#include "tree.h"
+#include "vector.h"
 
-typedef enum NodeType { NProgram, NWrite, NRead, NAssign, NFunction, NFunctionSign } NodeType;
+typedef enum NodeType {
+    NProgram,
+    NWrite,
+    NRead,
+    NAssign,
+    NFunction,
+    NFunctionSign
+} NodeType;
 
 typedef struct FunctionNode {
         StrSlice name;
@@ -25,7 +32,6 @@ typedef struct Node {
         NodeValue value;
 } Node;
 
-void node_display(Node * n, FILE * f, Tree * t, HashSet * tabla);
-
+void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla);
 
 #endif

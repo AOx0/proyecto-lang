@@ -33,6 +33,6 @@ void *tree_last_node(Tree *t, size_t *self_idx);
 void tree_drop(Tree *t);
 
 TreeEntry *tree_new_relation(Tree *t, size_t from, size_t to);
-TreeEntry *tree_new_rel(Tree *t, void * from, void * to);
+TreeEntry *tree_new_rel(Tree *t, void *from, void *to);
 
 #endif

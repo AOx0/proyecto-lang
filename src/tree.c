@@ -69,21 +69,21 @@ TreeEntry *tree_new_relation(Tree *t, size_t from, size_t to) {
     return te;
 }
 
-TreeEntry *tree_new_rel(Tree *t, void * from, void * to) {
+TreeEntry *tree_new_rel(Tree *t, void *from, void *to) {
     size_t from_idx = 0;
     size_t to_idx = 0;
     int found_from_idx = 0;
     int found_to_idx = 0;
 
     for (size_t i = 0; i < t->values.len; i++) {
-        if (vec_get(&t->values, i) == from) { 
+        if (vec_get(&t->values, i) == from) {
             from_idx = i;
             found_from_idx = 1;
             break;
         }
     }
     for (size_t i = 0; i < t->values.len; i++) {
-        if (vec_get(&t->values, i) == to) { 
+        if (vec_get(&t->values, i) == to) {
             to_idx = i;
             found_to_idx = 1;
             break;
@@ -96,7 +96,7 @@ TreeEntry *tree_new_rel(Tree *t, void * from, void * to) {
     if (!found_to_idx) {
         printf("Panic: Not existing `to` element %p", to);
     }
-    
+
     TreeEntry *te = (TreeEntry *)vec_push(&t->relations);
     te->from = from_idx;
     te->to = to_idx;

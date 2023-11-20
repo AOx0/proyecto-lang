@@ -355,7 +355,9 @@ argumentos : '(' parametros_lista ')' {
     // vec_drop(&$2);
     $$ = $2;
 }
-| ;
+| {
+    $$ = vec_new(sizeof(Symbol));
+};
 parametros_lista : ident_lista ':' tipo {
     for (size_t i = 0; i < $1.len; i++) {
         Symbol *s = (Symbol *)vec_get(&$1, i);

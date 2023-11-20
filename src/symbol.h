@@ -58,7 +58,7 @@ typedef union SymbolInfo SymbolInfo;
 void data_type_debug(DataType *d);
 size_t data_type_size(DataType *d);
 size_t data_type_e_size(DataTypeE *d);
-void data_type_e_display(DataTypeE *d); 
+void data_type_e_display(DataTypeE *d);
 void const_info_debug(ConstantInfo *f);
 void fun_info_debug(FunctionInfo *f);
 void var_info_debug(VariableInfo *f);
