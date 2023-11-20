@@ -5,16 +5,7 @@
     #include <stdlib.h>
 
     size_t comentarios_abiertos = 0;
-    // Su scanner tiene un contador tanto de lineas como de columnasº
-    // Lo hace referenciando con la palabra extern.
-
-    // Tiene un buffer donde va poniendo la cadena que encuentra, y lo manda al
-    // arbol sintactico, asi no necesitamos union
-
-    // Le funciono mejor la tabla de simbolos con un programa de 40k+ lineas,
-    // si quita la lista de colisiones la maneja usando un arreglo de
-    // apuntadores
-    size_t linea = 1;
+    size_t line = 1;
     size_t nchar = 1;
     extern size_t scope;
 %}
@@ -40,7 +31,7 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
 <COMENTARIO>\n {
     yyleng = 2;
     yytext = "\\n";
-    linea++;
+    line++;
     nchar = 1; }
 <INITIAL,COMENTARIO>"(*" {
     nchar += yyleng;
@@ -53,7 +44,7 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
 {SPACE}+ {
     nchar += yyleng; }/* Nah */
 \n {
-    linea++;
+    line++;
     nchar = 1; }
 ["]{CALFANUM}*["] {
     nchar += yyleng;
@@ -203,7 +194,7 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
                              .type = Ukw,
                              .info = (SymbolInfo){},
                              .scope = scope,
-                             .line = linea,
+                             .line = line,
                              .nchar = nchar,
                              .refs = vec_new(sizeof(size_t))  };
     nchar += yyleng;
