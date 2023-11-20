@@ -1,4 +1,5 @@
 #include "vector.h"
+#include "panic.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,8 +29,7 @@ void vec_shrink(Vec *v) {
     } else {
         void *ptr = realloc(v->ptr, v->t_size * v->cap);
         if (!ptr) {
-            puts("Panic: vec_grow: No ptr realloc");
-            exit(1);
+            panic("Panic: vec_grow: No ptr realloc");
         }
         v->ptr = ptr;
     }
@@ -48,8 +48,7 @@ void vec_grow(Vec *v, size_t cap) {
         v->cap += cap;
         void *ptr = realloc(v->ptr, v->t_size * v->cap);
         if (!ptr) {
-            puts("Panic: vec_grow: No ptr realloc");
-            exit(1);
+            panic("Panic: vec_grow: No ptr realloc");
         }
         v->ptr = ptr;
         memset(&v->ptr[v->t_size * (v->cap - cap)], 0, cap * v->t_size);
@@ -93,8 +92,7 @@ void *vec_get(Vec *v, size_t idx) {
     if (idx < v->len)
         return &v->ptr[v->t_size * idx];
     else {
-        printf("Panic: Index is %zu but len is %zu\n", idx, v->len);
-        exit(1);
+        panic("Panic: Index is %zu but len is %zu\n", idx, v->len);
     }
 }
 
@@ -166,11 +164,9 @@ VecSlice vec_slice_from_v(Vec *v) {
 
 void vec_slice_self(VecSlice *sl, size_t start, size_t end) {
     if (start > end) {
-        printf("Panic: Index is %zu but end is %zu\n", start, end);
-        exit(1);
+        panic("Panic: Index is %zu but end is %zu\n", start, end);
     } else if (end > sl->len) {
-        printf("Panic: Index is %zu but len is %zu\n", end, sl->len);
-        exit(1);
+        panic("Panic: Index is %zu but len is %zu\n", end, sl->len);
     }
 
     sl->ptr = &sl->ptr[start * sl->t_size];
@@ -179,11 +175,9 @@ void vec_slice_self(VecSlice *sl, size_t start, size_t end) {
 
 VecSlice vec_slice_slice(VecSlice *sl, size_t start, size_t end) {
     if (start > end) {
-        printf("Panic: Index is %zu but end is %zu\n", start, end);
-        exit(1);
+        panic("Panic: Index is %zu but end is %zu\n", start, end);
     } else if (end > sl->len) {
-        printf("Panic: Index is %zu but len is %zu\n", end, sl->len);
-        exit(1);
+        panic("Panic: Index is %zu but len is %zu\n", end, sl->len);
     }
 
     VecSlice res;
@@ -196,8 +190,7 @@ VecSlice vec_slice_slice(VecSlice *sl, size_t start, size_t end) {
 
 VecSlice vec_slice_slice_end(VecSlice *sl, size_t start) {
     if (start > sl->len) {
-        printf("Panic: Index is %zu but len is %zu", start, sl->len);
-        exit(1);
+        panic("Panic: Index is %zu but len is %zu", start, sl->len);
     }
 
     VecSlice res = vec_slice_slice(sl, start, sl->len);
@@ -208,8 +201,7 @@ Vec vec_slice_owned(VecSlice *sl) {
     Vec res = vec_with_cap(sl->t_size, sl->len);
 
     if (res.ptr == NULL) {
-        puts("Panic: NULL ptr on non-null context");
-        exit(1);
+        panic("NULL ptr on non-null context");
     }
 
     memcpy(res.ptr, sl->ptr, sl->len * sl->t_size);

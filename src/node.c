@@ -45,8 +45,7 @@ void node_type_debug(NodeType *nt) {
         break;
     }
     default:
-        puts("Panic: Invalid type");
-        exit(1);
+        panic("Panic: Invalid type");
     }
 }
 
@@ -63,7 +62,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
     case NExpr: {
         switch (n->value.expr.type) {
         case EIntValue: {
-            fprintf(f, "%lld", n->value.expr.value.int_value);
+            fprintf(f, "%ld", n->value.expr.value.int_value);
             break;
         }
         case ERealValue: {
@@ -79,8 +78,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Symbol *s =
                 (Symbol *)hashset_get(tabla, &n->value.expr.value.symbol);
             if (s == NULL) {
-                printf("Panic: Symbol not found\n");
-                exit(1);
+                panic("Panic: Symbol not found\n");
             }
             fprintf(f, "%.*s", (int)s->name.len, s->name.ptr);
             break;
@@ -89,8 +87,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Symbol *s =
                 (Symbol *)hashset_get(tabla, &n->value.expr.value.symbol);
             if (s == NULL) {
-                printf("Panic: Symbol not found\n");
-                exit(1);
+                panic("Panic: Symbol not found\n");
             }
             fprintf(f, "%.*s[%zu]", (int)s->name.len, s->name.ptr,
                     n->value.expr.value.symbol_idx.index);
@@ -100,8 +97,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Symbol *s = (Symbol *)hashset_get(
                 tabla, &n->value.expr.value.function_call.symbol);
             if (s == NULL) {
-                printf("Panic: Symbol not found\n");
-                exit(1);
+                panic("Panic: Symbol not found\n");
             }
             fprintf(f, "%.*s(", (int)s->name.len, s->name.ptr);
             Tree args = n->value.expr.value.function_call.args;
@@ -125,8 +121,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Vec hijos = tree_get_childs(t, n->id);
 
             if (hijos.len != 2) {
-                printf("Panic: Invalid number of childs\n");
-                exit(1);
+                panic("Panic: Invalid number of childs\n");
             }
 
             Node *derecha =
@@ -151,8 +146,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Vec hijos = tree_get_childs(t, n->id);
 
             if (hijos.len != 1) {
-                printf("Panic: Invalid number of childs\n");
-                exit(1);
+                panic("Panic: Invalid number of childs\n");
             }
 
             Node *derecha =

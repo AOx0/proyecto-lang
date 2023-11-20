@@ -1,4 +1,6 @@
 #include "str.h"
+#include "panic.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -104,8 +106,7 @@ void str_grow(String *s, size_t cap) {
         s->cap += cap + 1;
         void *ptr = realloc(s->ptr, sizeof(char) * s->cap);
         if (!ptr) {
-            puts("Panic: vec_grow: No ptr realloc");
-            exit(1);
+            panic("Panic: vec_grow: No ptr realloc");
         }
         s->ptr = ptr;
         memset(s->ptr + s->cap - cap - 1, 0, cap);
@@ -163,7 +164,7 @@ void str_push_sizet(String *s, size_t val) {
 
 void str_push_int(String *s, int64_t val) {
     char buff[64] = {0};
-    sprintf(buff, "%lld", val);
+    sprintf(buff, "%ld", val);
     str_push(s, buff);
 }
 
@@ -207,11 +208,9 @@ StrSlice str_slice_new(String *s) {
 
 void str_slice_self(StrSlice *sl, size_t start, size_t end) {
     if (start > end) {
-        printf("Panic: Index is %zu but end is %zu\n", start, end);
-        exit(1);
+        panic("Panic: Index is %zu but end is %zu\n", start, end);
     } else if (end > sl->len) {
-        printf("Panic: Index is %zu but len is %zu\n", end, sl->len);
-        exit(1);
+        panic("Panic: Index is %zu but len is %zu\n", end, sl->len);
     }
 
     sl->ptr = &sl->ptr[start];
@@ -220,11 +219,9 @@ void str_slice_self(StrSlice *sl, size_t start, size_t end) {
 
 StrSlice str_slice_slice(StrSlice *sl, size_t start, size_t end) {
     if (start > end) {
-        printf("Panic: Index is %zu but end is %zu\n", start, end);
-        exit(1);
+        panic("Panic: Index is %zu but end is %zu\n", start, end);
     } else if (end > sl->len) {
-        printf("Panic: Index is %zu but len is %zu\n", end, sl->len);
-        exit(1);
+        panic("Panic: Index is %zu but len is %zu\n", end, sl->len);
     }
 
     StrSlice res;
@@ -237,8 +234,7 @@ StrSlice str_slice_slice(StrSlice *sl, size_t start, size_t end) {
 
 StrSlice str_slice_slice_end(StrSlice *sl, size_t start) {
     if (start > sl->len) {
-        printf("Panic: Index is %zu but len is %zu", start, sl->len);
-        exit(1);
+        panic("Panic: Index is %zu but len is %zu", start, sl->len);
     }
 
     StrSlice res = str_slice_slice(sl, start, sl->len);
@@ -288,8 +284,8 @@ StrSlice str_iter_next(StrIter *it) {
         return res;
     }
 
-    puts("Panic: Empty iterator");
-    exit(1);
+    panic("Panic: Empty iterator");
+    return (StrSlice){};
 }
 
 StrSliceDupla str_slice_split_once(StrSlice *sl, char *with) {

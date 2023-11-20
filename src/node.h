@@ -1,6 +1,7 @@
 #ifndef LNG_NODEH
 #define LNG_NODEH
 
+#include "panic.h"
 #include "hashset.h"
 #include "str.h"
 #include "symbol.h"

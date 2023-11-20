@@ -1,4 +1,5 @@
 #include "symbol.h"
+#include "panic.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -43,8 +44,7 @@ void data_type_e_debug(DataTypeE *d) {
         break;
     }
     case Ukw: {
-        puts("Panic: Invalid DataType");
-        exit(1);
+        panic("Invalid DataType");
     }
     }
 }
@@ -72,8 +72,7 @@ void data_type_e_display(FILE *f, DataTypeE *d) {
         break;
     }
     case Ukw: {
-        puts("Panic: Invalid DataType");
-        exit(1);
+        panic("Invalid DataType");
     }
     }
 }
@@ -96,10 +95,11 @@ char *data_type_e_display_return(DataTypeE *d) {
         return "void";
     }
     case Ukw: {
-        puts("Panic: Invalid DataType");
-        exit(1);
+        panic("Invalid DataType");
     }
     }
+
+    return "NONE";
 }
 
 void data_type_display(FILE *f, int is_fun, StrSlice *name, DataType *d) {
@@ -138,8 +138,7 @@ void const_value_display(FILE *f, ConstValue *cv, DataType *d) {
         break;
     }
     default: {
-        puts("Panic: Invalid value");
-        exit(1);
+        panic("Invalid value");
     }
     }
 }
@@ -171,8 +170,7 @@ size_t data_type_size(DataType *d) {
     }
     case Ukw:
     case Void: {
-        puts("Panic: Invalid DataType");
-        exit(1);
+        panic("Invalid DataType");
     }
     }
     return size * d->size;
@@ -211,7 +209,6 @@ void sym_type_display(SymbolType st) {
         printf("PRC");
         break;
     default:
-        puts("Panic: Invalid SymbolType");
-        exit(1);
+        panic("Invalid SymbolType");
     }
 }

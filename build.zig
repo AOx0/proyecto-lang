@@ -44,7 +44,7 @@ pub fn build(b: *std.Build) void {
     });
 
     lnglib.linkLibC();
-    lnglib.addCSourceFiles(&.{ "src/str.c", "src/vector.c", "src/hashset.c", "src/parser.c", "src/lexer.c", "src/symbol.c", "src/tree.c", "src/node.c" }, &flags);
+    lnglib.addCSourceFiles(&.{ "src/str.c", "src/vector.c", "src/hashset.c", "src/parser.c", "src/lexer.c", "src/symbol.c", "src/tree.c", "src/node.c", "src/panic.c" }, &flags);
 
     if (!no_flex and !no_gen) lnglib.step.dependOn(&mv_flex.step);
     if (!no_bison and !no_gen) {

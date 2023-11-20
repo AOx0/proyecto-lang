@@ -1,6 +1,7 @@
 #ifndef LNG_TREEH
 #define LNG_TREEH
 
+#include "panic.h"
 #include "vector.h"
 #include <stdint.h>
 

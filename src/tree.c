@@ -173,10 +173,10 @@ TreeEntry *tree_new_rel(Tree *t, void *from, void *to) {
     }
 
     if (!found_from_idx) {
-        printf("Panic: Not existing `from` element %p", from);
+        panic("Panic: Not existing `from` element %p", from);
     }
     if (!found_to_idx) {
-        printf("Panic: Not existing `to` element %p", to);
+        panic("Panic: Not existing `to` element %p", to);
     }
 
     TreeEntry *te = (TreeEntry *)vec_push(&t->relations);
