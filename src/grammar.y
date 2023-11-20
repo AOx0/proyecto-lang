@@ -1,23 +1,26 @@
 %code top {
-#include "hashset.h"
-#include "parser.h"
-#include "str.h"
-#include "symbol.h"
-#include "node.h"
-#include "tree.h"
+    #include "hashset.h"
+    #include "parser.h"
+    #include "str.h"
+    #include "symbol.h"
+    #include "node.h"
+    #include "tree.h"
 
+    extern FILE * OUT_FILE;
+    
     extern int yylex(void);
     extern int main(void);
     extern void yyerror(char *s);
+
     extern size_t line;
     extern size_t nchar;
-    size_t tnchar;
     extern size_t yyleng;
     extern int err;
+
+    size_t tnchar;
     size_t scope = 0;
     size_t fun_id = 0;
     size_t addr = 0;
-    extern FILE * OUT_FILE;
 
     Tree ast;
     HashSet tabla;
@@ -128,11 +131,11 @@
 }
 
 /* Ident */
-%token<symbol> IDENT;
+%token <symbol>IDENT;
 
 /* Par */
-%token<fnum> CONST_REAL<snum> CONST_ENTERA<slice> CONST_CADENA<relop>
-        RELOP<addop> ADDOP<mulop> MULOP;
+%token <fnum>CONST_REAL <snum>CONST_ENTERA <slice>CONST_CADENA 
+    <relop>RELOP <addop>ADDOP <mulop>MULOP;
 
 /* Keywords */
 %token OP_ASIGN KW_PROCEDURE KW_PROG KW_CONST KW_VAR KW_ARRAY KW_OF KW_FUNC
@@ -146,14 +149,14 @@
 /* Types */
 %token T_INT T_REAL T_STR T_BOOL;
 
-%type<idents> ident_lista;
-%type<idents> parametros_lista;
-%type<idents> argumentos;
-%type<type> estandard_tipo;
-%type<type> tipo;
-%type<idents> decl;
-%type<idents> decl_const;
-%type<idents> decl_var;
+%type <idents>ident_lista;
+%type <idents>parametros_lista;
+%type <idents>argumentos;
+%type <type>estandard_tipo;
+%type <type>tipo;
+%type <idents>decl;
+%type <idents>decl_const;
+%type <idents>decl_var;
 
 %destructor {
     // printf("Dropping ident_lista:  ");

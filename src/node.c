@@ -60,7 +60,9 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
 
     switch (n->node_type) {
     case NVoid: {
-        fprintf(f, "#include <stdint.h>\n\n");
+        fprintf(f, "#include <stdint.h>\n");
+        fprintf(f, "#include <stdio.h>\n");
+        fprintf(f, "#include <stdlib.h>\n\n");
         Vec child = tree_get_childs(t, n->id);
         for (size_t i = 0; i < child.len; i++) {
             size_t *id = (size_t *)vec_get(&child, i);
@@ -113,6 +115,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         break;
     }
     case NProgram: {
+        fprintf(f, "\n");
         size_t i = 0;
         while (tabla->elements > i) {
             for (size_t j = 0; j < HASH_BUFF_SIZE; j++) {
