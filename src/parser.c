@@ -669,10 +669,10 @@ static const yytype_uint16 yyrline[] =
      475,   476,   476,   477,   477,   479,   480,   480,   480,   481,
      481,   481,   483,   484,   485,   486,   487,   488,   491,   494,
      495,   496,   497,   498,   502,   506,   507,   508,   511,   515,
-     516,   519,   520,   520,   521,   522,   523,   546,   605,   605,
-     606,   606,   607,   607,   608,   608,   609,   610,   610,   610,
-     610,   610,   610,   611,   611,   614,   627,   630,   636,   638,
-     671,   673,   706,   769,   788,   820,   844,   861,   878,   900
+     516,   519,   520,   520,   521,   522,   523,   546,   603,   603,
+     604,   604,   605,   605,   606,   606,   607,   608,   608,   608,
+     608,   608,   608,   609,   609,   612,   625,   628,   634,   636,
+     669,   671,   704,   765,   784,   816,   840,   857,   874,   896
 };
 #endif
 
@@ -2212,7 +2212,7 @@ yyreduce:
 
     Vec children = tree_get_childs(&(yyvsp[(3) - (4)].subtree), 0);
 
-        // Checamos que los tipos de datos de los argumentos hacen match con los del simbolo 
+    // Checamos que los tipos de datos de los argumentos hacen match con los del simbolo 
     if (s->info.fun.args.len != children.len) {
         str_clear(&wrn_buff);
         str_push(&wrn_buff, "Error: Se intento llamar a una funcion con una cantidad de argumentos distinta a la declarada: ");
@@ -2252,8 +2252,6 @@ yyreduce:
                 yyerror(str_as_ref(&wrn_buff));
             }
         }
-
-        printf("Llamado a funcion: %.*s que devuelve %s\n", (int)(yyvsp[(1) - (4)].symbol).name.len, (yyvsp[(1) - (4)].symbol).name.ptr, data_type_e_display_return(&s->info.fun.return_type.type));
 
         vec_drop(&children);
     }
@@ -2443,8 +2441,6 @@ yyreduce:
                 yyerror(str_as_ref(&wrn_buff));
             }
         }
-
-        printf("Llamado a funcion: %.*s que devuelve %s\n", (int)(yyvsp[(1) - (4)].symbol).name.len, (yyvsp[(1) - (4)].symbol).name.ptr, data_type_e_display_return(&s->info.fun.return_type.type));
 
         vec_drop(&children);
     }

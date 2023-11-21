@@ -548,7 +548,7 @@ procedure_instruccion : IDENT '(' expresion_lista ')' {
 
     Vec children = tree_get_childs(&$3, 0);
 
-        // Checamos que los tipos de datos de los argumentos hacen match con los del simbolo 
+    // Checamos que los tipos de datos de los argumentos hacen match con los del simbolo 
     if (s->info.fun.args.len != children.len) {
         str_clear(&wrn_buff);
         str_push(&wrn_buff, "Error: Se intento llamar a una funcion con una cantidad de argumentos distinta a la declarada: ");
@@ -588,8 +588,6 @@ procedure_instruccion : IDENT '(' expresion_lista ')' {
                 yyerror(str_as_ref(&wrn_buff));
             }
         }
-
-        printf("Llamado a funcion: %.*s que devuelve %s\n", (int)$1.name.len, $1.name.ptr, data_type_e_display_return(&s->info.fun.return_type.type));
 
         vec_drop(&children);
     }
@@ -754,8 +752,6 @@ llamado_funcion : IDENT '(' expresion_lista ')' {
                 yyerror(str_as_ref(&wrn_buff));
             }
         }
-
-        printf("Llamado a funcion: %.*s que devuelve %s\n", (int)$1.name.len, $1.name.ptr, data_type_e_display_return(&s->info.fun.return_type.type));
 
         vec_drop(&children);
     }
