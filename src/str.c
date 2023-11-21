@@ -106,7 +106,7 @@ void str_grow(String *s, size_t cap) {
         s->cap += cap + 1;
         void *ptr = realloc(s->ptr, sizeof(char) * s->cap);
         if (!ptr) {
-            panic("Panic: vec_grow: No ptr realloc");
+            panic("vec_grow: No ptr realloc");
         }
         s->ptr = ptr;
         memset(s->ptr + s->cap - cap - 1, 0, cap);
@@ -208,9 +208,9 @@ StrSlice str_slice_new(String *s) {
 
 void str_slice_self(StrSlice *sl, size_t start, size_t end) {
     if (start > end) {
-        panic("Panic: Index is %zu but end is %zu\n", start, end);
+        panic("Index is %zu but end is %zu", start, end);
     } else if (end > sl->len) {
-        panic("Panic: Index is %zu but len is %zu\n", end, sl->len);
+        panic("Index is %zu but len is %zu", end, sl->len);
     }
 
     sl->ptr = &sl->ptr[start];
@@ -219,9 +219,9 @@ void str_slice_self(StrSlice *sl, size_t start, size_t end) {
 
 StrSlice str_slice_slice(StrSlice *sl, size_t start, size_t end) {
     if (start > end) {
-        panic("Panic: Index is %zu but end is %zu\n", start, end);
+        panic("Index is %zu but end is %zu", start, end);
     } else if (end > sl->len) {
-        panic("Panic: Index is %zu but len is %zu\n", end, sl->len);
+        panic("Index is %zu but len is %zu", end, sl->len);
     }
 
     StrSlice res;
@@ -234,7 +234,7 @@ StrSlice str_slice_slice(StrSlice *sl, size_t start, size_t end) {
 
 StrSlice str_slice_slice_end(StrSlice *sl, size_t start) {
     if (start > sl->len) {
-        panic("Panic: Index is %zu but len is %zu", start, sl->len);
+        panic("Index is %zu but len is %zu", start, sl->len);
     }
 
     StrSlice res = str_slice_slice(sl, start, sl->len);
@@ -284,7 +284,7 @@ StrSlice str_iter_next(StrIter *it) {
         return res;
     }
 
-    panic("Panic: Empty iterator");
+    panic("Empty iterator");
     return (StrSlice){};
 }
 

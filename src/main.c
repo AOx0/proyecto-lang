@@ -3,6 +3,7 @@
 #include "str.h"
 #include "symbol.h"
 #include "vector.h"
+#include "panic.h"
 
 #include <stddef.h>
 #include <stdio.h>

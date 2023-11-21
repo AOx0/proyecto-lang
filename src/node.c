@@ -45,7 +45,7 @@ void node_type_debug(NodeType *nt) {
         break;
     }
     default:
-        panic("Panic: Invalid type");
+        panic("Invalid type");
     }
 }
 
@@ -78,7 +78,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Symbol *s =
                 (Symbol *)hashset_get(tabla, &n->value.expr.value.symbol);
             if (s == NULL) {
-                panic("Panic: Symbol not found\n");
+                panic("Symbol not found");
             }
             fprintf(f, "%.*s", (int)s->name.len, s->name.ptr);
             break;
@@ -87,7 +87,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Symbol *s =
                 (Symbol *)hashset_get(tabla, &n->value.expr.value.symbol);
             if (s == NULL) {
-                panic("Panic: Symbol not found\n");
+                panic("Symbol not found");
             }
             fprintf(f, "%.*s[%zu]", (int)s->name.len, s->name.ptr,
                     n->value.expr.value.symbol_idx.index);
@@ -97,7 +97,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Symbol *s = (Symbol *)hashset_get(
                 tabla, &n->value.expr.value.function_call.symbol);
             if (s == NULL) {
-                panic("Panic: Symbol not found\n");
+                panic("Symbol not found");
             }
             fprintf(f, "%.*s(", (int)s->name.len, s->name.ptr);
             Tree args = n->value.expr.value.function_call.args;
@@ -121,7 +121,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Vec hijos = tree_get_childs(t, n->id);
 
             if (hijos.len != 2) {
-                panic("Panic: Invalid number of childs\n");
+                panic("Invalid number of childs");
             }
 
             Node *derecha =
@@ -146,7 +146,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Vec hijos = tree_get_childs(t, n->id);
 
             if (hijos.len != 1) {
-                panic("Panic: Invalid number of childs\n");
+                panic("Invalid number of childs");
             }
 
             Node *derecha =

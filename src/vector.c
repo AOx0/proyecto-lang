@@ -29,7 +29,7 @@ void vec_shrink(Vec *v) {
     } else {
         void *ptr = realloc(v->ptr, v->t_size * v->cap);
         if (!ptr) {
-            panic("Panic: vec_grow: No ptr realloc");
+            panic("vec_grow: No ptr realloc");
         }
         v->ptr = ptr;
     }
@@ -48,7 +48,7 @@ void vec_grow(Vec *v, size_t cap) {
         v->cap += cap;
         void *ptr = realloc(v->ptr, v->t_size * v->cap);
         if (!ptr) {
-            panic("Panic: vec_grow: No ptr realloc");
+            panic("vec_grow: No ptr realloc");
         }
         v->ptr = ptr;
         memset(&v->ptr[v->t_size * (v->cap - cap)], 0, cap * v->t_size);
@@ -92,7 +92,7 @@ void *vec_get(Vec *v, size_t idx) {
     if (idx < v->len)
         return &v->ptr[v->t_size * idx];
     else {
-        panic("Panic: Index is %zu but len is %zu\n", idx, v->len);
+        panic("Index is %zu but len is %zu", idx, v->len);
     }
 }
 
@@ -164,9 +164,9 @@ VecSlice vec_slice_from_v(Vec *v) {
 
 void vec_slice_self(VecSlice *sl, size_t start, size_t end) {
     if (start > end) {
-        panic("Panic: Index is %zu but end is %zu\n", start, end);
+        panic("Index is %zu but end is %zu", start, end);
     } else if (end > sl->len) {
-        panic("Panic: Index is %zu but len is %zu\n", end, sl->len);
+        panic("Index is %zu but len is %zu", end, sl->len);
     }
 
     sl->ptr = &sl->ptr[start * sl->t_size];
@@ -175,9 +175,9 @@ void vec_slice_self(VecSlice *sl, size_t start, size_t end) {
 
 VecSlice vec_slice_slice(VecSlice *sl, size_t start, size_t end) {
     if (start > end) {
-        panic("Panic: Index is %zu but end is %zu\n", start, end);
+        panic("Index is %zu but end is %zu", start, end);
     } else if (end > sl->len) {
-        panic("Panic: Index is %zu but len is %zu\n", end, sl->len);
+        panic("Index is %zu but len is %zu", end, sl->len);
     }
 
     VecSlice res;
@@ -190,7 +190,7 @@ VecSlice vec_slice_slice(VecSlice *sl, size_t start, size_t end) {
 
 VecSlice vec_slice_slice_end(VecSlice *sl, size_t start) {
     if (start > sl->len) {
-        panic("Panic: Index is %zu but len is %zu", start, sl->len);
+        panic("Index is %zu but len is %zu", start, sl->len);
     }
 
     VecSlice res = vec_slice_slice(sl, start, sl->len);

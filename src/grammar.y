@@ -282,7 +282,7 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
                         case Variable: { var_info_debug(&s->info.var); break; }
                         case Constant: { const_info_debug(&s->info.cons); break; }
                         case Procedure: { fun_info_debug(&s->info.fun); break; }
-                        default: { panic("Panic: Invalid SymbolType"); } 
+                        default: { panic("Invalid SymbolType"); } 
                     }
                 puts("");
                 #endif

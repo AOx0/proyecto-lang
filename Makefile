@@ -28,6 +28,9 @@ zig_lib: out_dir
 		src/parser.c \
 		src/lexer.c \
 		src/symbol.c \
+		src/panic.c \
+		src/node.c \
+		src/tree.c \
 		-lc --cache-dir zig-cache \
 		--global-cache-dir $(HOME)/.cache/zig \
 		--name lnglib -static
@@ -52,18 +55,3 @@ zig_bin: zig_lib
 		--global-cache-dir $(HOME)/.cache/zig \
 		--name tmplng
 	mv tmplng $(OUT)/lng
-
-build_bin: build_lib
-	mkdir -p zig-out/bin
-	$(CC) $(CF) -o zig-out/bin/lng \
-		zig-out/bin/lng.o
-		src/main.c
-
-build_lib:
-	mkdir -p zig-out/bin
-	$(CC) $(CF) -o zig-out/bin/lng.o \
-		src/str.c \
-		src/vector.c \
-		src/hashset.c \
-		src/parser.c \
-		src/lexer.c 
