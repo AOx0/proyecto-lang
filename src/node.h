@@ -68,6 +68,7 @@ typedef enum OpType {
     OpLt,
     OpGte,
     OpLte,
+    OpAssign,
     OpAdd,
     OpSub,
     OpMul,

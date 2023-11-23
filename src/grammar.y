@@ -31,7 +31,7 @@
         *ref = line;
     }
 
-    void *assert_sym_exists(Symbol * s) {
+    Symbol *assert_sym_exists(Symbol * s) {
         tnchar = nchar;
         size_t orig_scope = s->scope;
         int found = 0;
@@ -163,6 +163,8 @@
 %type <subtree>expresion_lista;
 %type <subtree>factor;
 %type <subtree>termino;
+%type <subtree>variable;
+%type <subtree>variable_asignacion;
 %type <function_call>llamado_funcion;
 %type <function_call>procedure_instruccion;
 
@@ -516,12 +518,102 @@ if_instruccion
       KW_IF relop_expresion KW_THEN instrucciones KW_ELSE instrucciones;
 
 /* Asignacion */
-variable_asignacion : variable OP_ASIGN expresion;
+variable_asignacion : variable OP_ASIGN expresion {
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * past_root = (Node *)vec_get(&$1.values, 0);
+    Node * curr_root = (Node *)vec_get(&$3.values, 0);
+
+    if (past_root->asoc_type != curr_root->asoc_type) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Error: Se intento asignar una expresion de tipo distinto a una variable: ");
+        str_push_n(&wrn_buff, past_root->value.var.symbol.name.ptr,  past_root->value.var.symbol.name.len);
+        str_push(&wrn_buff, ", la variable es de tipo ");
+        str_push(&wrn_buff, data_type_e_display_return(&past_root->asoc_type));
+        str_push(&wrn_buff, " y la expresion es de tipo ");
+        str_push(&wrn_buff, data_type_e_display_return(&curr_root->asoc_type));
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    Tree assign;
+    tree_init(&assign, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&assign, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .asoc_type = past_root->asoc_type,
+        .value.expr = (ExprNode){
+            .type = EOp,
+            .value.op = OpAssign,
+        }
+    };
+
+    tree_extend(&assign, &$1, 0);
+    tree_extend(&assign, &$3, 0);
+
+    $$ = assign;
+
+};
+
 for_asignacion : variable_asignacion | variable;
-variable : IDENT { assert_sym_exists(&$1); };
-variable : IDENT '[' CONST_ENTERA ']' { assert_sym_exists(&$1); };
+
+
+
+variable : IDENT { 
+    Symbol * s = assert_sym_exists(&$1);
+    
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .value.expr = (ExprNode) {
+            .type = ESymbol,
+            .value.symbol = *s,
+        },
+        .asoc_type = s->info.var.type.type
+    };
+
+    $$ = t;
+};
+variable : IDENT '[' CONST_ENTERA ']' { 
+    Symbol * s = assert_sym_exists(&$1); 
+
+    size_t arr_size = s->info.var.type.size;
+    if ((int64_t)arr_size < $3 || $3 < 0) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Error: Indice fuera de rango: ");
+        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
+        str_push(&wrn_buff, ", el arreglo tiene un tamaño de ");
+        str_push_sizet(&wrn_buff, arr_size);
+        str_push(&wrn_buff, " y se intento acceder a la posicion ");
+        str_push_sizet(&wrn_buff, $3);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NExpr,
+        .value.expr = (ExprNode) {
+            .type = ESymbolIdx,
+            .value.symbol_idx = (IndexedSymbol) {
+                .symbol = *s,
+                .index = $3
+            }
+        },
+        .asoc_type = s->info.var.type.type
+    };
+
+    $$ = t;
+};
+
 procedure_instruccion : IDENT { 
-    Symbol * s = (Symbol *)assert_sym_exists(&$1);
+    Symbol * s = assert_sym_exists(&$1);
     if (s->type != Procedure) {
         str_clear(&wrn_buff);
         str_push(&wrn_buff, "Error: Se intento llamar a una variable como si fuera una funcion: ");
@@ -544,7 +636,7 @@ procedure_instruccion : IDENT {
     };
 };
 procedure_instruccion : IDENT '(' expresion_lista ')' {
-    Symbol * s = (Symbol *)assert_sym_exists(&$1);
+    Symbol * s = assert_sym_exists(&$1);
 
     Vec children = tree_get_childs(&$3, 0);
 
@@ -700,7 +792,7 @@ termino : factor {
     $$ = t;
 };
 llamado_funcion : IDENT '(' expresion_lista ')' { 
-    Symbol * s = (Symbol *)assert_sym_exists(&$1);
+    Symbol * s = assert_sym_exists(&$1);
     if (s->type != Function) {
         str_clear(&wrn_buff);
         str_push(&wrn_buff, "Error: Se intento llamar a una variable como si fuera una funcion: ");
@@ -782,7 +874,7 @@ factor : IDENT '[' CONST_ENTERA ']' {
     Tree t;
     tree_init(&t, sizeof(Node));
 
-    Symbol * s = (Symbol *)assert_sym_exists(&$1); 
+    Symbol * s = assert_sym_exists(&$1); 
 
     size_t arr_size = s->info.var.type.size;
     if ((int64_t)arr_size < $3 || $3 < 0) {
