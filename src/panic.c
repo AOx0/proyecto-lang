@@ -1,6 +1,6 @@
 #include "panic.h"
 
-void panic(const char * msg, ...) {
+void panic(const char *msg, ...) {
     va_list args;
     va_start(args, msg);
     vprintf("Panic: ", args);

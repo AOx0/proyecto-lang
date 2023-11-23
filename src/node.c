@@ -3,6 +3,8 @@
 #include "symbol.h"
 #include "tree.h"
 #include "vector.h"
+#include <inttypes.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -62,7 +64,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
     case NExpr: {
         switch (n->value.expr.type) {
         case EIntValue: {
-            fprintf(f, "%ld", n->value.expr.value.int_value);
+            fprintf(f, "%" PRId64, n->value.expr.value.int_value);
             break;
         }
         case ERealValue: {
@@ -224,12 +226,12 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
                     switch (s->type) {
                     case Function:
                     case Procedure: {
-                        Node n = (Node){
+                        Node n = {
                             .node_type = NFunctionSign,
-                            .value.fun = (FunctionNode){
-                                .args = s->info.fun.args,
-                                .return_type = s->info.fun.return_type.type,
-                                .name = s->name}};
+                            .value.fun = {.args = s->info.fun.args,
+                                          .return_type =
+                                              s->info.fun.return_type.type,
+                                          .name = s->name}};
                         node_display(&n, f, t, tabla);
                         fprintf(f, ";\n");
                         break;

@@ -94,6 +94,9 @@ void *vec_get(Vec *v, size_t idx) {
     else {
         panic("Index is %zu but len is %zu", idx, v->len);
     }
+
+    // Unreachable
+    return NULL;
 }
 
 void *vec_push(Vec *v) {

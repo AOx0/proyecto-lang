@@ -59,8 +59,7 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
 }
 ":=" {
     nchar += yyleng;
-    return OP_ASIGN;
-     }
+    return OP_ASIGN; }
 "("|")"|";"|","|"="|":"|"["|"]"|"." {
     nchar += yyleng;
     return yytext[0]; }
@@ -170,29 +169,29 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
     nchar += yyleng;
     return RELOP_NEQ; }
 "+" {
-    yylval.addop = Add;
+    yylval.op = OpAdd;
     return ADDOP; }
 "-" {
-    yylval.addop = Sub;
+    yylval.op = OpSub;
     return ADDOP; }
 "/"|"div" {
-    yylval.mulop = Div;
+    yylval.op = OpDiv;
     return MULOP; }
 "*" {
-    yylval.mulop = Mul;
+    yylval.op = OpMul;
     return MULOP; }
 "mod" {
-    yylval.mulop = Mod;
+    yylval.op = OpMod;
     return MULOP; }
 {LETRA}({LETRA}|{DIGIT})* {
     StrSlice name = (StrSlice){.ptr = yytext, .len = yyleng};
     yylval.symbol = (Symbol){.name = name,
-                             .type = Ukw,
-                             .info = (SymbolInfo){},
+                             .type = Unknown,
+                             .info.none = (Incomplete) { .f = 0 },
                              .scope = scope,
                              .line = line,
                              .nchar = nchar,
-                             .refs = vec_new(sizeof(size_t))  };
+                             .refs = vec_new(sizeof(size_t)) };
     nchar += yyleng;
     return IDENT;
 }

@@ -1,8 +1,8 @@
 #ifndef LNG_NODEH
 #define LNG_NODEH
 
-#include "panic.h"
 #include "hashset.h"
+#include "panic.h"
 #include "str.h"
 #include "symbol.h"
 #include "tree.h"
@@ -92,7 +92,6 @@ typedef struct OpNode {
 typedef struct ExprNode {
         ExprType type;
         ExprValue value;
-        DataTypeE asoc_type;
 } ExprNode;
 
 typedef union NodeValue {

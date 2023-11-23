@@ -1,5 +1,6 @@
 #include "symbol.h"
 #include "panic.h"
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -122,7 +123,7 @@ void data_type_display(FILE *f, int is_fun, StrSlice *name, DataType *d) {
 void const_value_display(FILE *f, ConstValue *cv, DataType *d) {
     switch (d->type) {
     case Int: {
-        fprintf(f, "%ld", cv->snum);
+        fprintf(f, "%" PRId64, cv->snum);
         break;
     }
     case Real: {
@@ -170,6 +171,7 @@ size_t data_type_size(DataType *d) {
     }
     case Ukw:
     case Void: {
+        size = 1;
         panic("Invalid DataType");
     }
     }

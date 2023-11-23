@@ -12,6 +12,7 @@ pub fn build(b: *std.Build) void {
     const debug_flex = b.option(bool, "debug-flex", "Run flex with the `-d` flag") orelse false;
     const debug_gen = b.option(bool, "debug-gen", "Run flex and bison with debug flags") orelse false;
     const table = b.option(bool, "table", "Print symbol table") orelse false;
+    const werror = b.option(bool, "error", "Treat warnings as errors") orelse false;
 
     _ = std.fs.cwd().openFile("build.zig", .{}) catch {
         // Change current directory to where `build.zig` is.
@@ -34,7 +35,7 @@ pub fn build(b: *std.Build) void {
     gen_step.dependOn(&mv_flex.step);
     gen_step.dependOn(&mv_bison.step);
 
-    const flags = .{ "-Wall", "-Wextra", "-pedantic", if (target.isWindows()) "-DWIN" else "", if (table) "-DPRINT_TABLE" else "" };
+    const flags = .{ "-Wall", "-Wextra", "-pedantic", if (werror) "-Werror" else "", if (werror) "-pedantic-errors" else "", if (target.isWindows()) "-DWIN" else "", if (table) "-DPRINT_TABLE" else "" };
     // The main source code files without `main.c`. It is easier to compile it with specific main
     // files so that, for example, we can test it.
     const lnglib = b.addStaticLibrary(.{
@@ -94,7 +95,7 @@ pub fn build(b: *std.Build) void {
         b.installArtifact(lng);
         lng.linkLibC();
         lng.linkLibrary(lnglib);
-        lng.addCSourceFiles(&.{ "test/main.c", "test/str_test.c", "test/vec_test.c", "test/hash_test.c", "test/tree_test.c" }, &flags);
+        lng.addCSourceFiles(&.{ "test/main.c", "test/str_test.c", "test/vec_test.c", "test/hash_test.c", "test/tree_test.c" }, &.{});
 
         const run_cmd = b.addRunArtifact(lng);
         run_cmd.step.dependOn(b.getInstallStep());

@@ -6,12 +6,7 @@
 #include "vector.h"
 #include <stdint.h>
 
-enum SymbolType {
-    Function,
-    Procedure,
-    Variable,
-    Constant,
-};
+enum SymbolType { Function, Procedure, Variable, Constant, Unknown };
 typedef enum SymbolType SymbolType;
 
 enum DataTypeE {
@@ -56,10 +51,15 @@ struct ConstantInfo {
 };
 typedef struct ConstantInfo ConstantInfo;
 
+typedef struct Incomplete {
+        int f;
+} Incomplete;
+
 union SymbolInfo {
         FunctionInfo fun;
         VariableInfo var;
         ConstantInfo cons;
+        Incomplete none;
 };
 typedef union SymbolInfo SymbolInfo;
 

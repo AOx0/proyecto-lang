@@ -1,9 +1,9 @@
 #include "hashset.h"
+#include "panic.h"
 #include "parser.h"
 #include "str.h"
 #include "symbol.h"
 #include "vector.h"
-#include "panic.h"
 
 #include <stddef.h>
 #include <stdio.h>

@@ -82,6 +82,7 @@ size_t tree_num_child(Tree *t, size_t root) {
 
 Vec tree_get_childs(Tree *t, size_t parent_id) {
     Vec res;
+    vec_init(&res, sizeof(size_t));
 
     if (t->relations.len == 0 || parent_id >= t->values.len ||
         tree_num_child(t, 0) == 0)
@@ -123,8 +124,6 @@ TreeIter tree_iter_new(Tree *t, size_t root) {
 void tree_init(Tree *t, size_t t_size) {
     vec_init(&t->relations, sizeof(TreeEntry));
     vec_init(&t->values, t_size);
-    size_t curr = 0;
-    size_t len = 0;
 }
 
 void *tree_new_node(Tree *t, size_t *self_idx) {

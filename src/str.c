@@ -1,5 +1,6 @@
 #include "str.h"
 #include "panic.h"
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -164,7 +165,7 @@ void str_push_sizet(String *s, size_t val) {
 
 void str_push_int(String *s, int64_t val) {
     char buff[64] = {0};
-    sprintf(buff, "%ld", val);
+    sprintf(buff, "%" PRId64, val);
     str_push(s, buff);
 }
 
@@ -285,7 +286,10 @@ StrSlice str_iter_next(StrIter *it) {
     }
 
     panic("Empty iterator");
-    return (StrSlice){};
+    return (StrSlice){
+        .ptr = NULL,
+        .len = 0,
+    };
 }
 
 StrSliceDupla str_slice_split_once(StrSlice *sl, char *with) {

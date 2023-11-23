@@ -126,8 +126,7 @@
     Symbol symbol;
     Vec idents;
     RelOp relop;
-    AddOp addop;
-    MulOp mulop;
+    OpType op;
     Tree subtree;
     ExprNode expr;
     FunctionCall function_call;
@@ -138,7 +137,7 @@
 
 /* Par */
 %token <fnum>CONST_REAL <snum>CONST_ENTERA <slice>CONST_CADENA 
-    <relop>RELOP <addop>ADDOP <mulop>MULOP;
+    <relop>RELOP <op>ADDOP <op>MULOP;
 
 /* Keywords */
 %token OP_ASIGN KW_PROCEDURE KW_PROG KW_CONST KW_VAR KW_ARRAY KW_OF KW_FUNC
@@ -220,9 +219,10 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
 
     size_t idx;
     Node * node = (Node *)tree_new_node(&ast, &idx);
-    *node = (Node) {
+    *node = (Node){ 
         .node_type = NVoid,
         .id = idx,
+        .asoc_type = Void,
     };
 
     size_t child_idx;
@@ -231,6 +231,7 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
         .node_type = NProgram,
         .id = child_idx,
         .value.fun = (FunctionNode) { .name = $3.name, .args = $5, .return_type = Void },
+        .asoc_type = Void
     };
     tree_new_relation(&ast, idx, child_idx); 
 
@@ -255,14 +256,13 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
     }
 
 
+    #ifdef PRINT_TABLE
     size_t i = 0;
     while (tabla.elements > i) {
         for (size_t j = 0; j < HASH_BUFF_SIZE; j++) {
             Vec *arr = (Vec *)vec_get(&tabla.values, j);
             for (size_t h = 0; h < arr->len; h++) {
-                Symbol *s = (Symbol *)vec_get(arr, h);
-
-                #ifdef PRINT_TABLE
+                    Symbol *s = (Symbol *)vec_get(arr, h);
                     sym_type_display(s->type);
                     printf(" (%.2zu,%.2zu), name: %10.*s, location: %2zu:%-2zu, "
                            "scope: %zu, refs: { ",
@@ -285,12 +285,12 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
                         default: { panic("Invalid SymbolType"); } 
                     }
                 puts("");
-                #endif
                 i += 1;
                 // vec_drop(&s->refs);
             }
         }
     }
+    #endif
 
     if (err == 0) 
         node_display_id(idx, OUT_FILE, &ast, &tabla);
@@ -656,7 +656,6 @@ expresion: termino {
         .asoc_type = past_root->asoc_type,
         .value.expr = (ExprNode){
             .type = EOp,
-            .asoc_type = past_root->asoc_type,
             .value.op = $2,
         }
     };
@@ -691,7 +690,6 @@ termino : factor {
         .asoc_type = past_root->asoc_type,
         .value.expr = (ExprNode){
             .type = EOp,
-            .asoc_type = past_root->asoc_type,
             .value.op = $2,
         }
     };
@@ -774,7 +772,6 @@ factor : IDENT {
         .value.expr = (ExprNode) {
             .type = ESymbol,
             .value.symbol = $1,
-            .asoc_type = $1.info.var.type.type
         },
         .asoc_type = $1.info.var.type.type
     };
@@ -808,7 +805,8 @@ factor : IDENT '[' CONST_ENTERA ']' {
                 .symbol = $1,
                 .index = $3
             }
-        }
+        },
+        .asoc_type = s->info.var.type.type
     };
 
     $$ = t;
@@ -823,7 +821,6 @@ factor : llamado_funcion {
         .value.expr = (ExprNode) {
             .type = EFunctionCall,
             .value.function_call = $1,
-            .asoc_type = $1.return_type
         },
         .asoc_type = $1.return_type
     };
@@ -847,7 +844,6 @@ factor : CONST_ENTERA {
         .value.expr = (ExprNode) {
             .type = EIntValue,
             .value.int_value = $1,
-            .asoc_type = Int
         },
         .asoc_type = Int
     };
@@ -864,7 +860,6 @@ factor : CONST_REAL {
         .value.expr = (ExprNode) {
             .type = ERealValue,
             .value.real_value = $1,
-            .asoc_type = Real
         },
         .asoc_type = Real
     };
@@ -884,7 +879,6 @@ factor : ADDOP factor {
         .asoc_type = past_root->asoc_type,
         .value.expr = (ExprNode){
             .type = EUnaryOp,
-            .asoc_type = past_root->asoc_type,
             .value.op = $1,
         }
     };
