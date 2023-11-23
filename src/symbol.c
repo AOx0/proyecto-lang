@@ -179,21 +179,15 @@ size_t data_type_size(DataType *d) {
 }
 
 void fun_info_debug(FunctionInfo *f) {
-    printf("FunctionInfo { type: ");
-    data_type_debug(&f->return_type);
-    printf(" }");
+    printf("FunctionInfo { args: %zu }", f->args.len);
 }
 
 void var_info_debug(VariableInfo *f) {
-    printf("VariableInfo { type: ");
-    data_type_debug(&f->type);
-    printf(", size: %zu, addr: %zu }", data_type_size(&f->type), f->addr);
+    printf("VariableInfo { addr: %zu }", f->addr);
 }
 
 void const_info_debug(ConstantInfo *f) {
-    printf("ConstantInfo { type: ");
-    data_type_debug(&f->type);
-    printf(", size: %zu, addr: %zu }", data_type_size(&f->type), f->addr);
+    printf("ConstantInfo { addr: %zu }", f->addr);
 }
 
 void sym_type_display(SymbolType st) {

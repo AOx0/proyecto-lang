@@ -26,10 +26,14 @@ pub fn build(b: *std.Build) void {
 
     // Gen bison & flex files
     const mv_flex = Move.create(b, &.{"./lex.yy.c"}, &.{"./src/lexer.c"});
-    mv_flex.step.dependOn(&b.addSystemCommand(&.{ "flex", if (debug_gen or debug_flex) "-Ld" else "-L", "src/lexer.l" }).step);
+    if (debug_gen or debug_flex) {
+        mv_flex.step.dependOn(&b.addSystemCommand(&.{ "flex", "-d", "src/lexer.l" }).step);
+    } else {
+        mv_flex.step.dependOn(&b.addSystemCommand(&.{ "flex", "src/lexer.l" }).step);
+    }
 
     const mv_bison = Move.create(b, &.{ "./grammar.tab.c", "./grammar.tab.h" }, &.{ "./src/parser.c", "./src/parser.h" });
-    mv_bison.step.dependOn(&b.addSystemCommand(&.{ "bison", if (debug_gen or debug_bison) "-ldt" else "-ld", "src/grammar.y" }).step);
+    mv_bison.step.dependOn(&b.addSystemCommand(&.{ "bison", if (debug_gen or debug_bison) "-dt" else "-d", "src/grammar.y" }).step);
 
     const gen_step = b.step("gen", "Generar lexer.{c,h}, parser.{c, h}");
     gen_step.dependOn(&mv_flex.step);

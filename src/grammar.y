@@ -207,14 +207,15 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
         Symbol *s = vec_get(&$5, i);
         assert_not_sym_exists(s);
         s->type = Variable;
-        s->info.var = (VariableInfo){.type = (DataType){ .type = Str, .size=1 }, .addr = addr};
+        s->asoc_type = (DataType) { .type = Str, .size = 1 };
+        s->info.var = (VariableInfo){ .addr = addr};
         hashset_insert(&tabla, s);
     }
 
     $3.type = Function;
+    $3.asoc_type = (DataType) { .type = Void, .size = 0 };
     $3.info.fun = (FunctionInfo) {
         .args = $5,
-        .return_type = (DataType) { .type = Void, .size = 0 }
     };
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
@@ -267,9 +268,14 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
                     Symbol *s = (Symbol *)vec_get(arr, h);
                     sym_type_display(s->type);
                     printf(" (%.2zu,%.2zu), name: %10.*s, location: %2zu:%-2zu, "
-                           "scope: %zu, refs: { ",
-                           j, h, (int)s->name.len, s->name.ptr, s->line, s->nchar,
+                           "scope: %zu, ", j, h, (int)s->name.len, s->name.ptr, s->line, s->nchar,
                            s->scope);
+
+                    printf("type: ");
+                    data_type_debug(&s->asoc_type);
+                    printf(", ");
+                
+                    printf("refs: { ");
                     for (size_t i = 0; i < s->refs.len; i++) {
                         size_t *ref = (size_t *)vec_get(&s->refs, i);
                         printf("%zu", *ref);
@@ -277,7 +283,9 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
                             printf(", ");
                         }
                     }
-                    printf(" }, info: ");
+                    printf(" }, ");
+                        
+                    printf("info: ");
 
                     switch (s->type) {
                         case Function: { fun_info_debug(&s->info.fun); break; }
@@ -328,7 +336,8 @@ decl_var : decl KW_VAR ident_lista ':' tipo ';' {
     for (size_t i = 0; i < $3.len; i++) {
         Symbol *s = vec_get(&$3, i);
         s->type = Variable;
-        s->info.var = (VariableInfo){.type = $5, .addr = addr};
+        s->asoc_type = $5;
+        s->info.var = (VariableInfo){.addr = addr};
         addr += data_type_size(&$5);
         assert_not_sym_exists(s);
         hashset_insert(&tabla, s);
@@ -340,11 +349,11 @@ decl_var : decl KW_VAR ident_lista ':' tipo ';' {
 
 decl_const : decl KW_CONST IDENT '=' CONST_ENTERA ';' {
     $3.type = Constant;
+    $3.asoc_type = (DataType){
+        .type = Int, 
+        .size = 1
+    };
     $3.info.cons = (ConstantInfo){
-        .type = (DataType){
-            .type = Int, 
-            .size = 1
-        },
         .addr = addr,
         .value.snum = $5
     };
@@ -357,11 +366,11 @@ decl_const : decl KW_CONST IDENT '=' CONST_ENTERA ';' {
 };
 decl_const : decl KW_CONST IDENT '=' CONST_REAL ';' {
     $3.type = Constant;
+    $3.asoc_type = (DataType){
+        .type = Real, 
+        .size = 1
+    };
     $3.info.cons = (ConstantInfo){
-        .type = (DataType){
-            .type = Real, 
-            .size = 1
-        },
         .addr = addr,
         .value.real = $5
     };
@@ -374,11 +383,11 @@ decl_const : decl KW_CONST IDENT '=' CONST_REAL ';' {
 };
 decl_const : decl KW_CONST IDENT '=' CONST_CADENA ';' {
     $3.type = Constant;
+    $3.asoc_type = (DataType){
+        .type = Str, 
+        .size = $5.len
+    };
     $3.info.cons = (ConstantInfo){
-        .type = (DataType){
-            .type = Str, 
-            .size = $5.len
-        }, 
         .addr = addr,
         .value.str = $5
     };
@@ -417,7 +426,8 @@ subprograma_encabezado : KW_FUNC IDENT {
 }
 argumentos ':' estandard_tipo ';' {
     Symbol *s = (Symbol *)hashset_get(&tabla, &$2);
-    s->info.fun = (FunctionInfo){.return_type = $6, .args=$4};
+    s->asoc_type = $6;
+    s->info.fun = (FunctionInfo){.args=$4};
 };
 subprograma_encabezado : KW_PROCEDURE IDENT {
     $2.type = Procedure;
@@ -428,7 +438,8 @@ subprograma_encabezado : KW_PROCEDURE IDENT {
 }
 argumentos ';'{
     Symbol *s = (Symbol *)hashset_get(&tabla, &$2);
-    s->info.fun = (FunctionInfo){ .return_type = (DataType) { .type = Void, .size = 0 }, .args=$4};
+    s->asoc_type = (DataType) { .type = Void, .size = 0};
+    s->info.fun = (FunctionInfo){ .args=$4 };
 };
 
 /* Argumentos */
@@ -452,7 +463,8 @@ parametros_lista : ident_lista ':' tipo {
     for (size_t i = 0; i < $1.len; i++) {
         Symbol *s = (Symbol *)vec_get(&$1, i);
         s->type = Variable;
-        s->info.var = (VariableInfo){.type = $3, .addr = addr};
+        s->asoc_type = $3;
+        s->info.var = (VariableInfo){ .addr = addr };
         addr += data_type_size(&$3);
         // printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
     }
@@ -464,7 +476,8 @@ parametros_lista : parametros_lista ';' ident_lista ':' tipo {
     for (size_t i = 0; i < $3.len; i++) {
         Symbol *s = (Symbol *)vec_get(&$3, i);
         s->type = Variable;
-        s->info.var = (VariableInfo){.type = $5, .addr = addr};
+        s->asoc_type = $5;
+        s->info.var = (VariableInfo){ .addr = addr };
         addr += data_type_size(&$5);
         // printf("    - %.*s\n", (int)s->name.len, s->name.ptr);
     }
@@ -528,7 +541,7 @@ variable_asignacion : variable OP_ASIGN expresion {
     if (past_root->asoc_type != curr_root->asoc_type) {
         str_clear(&wrn_buff);
         str_push(&wrn_buff, "Error: Se intento asignar una expresion de tipo distinto a una variable: ");
-        str_push_n(&wrn_buff, past_root->value.var.symbol.name.ptr,  past_root->value.var.symbol.name.len);
+        str_push_n(&wrn_buff, past_root->value.expr.value.symbol.name.ptr,  past_root->value.expr.value.symbol.name.len);
         str_push(&wrn_buff, ", la variable es de tipo ");
         str_push(&wrn_buff, data_type_e_display_return(&past_root->asoc_type));
         str_push(&wrn_buff, " y la expresion es de tipo ");
@@ -573,7 +586,7 @@ variable : IDENT {
             .type = ESymbol,
             .value.symbol = *s,
         },
-        .asoc_type = s->info.var.type.type
+        .asoc_type = s->asoc_type.type
     };
 
     $$ = t;
@@ -581,7 +594,7 @@ variable : IDENT {
 variable : IDENT '[' CONST_ENTERA ']' { 
     Symbol * s = assert_sym_exists(&$1); 
 
-    size_t arr_size = s->info.var.type.size;
+    size_t arr_size = s->asoc_type.size;
     if ((int64_t)arr_size < $3 || $3 < 0) {
         str_clear(&wrn_buff);
         str_push(&wrn_buff, "Error: Indice fuera de rango: ");
@@ -606,7 +619,7 @@ variable : IDENT '[' CONST_ENTERA ']' {
                 .index = $3
             }
         },
-        .asoc_type = s->info.var.type.type
+        .asoc_type = s->asoc_type.type
     };
 
     $$ = t;
@@ -667,14 +680,14 @@ procedure_instruccion : IDENT '(' expresion_lista ')' {
             Node * arg = (Node *)vec_get(&$3.values, *(size_t *)vec_get(&children, n_arg));
             Symbol * arg_sym = (Symbol *)vec_get(&s->info.fun.args, n_arg);
 
-            if (arg->asoc_type != arg_sym->info.var.type.type) {
+            if (arg->asoc_type != arg_sym->asoc_type.type) {
                 str_clear(&wrn_buff);
                 str_push(&wrn_buff, "Error: Se intento llamar a una funcion con argumentos de tipos distintos a los declarados: ");
                 str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
                 str_push(&wrn_buff, ", el argumento ");
                 str_push_sizet(&wrn_buff, n_arg + 1);
                 str_push(&wrn_buff, " se esperaba de tipo ");
-                str_push(&wrn_buff, data_type_e_display_return(&arg_sym->info.var.type.type));
+                str_push(&wrn_buff, data_type_e_display_return(&arg_sym->asoc_type.type));
                 str_push(&wrn_buff, " y se paso de tipo ");
                 str_push(&wrn_buff, data_type_e_display_return(&arg->asoc_type));
                 yyerror(str_as_ref(&wrn_buff));
@@ -687,7 +700,7 @@ procedure_instruccion : IDENT '(' expresion_lista ')' {
     $$ = (FunctionCall) {
         .symbol = $1,
         .args = $3,
-        .return_type = s->info.fun.return_type.type
+        .return_type = s->asoc_type.type,
     };
 };
 
@@ -829,14 +842,14 @@ llamado_funcion : IDENT '(' expresion_lista ')' {
             Node * arg = (Node *)vec_get(&$3.values, *(size_t *)vec_get(&children, n_arg));
             Symbol * arg_sym = (Symbol *)vec_get(&s->info.fun.args, n_arg);
 
-            if (arg->asoc_type != arg_sym->info.var.type.type) {
+            if (arg->asoc_type != arg_sym->asoc_type.type) {
                 str_clear(&wrn_buff);
                 str_push(&wrn_buff, "Error: Se intento llamar a una funcion con argumentos de tipos distintos a los declarados: ");
                 str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
                 str_push(&wrn_buff, ", el argumento ");
                 str_push_sizet(&wrn_buff, n_arg + 1);
                 str_push(&wrn_buff, " se esperaba de tipo ");
-                str_push(&wrn_buff, data_type_e_display_return(&arg_sym->info.var.type.type));
+                str_push(&wrn_buff, data_type_e_display_return(&arg_sym->asoc_type.type));
                 str_push(&wrn_buff, " y se paso de tipo ");
                 str_push(&wrn_buff, data_type_e_display_return(&arg->asoc_type));
                 yyerror(str_as_ref(&wrn_buff));
@@ -849,7 +862,7 @@ llamado_funcion : IDENT '(' expresion_lista ')' {
     $$ = (FunctionCall) {
         .symbol = $1,
         .args = $3,
-        .return_type = s->info.fun.return_type.type
+        .return_type = s->asoc_type.type
     };
 };
 factor : IDENT { 
@@ -865,7 +878,7 @@ factor : IDENT {
             .type = ESymbol,
             .value.symbol = $1,
         },
-        .asoc_type = $1.info.var.type.type
+        .asoc_type = $1.asoc_type.type
     };
 
     $$ = t;
@@ -876,7 +889,7 @@ factor : IDENT '[' CONST_ENTERA ']' {
 
     Symbol * s = assert_sym_exists(&$1); 
 
-    size_t arr_size = s->info.var.type.size;
+    size_t arr_size = s->asoc_type.size;
     if ((int64_t)arr_size < $3 || $3 < 0) {
         str_clear(&wrn_buff);
         str_push(&wrn_buff, "Error: Indice fuera de rango: ");
@@ -898,7 +911,7 @@ factor : IDENT '[' CONST_ENTERA ']' {
                 .index = $3
             }
         },
-        .asoc_type = s->info.var.type.type
+        .asoc_type = s->asoc_type.type
     };
 
     $$ = t;

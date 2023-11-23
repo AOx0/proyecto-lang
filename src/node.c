@@ -176,16 +176,16 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
     };
     case NVar: {
         VarNode node = n->value.var;
-        data_type_display(f, 0, &node.symbol.name, &node.symbol.info.var.type);
+        data_type_display(f, 0, &node.symbol.name, &node.symbol.asoc_type);
         fprintf(f, ";\n");
         break;
     }
     case NConst: {
         ConstNode node = n->value.cons;
-        data_type_display(f, 0, &node.symbol.name, &node.symbol.info.cons.type);
+        data_type_display(f, 0, &node.symbol.name, &node.symbol.asoc_type);
         fprintf(f, " = ");
         const_value_display(f, &node.symbol.info.cons.value,
-                            &node.symbol.info.cons.type);
+                            &node.symbol.asoc_type);
         fprintf(f, ";\n");
         break;
     }
@@ -202,7 +202,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         if (n->value.fun.args.len != 0) {
             for (size_t i = 0; i < n->value.fun.args.len; i++) {
                 Symbol *sl = (Symbol *)vec_get(&n->value.fun.args, i);
-                data_type_e_display(f, &sl->info.var.type.type);
+                data_type_e_display(f, &sl->asoc_type.type);
                 fprintf(f, " %.*s", (int)sl->name.len, sl->name.ptr);
                 if (i + 1 != n->value.fun.args.len) {
                     fprintf(f, ", ");
@@ -229,8 +229,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
                         Node n = {
                             .node_type = NFunctionSign,
                             .value.fun = {.args = s->info.fun.args,
-                                          .return_type =
-                                              s->info.fun.return_type.type,
+                                          .return_type = s->asoc_type.type,
                                           .name = s->name}};
                         node_display(&n, f, t, tabla);
                         fprintf(f, ";\n");

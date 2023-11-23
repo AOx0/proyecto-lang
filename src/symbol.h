@@ -27,12 +27,10 @@ typedef struct DataType DataType;
 
 struct FunctionInfo {
         Vec args;
-        DataType return_type;
 };
 typedef struct FunctionInfo FunctionInfo;
 
 struct VariableInfo {
-        DataType type;
         size_t addr;
 };
 typedef struct VariableInfo VariableInfo;
@@ -45,7 +43,6 @@ typedef union ConstValue {
 } ConstValue;
 
 struct ConstantInfo {
-        DataType type;
         size_t addr;
         ConstValue value;
 };
@@ -81,6 +78,7 @@ struct Symbol {
         StrSlice name;
         SymbolType type;
         SymbolInfo info;
+        DataType asoc_type;
         size_t scope;
         size_t line;
         size_t nchar;
