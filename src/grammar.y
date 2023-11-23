@@ -26,6 +26,14 @@
     HashSet tabla;
     String wrn_buff;
 
+    Node * tree_get_root(Tree *t) {
+        return (Node *)vec_get(&t->values, 0);
+    }
+
+    Node * tree_get_node(Tree *t, size_t id) {
+        return (Node *)vec_get(&t->values, id);
+    }
+
     void add_reference_to_sym(Symbol * s, size_t line) {
         size_t *ref = vec_push(&s->refs);
         *ref = line;
@@ -83,6 +91,31 @@
             // (int)s->name.len, s->name.ptr);
         }
         nchar = tnchar;
+    }
+
+    void assert_variable_assigned_type(Node *var, Node *val) {
+        if (var->asoc_type != val->asoc_type) {
+            str_clear(&wrn_buff);
+            str_push(&wrn_buff, "Error: Se intento asignar una expresion de tipo distinto a una variable: ");
+            str_push_n(&wrn_buff, var->value.expr.value.symbol.name.ptr,  var->value.expr.value.symbol.name.len);
+            str_push(&wrn_buff, ", la variable es de tipo ");
+            str_push(&wrn_buff, data_type_e_display_return(&var->asoc_type));
+            str_push(&wrn_buff, " y la expresion es de tipo ");
+            str_push(&wrn_buff, data_type_e_display_return(&val->asoc_type));
+            yyerror(str_as_ref(&wrn_buff));
+        }
+    }
+
+    void assert_expr_type(Node *a, Node *b) {
+        if (a->asoc_type != b->asoc_type) {
+            str_clear(&wrn_buff);
+            str_push(&wrn_buff, "Error: Se intento realizar operaciones entre expresiones de tipos distintos: ");
+            str_push(&wrn_buff, "El primer operando es de tipo ");
+            str_push(&wrn_buff, data_type_e_display_return(&a->asoc_type));
+            str_push(&wrn_buff, " y el segundo es de tipo ");
+            str_push(&wrn_buff, data_type_e_display_return(&b->asoc_type));
+            yyerror(str_as_ref(&wrn_buff));
+        }
     }
 }
 
@@ -162,6 +195,7 @@
 %type <subtree>expresion;
 %type <subtree>expresion_lista;
 %type <subtree>factor;
+%type <subtree>for_asignacion;
 %type <subtree>termino;
 %type <subtree>variable;
 %type <subtree>variable_asignacion;
@@ -535,19 +569,10 @@ variable_asignacion : variable OP_ASIGN expresion {
     Tree t;
     tree_init(&t, sizeof(Node));
 
-    Node * past_root = (Node *)vec_get(&$1.values, 0);
-    Node * curr_root = (Node *)vec_get(&$3.values, 0);
+    Node * var = tree_get_root(&$1);
+    Node * expr = tree_get_root(&$3);
 
-    if (past_root->asoc_type != curr_root->asoc_type) {
-        str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Error: Se intento asignar una expresion de tipo distinto a una variable: ");
-        str_push_n(&wrn_buff, past_root->value.expr.value.symbol.name.ptr,  past_root->value.expr.value.symbol.name.len);
-        str_push(&wrn_buff, ", la variable es de tipo ");
-        str_push(&wrn_buff, data_type_e_display_return(&past_root->asoc_type));
-        str_push(&wrn_buff, " y la expresion es de tipo ");
-        str_push(&wrn_buff, data_type_e_display_return(&curr_root->asoc_type));
-        yyerror(str_as_ref(&wrn_buff));
-    }
+    assert_variable_assigned_type(var, expr);
 
     Tree assign;
     tree_init(&assign, sizeof(Node));
@@ -555,7 +580,7 @@ variable_asignacion : variable OP_ASIGN expresion {
     Node * n = (Node *)tree_new_node(&assign, NULL);
     *n = (Node){
         .node_type = NExpr,
-        .asoc_type = past_root->asoc_type,
+        .asoc_type = var->asoc_type,
         .value.expr = (ExprNode){
             .type = EOp,
             .value.op = OpAssign,
@@ -566,12 +591,13 @@ variable_asignacion : variable OP_ASIGN expresion {
     tree_extend(&assign, &$3, 0);
 
     $$ = assign;
-
 };
 
-for_asignacion : variable_asignacion | variable;
-
-
+for_asignacion : variable_asignacion {
+    $$ = $1;
+} | variable {
+    $$ = $1;
+} ;
 
 variable : IDENT { 
     Symbol * s = assert_sym_exists(&$1);
@@ -742,23 +768,15 @@ expresion: termino {
     Tree t;
     tree_init(&t, sizeof(Node));
 
-    Node * past_root = (Node *)vec_get(&$1.values, 0);
-    Node * curr_root = (Node *)vec_get(&$3.values, 0);
+    Node * lhs = tree_get_root(&$1);
+    Node * rhs = tree_get_root(&$3);
     
-    if (past_root->asoc_type != curr_root->asoc_type) {
-        str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Error: Se intento sumar dos expresiones de tipos distintos: ");
-        str_push(&wrn_buff, "El primer operando es de tipo ");
-        str_push(&wrn_buff, data_type_e_display_return(&past_root->asoc_type));
-        str_push(&wrn_buff, " y el segundo es de tipo ");
-        str_push(&wrn_buff, data_type_e_display_return(&curr_root->asoc_type));
-        yyerror(str_as_ref(&wrn_buff));
-    }
+    assert_expr_type(lhs, rhs);
 
     Node * n = (Node *)tree_new_node(&t, NULL);
     *n = (Node){
         .node_type = NExpr,
-        .asoc_type = past_root->asoc_type,
+        .asoc_type = lhs->asoc_type,
         .value.expr = (ExprNode){
             .type = EOp,
             .value.op = $2,
@@ -776,23 +794,15 @@ termino : factor {
     Tree t;
     tree_init(&t, sizeof(Node));
 
-    Node * past_root = (Node *)vec_get(&$1.values, 0);
-    Node * curr_root = (Node *)vec_get(&$3.values, 0);
+    Node * lhs = tree_get_root(&$1);
+    Node * rhs = tree_get_root(&$3);
 
-    if (past_root->asoc_type != curr_root->asoc_type) {
-        str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Error: Se intento sumar dos expresiones de tipos distintos: ");
-        str_push(&wrn_buff, "El primer operando es de tipo ");
-        str_push(&wrn_buff, data_type_e_display_return(&past_root->asoc_type));
-        str_push(&wrn_buff, " y el segundo es de tipo ");
-        str_push(&wrn_buff, data_type_e_display_return(&curr_root->asoc_type));
-        yyerror(str_as_ref(&wrn_buff));
-    }
+    assert_expr_type(lhs, rhs);
 
     Node * n = (Node *)tree_new_node(&t, NULL);
     *n = (Node){
         .node_type = NExpr,
-        .asoc_type = past_root->asoc_type,
+        .asoc_type = lhs->asoc_type,
         .value.expr = (ExprNode){
             .type = EOp,
             .value.op = $2,
@@ -839,7 +849,7 @@ llamado_funcion : IDENT '(' expresion_lista ')' {
 
         
         for (size_t n_arg = 0; n_arg < children.len; n_arg++) {
-            Node * arg = (Node *)vec_get(&$3.values, *(size_t *)vec_get(&children, n_arg));
+            Node * arg = tree_get_node(&$3, *(size_t *)vec_get(&children, n_arg));
             Symbol * arg_sym = (Symbol *)vec_get(&s->info.fun.args, n_arg);
 
             if (arg->asoc_type != arg_sym->asoc_type.type) {
@@ -976,7 +986,7 @@ factor : ADDOP factor {
 
     tree_init(&t, sizeof(Node));
 
-    Node * past_root = (Node *)vec_get(&$2.values, 0);
+    Node * past_root = tree_get_root(&$2);
 
     Node * n = (Node *)tree_new_node(&t, NULL);
     *n = (Node){
