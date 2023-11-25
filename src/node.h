@@ -100,6 +100,7 @@ typedef struct WriteNode {
 } WriteNode;
 
 typedef struct ReadNode {
+        int newline;
         Symbol target_symbol;
 } ReadNode;
 
@@ -117,6 +118,7 @@ typedef union NodeValue {
         OpNode op;
         IfNode ifn;
         WriteNode write;
+        ReadNode read;
 } NodeValue;
 
 typedef struct Node {

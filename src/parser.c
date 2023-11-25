@@ -725,12 +725,12 @@ static const yytype_uint16 yyrline[] =
      415,   432,   449,   469,   470,   474,   475,   476,   477,   480,
      480,   482,   485,   485,   497,   497,   511,   524,   527,   538,
      555,   556,   556,   557,   557,   559,   560,   560,   560,   561,
-     561,   561,   563,   564,   565,   566,   567,   573,   611,   649,
-     673,   697,   725,   752,   797,   842,   872,   902,   934,   966,
-     986,  1010,  1038,  1040,  1044,  1062,  1096,  1120,  1177,  1200,
-    1203,  1226,  1229,  1248,  1251,  1253,  1256,  1277,  1282,  1287,
-    1292,  1297,  1302,  1307,  1312,  1320,  1333,  1336,  1342,  1344,
-    1368,  1370,  1394,  1455,  1473,  1506,  1529,  1545,  1561,  1582
+     561,   561,   563,   564,   565,   568,   586,   606,   644,   682,
+     706,   730,   758,   785,   830,   875,   905,   935,   967,   999,
+    1019,  1043,  1071,  1073,  1077,  1095,  1129,  1153,  1210,  1233,
+    1236,  1259,  1262,  1281,  1284,  1286,  1289,  1310,  1315,  1320,
+    1325,  1330,  1335,  1340,  1345,  1353,  1366,  1369,  1375,  1377,
+    1401,  1403,  1427,  1488,  1506,  1539,  1562,  1578,  1594,  1615
 };
 #endif
 
@@ -2209,22 +2209,53 @@ yyreduce:
 
   case 45:
 /* Line 1802 of yacc.c  */
-#line 566 "src/grammar.y"
-    { assert_sym_exists(&(yyvsp[(3) - (4)].symbol)); }
+#line 568 "src/grammar.y"
+    { 
+    assert_sym_exists(&(yyvsp[(3) - (4)].symbol));
+    
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NRead,
+        .asoc_type = Void,
+        .value.read = (ReadNode){
+            .newline = 0,
+            .target_symbol = (yyvsp[(3) - (4)].symbol),
+        }
+    };
+
+    (yyval.subtree) = t;
+}
     break;
 
   case 46:
 /* Line 1802 of yacc.c  */
-#line 567 "src/grammar.y"
+#line 586 "src/grammar.y"
     { 
     assert_sym_exists(&(yyvsp[(3) - (4)].symbol)); 
 
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NRead,
+        .asoc_type = Void,
+        .value.read = (ReadNode){
+            .newline = 1,
+            .target_symbol = (yyvsp[(3) - (4)].symbol),
+        }
+    };
+
+    (yyval.subtree) = t;
 }
     break;
 
   case 47:
 /* Line 1802 of yacc.c  */
-#line 573 "src/grammar.y"
+#line 606 "src/grammar.y"
     {
     assert_sym_exists(&(yyvsp[(5) - (6)].symbol));
     assert_ident_is_printable(&(yyvsp[(5) - (6)].symbol));
@@ -2267,7 +2298,7 @@ yyreduce:
 
   case 48:
 /* Line 1802 of yacc.c  */
-#line 611 "src/grammar.y"
+#line 644 "src/grammar.y"
     {
     assert_sym_exists(&(yyvsp[(5) - (6)].symbol));
     assert_ident_is_printable(&(yyvsp[(5) - (6)].symbol));
@@ -2310,7 +2341,7 @@ yyreduce:
 
   case 49:
 /* Line 1802 of yacc.c  */
-#line 649 "src/grammar.y"
+#line 682 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -2339,7 +2370,7 @@ yyreduce:
 
   case 50:
 /* Line 1802 of yacc.c  */
-#line 673 "src/grammar.y"
+#line 706 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -2368,7 +2399,7 @@ yyreduce:
 
   case 51:
 /* Line 1802 of yacc.c  */
-#line 697 "src/grammar.y"
+#line 730 "src/grammar.y"
     {
     assert_node_is_printable(tree_get_root(&(yyvsp[(5) - (6)].subtree)));
 
@@ -2401,7 +2432,7 @@ yyreduce:
 
   case 52:
 /* Line 1802 of yacc.c  */
-#line 725 "src/grammar.y"
+#line 758 "src/grammar.y"
     {
     assert_node_is_printable(tree_get_root(&(yyvsp[(5) - (6)].subtree)));
 
@@ -2433,7 +2464,7 @@ yyreduce:
 
   case 53:
 /* Line 1802 of yacc.c  */
-#line 752 "src/grammar.y"
+#line 785 "src/grammar.y"
     {
     assert_sym_exists(&(yyvsp[(3) - (6)].symbol));
     assert_sym_exists(&(yyvsp[(5) - (6)].symbol));
@@ -2483,7 +2514,7 @@ yyreduce:
 
   case 54:
 /* Line 1802 of yacc.c  */
-#line 797 "src/grammar.y"
+#line 830 "src/grammar.y"
     {
     assert_sym_exists(&(yyvsp[(3) - (6)].symbol));
     assert_sym_exists(&(yyvsp[(5) - (6)].symbol));
@@ -2533,7 +2564,7 @@ yyreduce:
 
   case 55:
 /* Line 1802 of yacc.c  */
-#line 842 "src/grammar.y"
+#line 875 "src/grammar.y"
     { 
     assert_sym_exists(&(yyvsp[(3) - (4)].symbol));
     assert_ident_is_printable(&(yyvsp[(3) - (4)].symbol));
@@ -2568,7 +2599,7 @@ yyreduce:
 
   case 56:
 /* Line 1802 of yacc.c  */
-#line 872 "src/grammar.y"
+#line 905 "src/grammar.y"
     { 
     assert_sym_exists(&(yyvsp[(3) - (4)].symbol));
     assert_ident_is_printable(&(yyvsp[(3) - (4)].symbol));
@@ -2603,7 +2634,7 @@ yyreduce:
 
   case 57:
 /* Line 1802 of yacc.c  */
-#line 902 "src/grammar.y"
+#line 935 "src/grammar.y"
     {
     assert_sym_exists(&(yyvsp[(3) - (6)].symbol));
     assert_node_is_printable(tree_get_root(&(yyvsp[(5) - (6)].subtree)));
@@ -2640,7 +2671,7 @@ yyreduce:
 
   case 58:
 /* Line 1802 of yacc.c  */
-#line 934 "src/grammar.y"
+#line 967 "src/grammar.y"
     {
     assert_sym_exists(&(yyvsp[(3) - (6)].symbol));
     assert_node_is_printable(tree_get_root(&(yyvsp[(5) - (6)].subtree)));
@@ -2677,7 +2708,7 @@ yyreduce:
 
   case 59:
 /* Line 1802 of yacc.c  */
-#line 966 "src/grammar.y"
+#line 999 "src/grammar.y"
     {
     assert_expr_type(tree_get_root(&(yyvsp[(2) - (4)].subtree)), tree_get_root(&(yyvsp[(4) - (4)].subtree)));
 
@@ -2702,7 +2733,7 @@ yyreduce:
 
   case 60:
 /* Line 1802 of yacc.c  */
-#line 986 "src/grammar.y"
+#line 1019 "src/grammar.y"
     {
     
     assert_expr_type(tree_get_root(&(yyvsp[(2) - (6)].subtree)), tree_get_root(&(yyvsp[(4) - (6)].subtree)));
@@ -2729,7 +2760,7 @@ yyreduce:
 
   case 61:
 /* Line 1802 of yacc.c  */
-#line 1010 "src/grammar.y"
+#line 1043 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -2761,7 +2792,7 @@ yyreduce:
 
   case 62:
 /* Line 1802 of yacc.c  */
-#line 1038 "src/grammar.y"
+#line 1071 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (1)].subtree);
 }
@@ -2769,7 +2800,7 @@ yyreduce:
 
   case 63:
 /* Line 1802 of yacc.c  */
-#line 1040 "src/grammar.y"
+#line 1073 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (1)].subtree);
 }
@@ -2777,7 +2808,7 @@ yyreduce:
 
   case 64:
 /* Line 1802 of yacc.c  */
-#line 1044 "src/grammar.y"
+#line 1077 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (1)].symbol));
     
@@ -2800,7 +2831,7 @@ yyreduce:
 
   case 65:
 /* Line 1802 of yacc.c  */
-#line 1062 "src/grammar.y"
+#line 1095 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (4)].symbol)); 
 
@@ -2838,7 +2869,7 @@ yyreduce:
 
   case 66:
 /* Line 1802 of yacc.c  */
-#line 1096 "src/grammar.y"
+#line 1129 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (1)].symbol));
     if (s->type != Procedure) {
@@ -2866,7 +2897,7 @@ yyreduce:
 
   case 67:
 /* Line 1802 of yacc.c  */
-#line 1120 "src/grammar.y"
+#line 1153 "src/grammar.y"
     {
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (4)].symbol));
 
@@ -2926,7 +2957,7 @@ yyreduce:
 
   case 68:
 /* Line 1802 of yacc.c  */
-#line 1177 "src/grammar.y"
+#line 1210 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -2955,7 +2986,7 @@ yyreduce:
 
   case 69:
 /* Line 1802 of yacc.c  */
-#line 1200 "src/grammar.y"
+#line 1233 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (1)].subtree);
 }
@@ -2963,7 +2994,7 @@ yyreduce:
 
   case 70:
 /* Line 1802 of yacc.c  */
-#line 1203 "src/grammar.y"
+#line 1236 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -2992,7 +3023,7 @@ yyreduce:
 
   case 71:
 /* Line 1802 of yacc.c  */
-#line 1226 "src/grammar.y"
+#line 1259 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (1)].subtree);
 }
@@ -3000,7 +3031,7 @@ yyreduce:
 
   case 72:
 /* Line 1802 of yacc.c  */
-#line 1229 "src/grammar.y"
+#line 1262 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -3025,7 +3056,7 @@ yyreduce:
 
   case 73:
 /* Line 1802 of yacc.c  */
-#line 1248 "src/grammar.y"
+#line 1281 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (1)].subtree);
 }
@@ -3033,7 +3064,7 @@ yyreduce:
 
   case 74:
 /* Line 1802 of yacc.c  */
-#line 1251 "src/grammar.y"
+#line 1284 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(2) - (3)].subtree);
 }
@@ -3041,7 +3072,7 @@ yyreduce:
 
   case 75:
 /* Line 1802 of yacc.c  */
-#line 1253 "src/grammar.y"
+#line 1286 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (1)].subtree);
 }
@@ -3049,7 +3080,7 @@ yyreduce:
 
   case 76:
 /* Line 1802 of yacc.c  */
-#line 1256 "src/grammar.y"
+#line 1289 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -3075,7 +3106,7 @@ yyreduce:
 
   case 77:
 /* Line 1802 of yacc.c  */
-#line 1277 "src/grammar.y"
+#line 1310 "src/grammar.y"
     {
     (yyval.expr) = (ExprNode) {
         .type = EOp,
@@ -3086,7 +3117,7 @@ yyreduce:
 
   case 78:
 /* Line 1802 of yacc.c  */
-#line 1282 "src/grammar.y"
+#line 1315 "src/grammar.y"
     {
     (yyval.expr) = (ExprNode) {
         .type = EOp,
@@ -3097,7 +3128,7 @@ yyreduce:
 
   case 79:
 /* Line 1802 of yacc.c  */
-#line 1287 "src/grammar.y"
+#line 1320 "src/grammar.y"
     { 
     (yyval.expr) = (ExprNode) {
         .type = EOp,
@@ -3108,7 +3139,7 @@ yyreduce:
 
   case 80:
 /* Line 1802 of yacc.c  */
-#line 1292 "src/grammar.y"
+#line 1325 "src/grammar.y"
     {
     (yyval.expr) = (ExprNode) {
         .type = EOp,
@@ -3119,7 +3150,7 @@ yyreduce:
 
   case 81:
 /* Line 1802 of yacc.c  */
-#line 1297 "src/grammar.y"
+#line 1330 "src/grammar.y"
     {
     (yyval.expr) = (ExprNode) {
         .type = EOp,
@@ -3130,7 +3161,7 @@ yyreduce:
 
   case 82:
 /* Line 1802 of yacc.c  */
-#line 1302 "src/grammar.y"
+#line 1335 "src/grammar.y"
     {
     (yyval.expr) = (ExprNode) {
         .type = EOp,
@@ -3141,7 +3172,7 @@ yyreduce:
 
   case 83:
 /* Line 1802 of yacc.c  */
-#line 1307 "src/grammar.y"
+#line 1340 "src/grammar.y"
     {
     (yyval.expr) = (ExprNode) {
         .type = EOp,
@@ -3152,7 +3183,7 @@ yyreduce:
 
   case 84:
 /* Line 1802 of yacc.c  */
-#line 1312 "src/grammar.y"
+#line 1345 "src/grammar.y"
     {
     (yyval.expr) = (ExprNode) {
         .type = EOp,
@@ -3163,7 +3194,7 @@ yyreduce:
 
   case 85:
 /* Line 1802 of yacc.c  */
-#line 1320 "src/grammar.y"
+#line 1353 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -3182,7 +3213,7 @@ yyreduce:
 
   case 86:
 /* Line 1802 of yacc.c  */
-#line 1333 "src/grammar.y"
+#line 1366 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (3)].subtree);
     tree_extend(&(yyval.subtree), &(yyvsp[(3) - (3)].subtree), 0);
@@ -3191,7 +3222,7 @@ yyreduce:
 
   case 87:
 /* Line 1802 of yacc.c  */
-#line 1336 "src/grammar.y"
+#line 1369 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -3202,7 +3233,7 @@ yyreduce:
 
   case 88:
 /* Line 1802 of yacc.c  */
-#line 1342 "src/grammar.y"
+#line 1375 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (1)].subtree);
 }
@@ -3210,7 +3241,7 @@ yyreduce:
 
   case 89:
 /* Line 1802 of yacc.c  */
-#line 1344 "src/grammar.y"
+#line 1377 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -3239,7 +3270,7 @@ yyreduce:
 
   case 90:
 /* Line 1802 of yacc.c  */
-#line 1368 "src/grammar.y"
+#line 1401 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (1)].subtree);
 }
@@ -3247,7 +3278,7 @@ yyreduce:
 
   case 91:
 /* Line 1802 of yacc.c  */
-#line 1370 "src/grammar.y"
+#line 1403 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -3276,7 +3307,7 @@ yyreduce:
 
   case 92:
 /* Line 1802 of yacc.c  */
-#line 1394 "src/grammar.y"
+#line 1427 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (4)].symbol));
     if (s->type != Function) {
@@ -3342,7 +3373,7 @@ yyreduce:
 
   case 93:
 /* Line 1802 of yacc.c  */
-#line 1455 "src/grammar.y"
+#line 1488 "src/grammar.y"
     { 
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -3365,7 +3396,7 @@ yyreduce:
 
   case 94:
 /* Line 1802 of yacc.c  */
-#line 1473 "src/grammar.y"
+#line 1506 "src/grammar.y"
     { 
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -3403,7 +3434,7 @@ yyreduce:
 
   case 95:
 /* Line 1802 of yacc.c  */
-#line 1506 "src/grammar.y"
+#line 1539 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -3431,7 +3462,7 @@ yyreduce:
 
   case 96:
 /* Line 1802 of yacc.c  */
-#line 1529 "src/grammar.y"
+#line 1562 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -3452,7 +3483,7 @@ yyreduce:
 
   case 97:
 /* Line 1802 of yacc.c  */
-#line 1545 "src/grammar.y"
+#line 1578 "src/grammar.y"
     {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -3473,7 +3504,7 @@ yyreduce:
 
   case 98:
 /* Line 1802 of yacc.c  */
-#line 1561 "src/grammar.y"
+#line 1594 "src/grammar.y"
     {
     Tree t;
 
@@ -3499,7 +3530,7 @@ yyreduce:
 
   case 99:
 /* Line 1802 of yacc.c  */
-#line 1582 "src/grammar.y"
+#line 1615 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(2) - (3)].subtree);
 }
@@ -3507,7 +3538,7 @@ yyreduce:
 
 
 /* Line 1802 of yacc.c  */
-#line 3511 "grammar.tab.c"
+#line 3542 "grammar.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -3739,5 +3770,5 @@ yyreturn:
 
 
 /* Line 2050 of yacc.c  */
-#line 1585 "src/grammar.y"
+#line 1618 "src/grammar.y"
 

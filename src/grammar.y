@@ -391,11 +391,7 @@ ident_lista : IDENT {
 };
 
 /* Declaration of var and const */
-decl : decl_var {
-    $$ = $1;
-} | decl_const {
-    $$ = $1;
-} | { $$ = vec_new(sizeof(Symbol)); };
+decl : decl_var | decl_const | { $$ = vec_new(sizeof(Symbol)); };
 
 decl_var : decl KW_VAR ident_lista ':' tipo ';' {
     for (size_t i = 0; i < $3.len; i++) {
@@ -555,18 +551,57 @@ parametros_lista : parametros_lista ';' ident_lista ':' tipo {
 instruccion_compuesta : KW_BEGIN instrucciones_opcionales KW_END;
 instrucciones_opcionales : instrucciones_lista | /* Empty */;
 instrucciones_lista : instrucciones | instrucciones_lista ';' instrucciones;
-instrucciones
-    : variable_asignacion |
+instrucciones: variable_asignacion |
       procedure_instruccion | instruccion_compuesta | if_instruccion |
       repeticion_instruccion | lectura_instruccion | escritura_instruccion;
-repeticion_instruccion
-    : KW_WHILE relop_expresion KW_DO instrucciones |
-      KW_FOR for_asignacion KW_TO expresion KW_DO instrucciones |
-      KW_FOR for_asignacion KW_DOWNTO expresion KW_DO instrucciones;
-lectura_instruccion : KW_READ '(' IDENT ')' { assert_sym_exists(&$3); };
+
+/* Loops */
+repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones {
+
+}
+| KW_FOR for_asignacion KW_TO expresion KW_DO instrucciones {
+
+}
+| KW_FOR for_asignacion KW_DOWNTO expresion KW_DO instrucciones {
+
+};
+
+/* Lectura */
+lectura_instruccion : KW_READ '(' IDENT ')' { 
+    assert_sym_exists(&$3);
+    
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NRead,
+        .asoc_type = Void,
+        .value.read = (ReadNode){
+            .newline = 0,
+            .target_symbol = $3,
+        }
+    };
+
+    $$ = t;
+};
 lectura_instruccion : KW_READLN '(' IDENT ')' { 
     assert_sym_exists(&$3); 
 
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NRead,
+        .asoc_type = Void,
+        .value.read = (ReadNode){
+            .newline = 1,
+            .target_symbol = $3,
+        }
+    };
+
+    $$ = t;
 };
 
 /* Escritura */
@@ -1035,11 +1070,7 @@ variable_asignacion : variable OP_ASIGN expresion {
     $$ = assign;
 };
 
-for_asignacion : variable_asignacion {
-    $$ = $1;
-} | variable {
-    $$ = $1;
-} ;
+for_asignacion : variable_asignacion | variable;
 
 variable : IDENT { 
     Symbol * s = assert_sym_exists(&$1);
@@ -1197,9 +1228,7 @@ relop_expresion : relop_expresion RELOP_OR relop_and {
     tree_extend(&t, &$3, 0);
 
     $$ = t;
-} | relop_and {
-    $$ = $1;
-};
+} | relop_and;
 relop_and : relop_and RELOP_AND relop_not {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -1245,14 +1274,10 @@ relop_not : RELOP_NOT relop_not {
     tree_extend(&t, &$2, 0);
 
     $$ = t;
-} | relop_paren {
-    $$ = $1;
-};
+} | relop_paren;
 relop_paren : '(' relop_expresion ')' {
     $$ = $2;
-} | relop_expresion_simple {
-    $$ = $1;
-};
+} | relop_expresion_simple;
 relop_expresion_simple : expresion relop expresion {
     Tree t;
     tree_init(&t, sizeof(Node));
@@ -1339,9 +1364,7 @@ expresion_lista : expresion {
 
     $$ = t;
 };
-expresion: termino {
-    $$ = $1;
-} | expresion ADDOP termino {
+expresion: termino | expresion ADDOP termino {
     Tree t;
     tree_init(&t, sizeof(Node));
 
@@ -1365,9 +1388,7 @@ expresion: termino {
 
     $$ = t;
 };
-termino : factor {
-    $$ = $1;
-} | termino MULOP factor {
+termino : factor | termino MULOP factor {
     Tree t;
     tree_init(&t, sizeof(Node));
 
