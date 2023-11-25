@@ -1298,19 +1298,19 @@ procedure_instruccion : IDENT {
         yyerror(str_as_ref(&wrn_buff));
     }
 
-    Tree args;
-    tree_init(&args, sizeof(Tree));
-    
     Tree t;
     tree_init(&t, sizeof(Node));
+
+    Tree args;
+    tree_init(&args, sizeof(Node));
 
     Node * n = (Node *)tree_new_node(&t, NULL);
     *n = (Node){
         .node_type = NCall,
         .asoc_type = s->asoc_type.type,
         .value.call = (FunctionCall){
-            .symbol = $1,
             .args = args,
+            .symbol = $1,
             .return_type = s->asoc_type.type,
         }
     };

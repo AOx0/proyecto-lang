@@ -139,7 +139,7 @@ typedef struct Node {
 } Node;
 
 void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla);
-char * node_type_display(NodeType nt);
+char *node_type_display(NodeType nt);
 void node_display_id(size_t id, FILE *f, Tree *t, HashSet *tabla);
 void node_type_debug(NodeType nt);
 void tree_debug(Tree *t);

@@ -16,9 +16,9 @@ void tree_debug(Tree *t) {
         node_type_debug(n->node_type);
         printf("\n");
     }
-    
+
     tree_relations_debug(t);
-    
+
     TreeIter ti = tree_iter_new(t, 0);
     while (1) {
         Node *n = tree_iter_next(&ti);
@@ -29,11 +29,9 @@ void tree_debug(Tree *t) {
         node_type_debug(n->node_type);
         printf("\n");
     }
-    
-    
 }
 
-char * node_type_display(NodeType nt) {
+char *node_type_display(NodeType nt) {
     switch (nt) {
     case NProgram: {
         return "programa";
@@ -300,7 +298,8 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         data_type_display(
             f, 1, &n->value.fun.symbol.name,
             &(DataType){.type = n->value.fun.symbol.asoc_type.type, .size = 1});
-        fprintf(f, " %.*s(", (int)n->value.fun.symbol.name.len, n->value.fun.symbol.name.ptr);
+        fprintf(f, " %.*s(", (int)n->value.fun.symbol.name.len,
+                n->value.fun.symbol.name.ptr);
 
         if (n->value.fun.args.len != 0) {
             for (size_t i = 0; i < n->value.fun.args.len; i++) {
@@ -329,13 +328,11 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
                     switch (s->type) {
                     case Function:
                     case Procedure: {
-                        Node n = {
-                            .node_type = NFunctionSign,
-                            .value.fun = {
-                                .args = s->info.fun.args,
-                                .symbol = *s,        
-                            }
-                         };
+                        Node n = {.node_type = NFunctionSign,
+                                  .value.fun = {
+                                      .args = s->info.fun.args,
+                                      .symbol = *s,
+                                  }};
                         node_display(&n, f, t, tabla);
                         fprintf(f, ";\n");
                         break;
