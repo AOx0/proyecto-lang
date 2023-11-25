@@ -260,6 +260,9 @@
 %type <subtree>procedure_instruccion;
 %type <subtree>instrucciones_opcionales;
 %type <instructions>instrucciones_lista;
+%type <subtree>subprogramas;
+%type <subtree>subprograma_declaracion;
+%type <symbol>subprograma_encabezado;
 
 %destructor {
     // printf("Dropping ident_lista:  ");
@@ -293,7 +296,7 @@ programa : {
     str_init(&wrn_buff);
     tree_init(&ast, sizeof(Node));
 }
-KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
+KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
     instruccion_compuesta '.' {
 
     for (size_t i = 0; i < $5.len; i++) {
@@ -316,7 +319,7 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
     size_t idx;
     Node * node = (Node *)tree_new_node(&ast, &idx);
     *node = (Node){ 
-        .node_type = NVoid,
+        .node_type = NRoot,
         .id = idx,
         .asoc_type = Void,
     };
@@ -326,7 +329,7 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
     *node = (Node) {
         .node_type = NProgram,
         .id = child_idx,
-        .value.fun = (FunctionNode) { .name = $3.name, .args = $5, .return_type = Void },
+        .value.fun = (FunctionNode) { .symbol = $3, .args = $5 },
         .asoc_type = Void
     };
     tree_new_relation(&ast, idx, child_idx); 
@@ -350,6 +353,8 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
         }
         tree_new_relation(&ast, idx, child_idx); 
     }
+
+    tree_extend(&ast, &$9, 0);
 
 
     #ifdef PRINT_TABLE
@@ -396,10 +401,10 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprograma_decl
     }
     #endif
 
-    if (err == 0) 
-        node_display_id(idx, OUT_FILE, &ast, &tabla);
-    
-
+    if (err == 0)  {
+        // node_display_id(idx, OUT_FILE, &ast, &tabla);
+        tree_debug(&ast);
+    }
 
     // Al final liberamos la tabla de hashes de memoria
     vec_drop(&$5);
@@ -502,10 +507,47 @@ estandard_tipo : T_INT { $$ = (DataType){.type = Int, .size = 1}; }
 | T_BOOL { $$ = (DataType){.type = Bool, .size = 1}; };
 
 /* Subprograma */
-subprograma_decl : subprograma_decl subprograma_declaracion ';' | ;
+subprogramas : subprogramas subprograma_declaracion ';' {
+    $$ = $1;
+    tree_extend(&$$, &$2, 0);
+} | {
+    tree_init(&$$, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&$$, NULL);
+    *n = (Node) {
+        .node_type = NVoid,
+        .asoc_type = Void,
+    };
+};
 subprograma_declaracion
-    : subprograma_encabezado decl subprograma_decl instruccion_compuesta {
+    : subprograma_encabezado decl subprogramas instruccion_compuesta {
     scope -= fun_id;
+
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * root = (Node *)tree_new_node(&t, NULL);
+    *root = (Node) {
+        .node_type = NVoid,
+        .asoc_type = Void,
+    };
+
+     // Add to tree subprogram declarations
+    tree_extend(&t, &$3, 0);
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node) {
+        .node_type = NFunction,
+        .asoc_type = Void,
+        .value.fun = (FunctionNode) {
+            .symbol = $1,
+            .args = $2,
+        }
+    };
+
+    tree_extend(&t, &$4, 0);
+
+    $$ = t;
 };
 subprograma_encabezado : KW_FUNC IDENT {
     $2.type = Function;
@@ -518,6 +560,7 @@ argumentos ':' estandard_tipo ';' {
     Symbol *s = (Symbol *)hashset_get(&tabla, &$2);
     s->asoc_type = $6;
     s->info.fun = (FunctionInfo){.args=$4};
+    $$ = *s;
 };
 subprograma_encabezado : KW_PROCEDURE IDENT {
     $2.type = Procedure;
@@ -530,6 +573,7 @@ argumentos ';'{
     Symbol *s = (Symbol *)hashset_get(&tabla, &$2);
     s->asoc_type = (DataType) { .type = Void, .size = 0};
     s->info.fun = (FunctionInfo){ .args=$4 };
+    $$ = *s;
 };
 
 /* Argumentos */

@@ -150,6 +150,14 @@ TreeEntry *tree_new_relation(Tree *t, size_t from, size_t to) {
     return te;
 }
 
+void tree_relations_debug(Tree *t) {
+    printf("Relations:\n");
+    for (size_t i = 0; i < t->relations.len; i++) {
+        TreeEntry *te = (TreeEntry *)vec_get(&t->relations, i);
+        printf("%zu:%zu -> %zu\n", i, te->from, te->to);
+    }
+}
+
 TreeEntry *tree_new_rel(Tree *t, void *from, void *to) {
     size_t from_idx = 0;
     size_t to_idx = 0;

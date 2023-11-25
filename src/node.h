@@ -14,6 +14,7 @@ typedef enum NodeType {
     NRead,
     NVar,
     NVoid,
+    NRoot,
     NConst,
     NAssign,
     NFunction,
@@ -26,9 +27,9 @@ typedef enum NodeType {
 } NodeType;
 
 typedef struct FunctionNode {
-        StrSlice name;
-        DataTypeE return_type;
+        Symbol symbol;
         Vec args;
+        Vec declarations;
 } FunctionNode;
 
 typedef struct VarNode {
@@ -141,5 +142,6 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla);
 char * node_type_display(NodeType nt);
 void node_display_id(size_t id, FILE *f, Tree *t, HashSet *tabla);
 void node_type_debug(NodeType nt);
+void tree_debug(Tree *t);
 
 #endif

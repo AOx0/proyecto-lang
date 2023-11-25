@@ -8,6 +8,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void tree_debug(Tree *t) {
+
+    for (size_t i = 0; i < t->values.len; i++) {
+        Node *n = (Node *)vec_get(&t->values, i);
+        printf("%zu: ", i);
+        node_type_debug(n->node_type);
+        printf("\n");
+    }
+    
+    tree_relations_debug(t);
+    
+    TreeIter ti = tree_iter_new(t, 0);
+    while (1) {
+        Node *n = tree_iter_next(&ti);
+        if (n == NULL) {
+            break;
+        }
+
+        node_type_debug(n->node_type);
+        printf("\n");
+    }
+    
+    
+}
+
 char * node_type_display(NodeType nt) {
     switch (nt) {
     case NProgram: {
@@ -50,6 +75,8 @@ char * node_type_display(NodeType nt) {
         return "bucle while";
     }
     case NCall:
+        break;
+    case NRoot:
         break;
     }
 
@@ -113,6 +140,8 @@ void node_type_debug(NodeType nt) {
     }
     case NCall:
         break;
+    case NRoot:
+        break;
     }
 }
 
@@ -127,6 +156,12 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
 
     switch (n->node_type) {
     case NIf: {
+        fprintf(f, "if (");
+        Vec child = tree_get_childs(t, n->id);
+        size_t *id = (size_t *)vec_get(&child, 0);
+        Node *v = (Node *)vec_get(&t->values, *id);
+        node_display_id(v->id, f, t, tabla);
+        fprintf(f, ") {\n");
         break;
     }
     case NExpr: {
@@ -228,7 +263,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         }
         break;
     }
-    case NVoid: {
+    case NRoot: {
         fprintf(f, "#include <stdint.h>\n");
         fprintf(f, "#include <stdio.h>\n");
         fprintf(f, "#include <stdlib.h>\n\n");
@@ -263,9 +298,9 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
     }
     case NFunctionSign: {
         data_type_display(
-            f, 1, &n->value.fun.name,
-            &(DataType){.type = n->value.fun.return_type, .size = 1});
-        fprintf(f, " %.*s(", (int)n->value.fun.name.len, n->value.fun.name.ptr);
+            f, 1, &n->value.fun.symbol.name,
+            &(DataType){.type = n->value.fun.symbol.asoc_type.type, .size = 1});
+        fprintf(f, " %.*s(", (int)n->value.fun.symbol.name.len, n->value.fun.symbol.name.ptr);
 
         if (n->value.fun.args.len != 0) {
             for (size_t i = 0; i < n->value.fun.args.len; i++) {
@@ -296,9 +331,11 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
                     case Procedure: {
                         Node n = {
                             .node_type = NFunctionSign,
-                            .value.fun = {.args = s->info.fun.args,
-                                          .return_type = s->asoc_type.type,
-                                          .name = s->name}};
+                            .value.fun = {
+                                .args = s->info.fun.args,
+                                .symbol = *s,        
+                            }
+                         };
                         node_display(&n, f, t, tabla);
                         fprintf(f, ";\n");
                         break;
@@ -312,8 +349,8 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             }
         }
 
-        fprintf(f, "\nvoid %.*s(", (int)n->value.fun.name.len,
-                n->value.fun.name.ptr);
+        fprintf(f, "\nvoid %.*s(", (int)n->value.fun.symbol.name.len,
+                n->value.fun.symbol.name.ptr);
         for (size_t i = 0; i < n->value.fun.args.len; i++) {
             StrSlice *sl = (StrSlice *)vec_get(&n->value.fun.args, i);
             fprintf(f, "char * %.*s", (int)sl->len, sl->ptr);
@@ -351,6 +388,8 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
     case NWhile:
         break;
     case NCall:
+        break;
+    case NVoid:
         break;
     }
 }

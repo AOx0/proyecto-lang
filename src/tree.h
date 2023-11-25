@@ -19,11 +19,13 @@ typedef struct TreeEntry TreeEntry;
 
 struct TreeIter {
         Tree *tree;
+        size_t level;
         Vec parents;
         Vec tmp;
 };
 typedef struct TreeIter TreeIter;
 
+void tree_relations_debug(Tree *t);
 void *tree_iter_next(TreeIter *ti);
 int tree_iter_has_next(TreeIter *ti);
 void tree_extend(Tree *t, Tree *o, size_t childs_of);
