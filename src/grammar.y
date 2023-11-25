@@ -99,9 +99,9 @@
             str_push(&wrn_buff, "Error: Se intento asignar una expresion de tipo distinto a una variable: ");
             str_push_n(&wrn_buff, var->value.expr.value.symbol.name.ptr,  var->value.expr.value.symbol.name.len);
             str_push(&wrn_buff, ", la variable es de tipo ");
-            str_push(&wrn_buff, data_type_e_display_return(&var->asoc_type));
+            str_push(&wrn_buff, data_type_e_display_return(var->asoc_type));
             str_push(&wrn_buff, " y la expresion es de tipo ");
-            str_push(&wrn_buff, data_type_e_display_return(&val->asoc_type));
+            str_push(&wrn_buff, data_type_e_display_return(val->asoc_type));
             yyerror(str_as_ref(&wrn_buff));
         }
     }
@@ -111,9 +111,9 @@
             str_clear(&wrn_buff);
             str_push(&wrn_buff, "Error: Se intento realizar operaciones entre expresiones de tipos distintos: ");
             str_push(&wrn_buff, "El primer operando es de tipo ");
-            str_push(&wrn_buff, data_type_e_display_return(&a->asoc_type));
+            str_push(&wrn_buff, data_type_e_display_return(a->asoc_type));
             str_push(&wrn_buff, " y el segundo es de tipo ");
-            str_push(&wrn_buff, data_type_e_display_return(&b->asoc_type));
+            str_push(&wrn_buff, data_type_e_display_return(b->asoc_type));
             yyerror(str_as_ref(&wrn_buff));
         }
     }
@@ -122,7 +122,7 @@
         if (n->asoc_type == Void || n->asoc_type == Ukw) {
             str_clear(&wrn_buff);
             str_push(&wrn_buff, "Error: Se intento imprimir una expresion de tipo no imprimible, la expresion es de tipo ");
-            str_push(&wrn_buff, data_type_e_display_return(&n->asoc_type));
+            str_push(&wrn_buff, data_type_e_display_return(n->asoc_type));
             yyerror(str_as_ref(&wrn_buff));
         }
     }
@@ -131,7 +131,33 @@
         if (s->asoc_type.type == Void || s->asoc_type.type == Ukw) {
             str_clear(&wrn_buff);
             str_push(&wrn_buff, "Error: Se intento imprimir un identificador de tipo no imprimible, la expresion es de tipo ");
-            str_push(&wrn_buff, data_type_e_display_return(&s->asoc_type.type));
+            str_push(&wrn_buff, data_type_e_display_return(s->asoc_type.type));
+            yyerror(str_as_ref(&wrn_buff));
+        }
+    }
+
+    void assert_tree_asoc_type_is(Tree t, DataTypeE type) {
+        Node *n = tree_get_root(&t);
+
+        if (n->asoc_type != type) {
+            str_clear(&wrn_buff);
+            str_push(&wrn_buff, "Error: Se esperaba una expresion de tipo ");
+            str_push(&wrn_buff, data_type_e_display_return(type));
+            str_push(&wrn_buff, " pero se recibio una expresion de tipo ");
+            str_push(&wrn_buff, data_type_e_display_return(n->asoc_type));
+            yyerror(str_as_ref(&wrn_buff));
+        }
+    }
+
+    void assert_tree_node_type_is(Tree t, NodeType type) {
+        Node *n = tree_get_root(&t);
+
+        if (n->node_type != type) {
+            str_clear(&wrn_buff);
+            str_push(&wrn_buff, "Error: Se esperaba ");
+            str_push(&wrn_buff, node_type_display(type));
+            str_push(&wrn_buff, " pero se recibió ");
+            str_push(&wrn_buff, node_type_display(n->node_type));
             yyerror(str_as_ref(&wrn_buff));
         }
     }
@@ -181,6 +207,7 @@
     Tree subtree;
     ExprNode expr;
     FunctionCall function_call;
+    Vec instructions;
 }
 
 /* Ident */
@@ -230,7 +257,9 @@
 %type <subtree>relop_paren;
 %type <subtree>variable_asignacion;
 %type <function_call>llamado_funcion;
-%type <function_call>procedure_instruccion;
+%type <subtree>procedure_instruccion;
+%type <subtree>instrucciones_opcionales;
+%type <instructions>instrucciones_lista;
 
 %destructor {
     // printf("Dropping ident_lista:  ");
@@ -548,22 +577,107 @@ parametros_lista : parametros_lista ';' ident_lista ':' tipo {
 };
 
 /* Instrucciones */
-instruccion_compuesta : KW_BEGIN instrucciones_opcionales KW_END;
-instrucciones_opcionales : instrucciones_lista | /* Empty */;
-instrucciones_lista : instrucciones | instrucciones_lista ';' instrucciones;
+instruccion_compuesta : KW_BEGIN instrucciones_opcionales KW_END {
+    $$ = $2;
+};
+instrucciones_opcionales : instrucciones_lista {
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node) {
+        .node_type = NVoid,
+        .asoc_type = Void,
+    };
+
+    for (size_t i = $1.len; i > 0; i--) {
+        Tree *t2 = (Tree *)vec_get(&$1, i - 1);
+        tree_extend(&t, t2, 0);
+    }
+
+    $$ = t;
+} | {
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node) {
+        .node_type = NVoid,
+        .asoc_type = Void,
+    };
+
+    $$ = t;
+}
+instrucciones_lista : instrucciones {
+    vec_init(&$$, sizeof(Tree));
+
+    Tree * sub = vec_push(&$$);
+    *sub = $1;
+} | instrucciones_lista ';' instrucciones {
+    $$ = $1;
+    vec_push(&$$);
+
+    Tree * sub = vec_push(&$$);
+    *sub = $3;
+};
 instrucciones: variable_asignacion |
       procedure_instruccion | instruccion_compuesta | if_instruccion |
       repeticion_instruccion | lectura_instruccion | escritura_instruccion;
 
 /* Loops */
 repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones {
+    Tree t;
+    tree_init(&t, sizeof(Node));
 
+    Node * n = (Node *)tree_new_node(&t, NULL);
+
+    *n = (Node) {
+        .node_type = NWhile,
+        .asoc_type = Void,
+    };
+
+    assert_tree_asoc_type_is($2, Bool);
+
+    tree_extend(&t, &$2, 0);
+    tree_extend(&t, &$4, 0);
+
+    $$ = t;
 }
 | KW_FOR for_asignacion KW_TO expresion KW_DO instrucciones {
+    Tree t;
+    tree_init(&t, sizeof(Node));
 
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node) {
+        .node_type = NFor,
+        .asoc_type = Void,
+        .value.forn = (ForNode) {
+            .down = 0,
+        }
+    };
+
+    tree_extend(&t, &$2, 0);
+    tree_extend(&t, &$4, 0);
+
+    $$ = t;
 }
 | KW_FOR for_asignacion KW_DOWNTO expresion KW_DO instrucciones {
+    Tree t;
+    tree_init(&t, sizeof(Node));
 
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node) {
+        .node_type = NFor,
+        .asoc_type = Void,
+        .value.forn = (ForNode) {
+            .down = 1,
+        }
+    };
+
+    tree_extend(&t, &$2, 0);
+    tree_extend(&t, &$4, 0);
+
+    $$ = t;
 };
 
 /* Lectura */
@@ -1139,13 +1253,25 @@ procedure_instruccion : IDENT {
         str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
         yyerror(str_as_ref(&wrn_buff));
     }
+
+    Tree args;
+    tree_init(&args, sizeof(Tree));
     
     Tree t;
-    tree_init(&t, sizeof(Tree));
-    $$ = (FunctionCall) {
-        .symbol = $1,
-        .args = t
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node){
+        .node_type = NCall,
+        .asoc_type = s->asoc_type.type,
+        .value.call = (FunctionCall){
+            .symbol = $1,
+            .args = args,
+            .return_type = s->asoc_type.type,
+        }
     };
+
+    $$ = t;
 };
 
 procedure_instruccion : IDENT '(' expresion_lista ')' {
@@ -1187,9 +1313,9 @@ procedure_instruccion : IDENT '(' expresion_lista ')' {
                 str_push(&wrn_buff, ", el argumento ");
                 str_push_sizet(&wrn_buff, n_arg + 1);
                 str_push(&wrn_buff, " se esperaba de tipo ");
-                str_push(&wrn_buff, data_type_e_display_return(&arg_sym->asoc_type.type));
+                str_push(&wrn_buff, data_type_e_display_return(arg_sym->asoc_type.type));
                 str_push(&wrn_buff, " y se paso de tipo ");
-                str_push(&wrn_buff, data_type_e_display_return(&arg->asoc_type));
+                str_push(&wrn_buff, data_type_e_display_return(arg->asoc_type));
                 yyerror(str_as_ref(&wrn_buff));
             }
         }
@@ -1197,11 +1323,20 @@ procedure_instruccion : IDENT '(' expresion_lista ')' {
         vec_drop(&children);
     }
 
-    $$ = (FunctionCall) {
-        .symbol = $1,
-        .args = $3,
-        .return_type = s->asoc_type.type,
+    Tree t;
+    tree_init(&t, sizeof(Node));
+
+    Node * n = (Node *)tree_new_node(&t, NULL);
+    *n = (Node) {
+        .node_type = NCall,
+        .asoc_type = s->asoc_type.type,
+        .value.call = (FunctionCall){
+            .symbol = $1,
+            .args = $3,
+        }
     };
+
+    $$ = t;
 };
 
 /* Relop */
@@ -1457,9 +1592,9 @@ llamado_funcion : IDENT '(' expresion_lista ')' {
                 str_push(&wrn_buff, ", el argumento ");
                 str_push_sizet(&wrn_buff, n_arg + 1);
                 str_push(&wrn_buff, " se esperaba de tipo ");
-                str_push(&wrn_buff, data_type_e_display_return(&arg_sym->asoc_type.type));
+                str_push(&wrn_buff, data_type_e_display_return(arg_sym->asoc_type.type));
                 str_push(&wrn_buff, " y se paso de tipo ");
-                str_push(&wrn_buff, data_type_e_display_return(&arg->asoc_type));
+                str_push(&wrn_buff, data_type_e_display_return(arg->asoc_type));
                 yyerror(str_as_ref(&wrn_buff));
             }
         }

@@ -20,6 +20,9 @@ typedef enum NodeType {
     NFunctionSign,
     NExpr,
     NIf,
+    NFor,
+    NWhile,
+    NCall,
 } NodeType;
 
 typedef struct FunctionNode {
@@ -36,6 +39,10 @@ typedef struct ConstNode {
         Symbol symbol;
         ConstValue value;
 } ConstNode;
+
+typedef struct ForNode {
+        int down;
+} ForNode;
 
 typedef enum ExprType {
     EIntValue,
@@ -112,6 +119,7 @@ typedef struct ExprNode {
 typedef union NodeValue {
         StrSlice sl;
         FunctionNode fun;
+        FunctionCall call;
         VarNode var;
         ConstNode cons;
         ExprNode expr;
@@ -119,6 +127,7 @@ typedef union NodeValue {
         IfNode ifn;
         WriteNode write;
         ReadNode read;
+        ForNode forn;
 } NodeValue;
 
 typedef struct Node {
@@ -129,7 +138,8 @@ typedef struct Node {
 } Node;
 
 void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla);
+char * node_type_display(NodeType nt);
 void node_display_id(size_t id, FILE *f, Tree *t, HashSet *tabla);
-void node_type_debug(NodeType *nt);
+void node_type_debug(NodeType nt);
 
 #endif

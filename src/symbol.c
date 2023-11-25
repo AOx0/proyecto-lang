@@ -22,8 +22,8 @@ HashIdx hash_symbol(void *s) {
     return res;
 }
 
-void data_type_e_debug(DataTypeE *d) {
-    switch (*d) {
+void data_type_e_debug(DataTypeE d) {
+    switch (d) {
     case Int: {
         printf("Int");
         break;
@@ -50,8 +50,8 @@ void data_type_e_debug(DataTypeE *d) {
     }
 }
 
-void data_type_e_display(FILE *f, DataTypeE *d) {
-    switch (*d) {
+void data_type_e_display(FILE *f, DataTypeE d) {
+    switch (d) {
     case Int: {
         fprintf(f, "int32_t");
         break;
@@ -78,8 +78,8 @@ void data_type_e_display(FILE *f, DataTypeE *d) {
     }
 }
 
-char *data_type_e_display_return(DataTypeE *d) {
-    switch (*d) {
+char *data_type_e_display_return(DataTypeE d) {
+    switch (d) {
     case Int: {
         return "int32_t";
     }
@@ -105,15 +105,15 @@ char *data_type_e_display_return(DataTypeE *d) {
 
 void data_type_display(FILE *f, int is_fun, StrSlice *name, DataType *d) {
     if (d->size == 1 || d->type == Str) {
-        data_type_e_display(f, &d->type);
+        data_type_e_display(f, d->type);
         if (!is_fun)
             fprintf(f, " %.*s", (int)name->len, name->ptr);
     } else {
         if (is_fun) {
-            data_type_e_display(f, &d->type);
+            data_type_e_display(f, d->type);
             fprintf(f, " *");
         } else {
-            data_type_e_display(f, &d->type);
+            data_type_e_display(f, d->type);
             fprintf(f, " %.*s", (int)name->len, name->ptr);
             fprintf(f, "[%zu]", d->size);
         }
@@ -146,7 +146,7 @@ void const_value_display(FILE *f, ConstValue *cv, DataType *d) {
 
 void data_type_debug(DataType *d) {
     printf("DataType { type: ");
-    data_type_e_debug(&d->type);
+    data_type_e_debug(d->type);
     printf(", num: %zu }", d->size);
 }
 

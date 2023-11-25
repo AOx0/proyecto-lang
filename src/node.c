@@ -8,8 +8,57 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void node_type_debug(NodeType *nt) {
-    switch (*nt) {
+char * node_type_display(NodeType nt) {
+    switch (nt) {
+    case NProgram: {
+        return "programa";
+    }
+    case NWrite: {
+        return "escritura";
+    }
+    case NRead: {
+        return "lectura";
+    }
+    case NVar: {
+        return "declaración de variable";
+    }
+    case NConst: {
+        return "declaración de constante";
+    }
+    case NAssign: {
+        return "asignacion";
+    }
+    case NFunction: {
+        return "funcion";
+    }
+    case NFunctionSign: {
+        return "funcion_sign";
+    }
+    case NVoid: {
+        return "void";
+    }
+    case NExpr: {
+        return "expresion";
+    }
+    case NIf: {
+        return "if";
+    }
+    case NFor: {
+        return "bucle for";
+    }
+    case NWhile: {
+        return "bucle while";
+    }
+    case NCall:
+        break;
+    }
+
+    panic("Invalid node type");
+    return NULL;
+}
+
+void node_type_debug(NodeType nt) {
+    switch (nt) {
     case NProgram: {
         printf("NProgram");
         break;
@@ -46,8 +95,24 @@ void node_type_debug(NodeType *nt) {
         printf("NVoid");
         break;
     }
-    default:
-        panic("Invalid type");
+    case NExpr: {
+        printf("NExpr");
+        break;
+    }
+    case NIf: {
+        printf("NIf");
+        break;
+    }
+    case NFor: {
+        printf("NFor");
+        break;
+    }
+    case NWhile: {
+        printf("NWhile");
+        break;
+    }
+    case NCall:
+        break;
     }
 }
 
@@ -205,7 +270,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         if (n->value.fun.args.len != 0) {
             for (size_t i = 0; i < n->value.fun.args.len; i++) {
                 Symbol *sl = (Symbol *)vec_get(&n->value.fun.args, i);
-                data_type_e_display(f, &sl->asoc_type.type);
+                data_type_e_display(f, sl->asoc_type.type);
                 fprintf(f, " %.*s", (int)sl->name.len, sl->name.ptr);
                 if (i + 1 != n->value.fun.args.len) {
                     fprintf(f, ", ");
@@ -282,5 +347,10 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         fprintf(f, "Assign");
         break;
     }
+    case NFor:
+    case NWhile:
+        break;
+    case NCall:
+        break;
     }
 }
