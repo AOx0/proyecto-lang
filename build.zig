@@ -39,7 +39,7 @@ pub fn build(b: *std.Build) void {
     gen_step.dependOn(&mv_flex.step);
     gen_step.dependOn(&mv_bison.step);
 
-    const flags = .{ "-Wall", "-Wextra", "-pedantic", if (werror) "-Werror" else "", if (werror) "-pedantic-errors" else "", if (target.isWindows()) "-DWIN" else "", if (table) "-DPRINT_TABLE" else "" };
+    const flags = .{ "-Wall", "-Wextra", "-pedantic", "-Wno-missing-braces", "-Wmissing-field-initializers", if (werror) "-Werror" else "", if (werror) "-pedantic-errors" else "", if (target.isWindows()) "-DWIN" else "", if (table) "-DPRINT_TABLE" else "" };
     // The main source code files without `main.c`. It is easier to compile it with specific main
     // files so that, for example, we can test it.
     const lnglib = b.addStaticLibrary(.{

@@ -61,6 +61,9 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
     // printf("\n");
 
     switch (n->node_type) {
+    case NIf: {
+        break;
+    }
     case NExpr: {
         switch (n->value.expr.type) {
         case EIntValue: {

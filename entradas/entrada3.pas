@@ -47,7 +47,7 @@ begin
     b := 3 + Add(a, b);
     (*b := multadd();*)
     multadd;
-    while (a > b) do
+    while ((a > b) and (4.0 == 4.0)) do
       b := b + 1 + 1;
     writeln(c);
     writeln(d)

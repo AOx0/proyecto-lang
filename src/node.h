@@ -18,7 +18,8 @@ typedef enum NodeType {
     NAssign,
     NFunction,
     NFunctionSign,
-    NExpr
+    NExpr,
+    NIf,
 } NodeType;
 
 typedef struct FunctionNode {
@@ -64,10 +65,10 @@ typedef enum OpType {
     OpNot,
     OpEq,
     OpNeq,
-    OpGt,
+    OpBt,
     OpLt,
-    OpGte,
-    OpLte,
+    OpEbt,
+    OpElt,
     OpAssign,
     OpAdd,
     OpSub,
@@ -90,6 +91,18 @@ typedef struct OpNode {
         OpType type;
 } OpNode;
 
+typedef struct IfNode {
+        int blocks;
+} IfNode;
+
+typedef struct WriteNode {
+        int newline;
+} WriteNode;
+
+typedef struct ReadNode {
+        Symbol target_symbol;
+} ReadNode;
+
 typedef struct ExprNode {
         ExprType type;
         ExprValue value;
@@ -102,6 +115,8 @@ typedef union NodeValue {
         ConstNode cons;
         ExprNode expr;
         OpNode op;
+        IfNode ifn;
+        WriteNode write;
 } NodeValue;
 
 typedef struct Node {
