@@ -404,6 +404,9 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
                 }
             }
             fprintf(f, ")");
+
+            vec_drop(&childs);
+
             break;
         }
         case EOp: {

@@ -12,7 +12,7 @@ pub fn build(b: *std.Build) void {
     const debug_flex = b.option(bool, "debug-flex", "Run flex with the `-d` flag") orelse false;
     const debug_gen = b.option(bool, "debug-gen", "Run flex and bison with debug flags") orelse false;
     const table = b.option(bool, "table", "Print symbol table") orelse false;
-    const tree = b.option(bool, "tree", "Print tree overview") orelse false;
+    const tree = b.option(bool, "tree", "Print basic AST") orelse false;
     const werror = b.option(bool, "error", "Treat warnings as errors") orelse false;
 
     _ = std.fs.cwd().openFile("build.zig", .{}) catch {
