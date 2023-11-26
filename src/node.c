@@ -21,13 +21,19 @@ void tree_debug(Tree *t) {
 
     TreeIter ti = tree_iter_new(t, 0);
     while (1) {
-        Node *n = tree_iter_next(&ti);
-        if (n == NULL) {
+        // Print tree with identation
+        TreeIterEntry entry = tree_iter_next(&ti);
+        if (entry.value == NULL) {
             break;
         }
-
+        
+        Node *n = (Node *)entry.value;
+        for (size_t i = 0; i < entry.level; i++) {
+            printf("  ");
+        }
         node_type_debug(n->node_type);
         printf("\n");
+
     }
 }
 
@@ -206,11 +212,11 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Tree args = n->value.expr.value.function_call.args;
             TreeIter ti = tree_iter_new(&args, 0);
             while (1) {
-                size_t *id = tree_iter_next(&ti);
-                if (id == NULL) {
+                TreeIterEntry entry = tree_iter_next(&ti);
+                if (entry.value == NULL) {
                     break;
                 }
-                Node *n = (Node *)vec_get(&args.values, *id);
+                Node *n = (Node *)vec_get(&args.values, *(size_t *)entry.value);
                 node_display(n, f, &args, tabla);
                 if (tree_iter_has_next(&ti)) {
                     fprintf(f, ", ");

@@ -1,4 +1,5 @@
 #include "../src/tree.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -41,10 +42,10 @@ int tree_extend_test() {
     TreeIter ti = tree_iter_new(&t1, 0);
 
     while (1) {
-        uint8_t *v = tree_iter_next(&ti);
-        if (v == NULL)
+        TreeIterEntry entry = tree_iter_next(&ti);
+        if (entry.value == NULL)
             break;
-        printf("%d\n", *v);
+        printf("%d\n", *(uint8_t *)entry.value);
     }
 
     return res;
@@ -105,10 +106,10 @@ int test_tree() {
     TreeIter ti = tree_iter_new(&t, 0);
 
     while (1) {
-        uint8_t *v = tree_iter_next(&ti);
+        TreeIterEntry entry = tree_iter_next(&ti);
         if (v == NULL)
             break;
-        printf("%d\n", *v);
+        printf("%d\n", *(uint8_t *)entry.value);
     }
 
     puts("DONE");

@@ -33,9 +33,9 @@ void tree_extend(Tree *t, Tree *o, size_t childs_of) {
 
 int tree_iter_has_next(TreeIter *ti) { return ti->parents.len != 0; }
 
-void *tree_iter_next(TreeIter *ti) {
+TreeIterEntry tree_iter_next(TreeIter *ti) {
     if (ti->parents.len == 0)
-        return NULL;
+        return (TreeIterEntry){.level = 0, .value = NULL, .parent = 0};
 
     size_t max_child = ti->tree->relations.len;
     size_t curr = *(size_t *)vec_last(&ti->parents);
@@ -59,7 +59,7 @@ void *tree_iter_next(TreeIter *ti) {
         }
     }
 
-    return temp;
+    return (TreeIterEntry){.level = ti->parents.len, .value = temp, .parent = curr};
 }
 
 size_t tree_num_child(Tree *t, size_t root) {

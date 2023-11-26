@@ -25,8 +25,16 @@ struct TreeIter {
 };
 typedef struct TreeIter TreeIter;
 
+struct TreeIterEntry {
+        size_t level;
+        size_t parent;
+        size_t child;
+        void *value;
+};
+typedef struct TreeIterEntry TreeIterEntry;
+
 void tree_relations_debug(Tree *t);
-void *tree_iter_next(TreeIter *ti);
+TreeIterEntry tree_iter_next(TreeIter *ti);
 int tree_iter_has_next(TreeIter *ti);
 void tree_extend(Tree *t, Tree *o, size_t childs_of);
 Vec tree_get_childs(Tree *t, size_t parent_id);
