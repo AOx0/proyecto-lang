@@ -3,8 +3,16 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+#include "hashset.h"
 
-void tree_extend(Tree *t, Tree *o, size_t childs_of) {
+#define UNUSED(x) (void)(x)
+
+HashIdx hash_size_t(void * v) {
+    return (HashIdx) { .idx = *(size_t *)v };
+}
+
+// Same as tree_extend but without the root node
+void tree_pull_extend(Tree *t, Tree *o, size_t sub_tree_root, size_t new_parent) {
     if (t->values.t_size != o->values.t_size)
         panic("Tree values size mismatch %zu != %zu", t->values.t_size,
               o->values.t_size);
@@ -13,32 +21,76 @@ void tree_extend(Tree *t, Tree *o, size_t childs_of) {
         panic("Trying to join empty tree", t->values.t_size, o->values.t_size);
 
     size_t offset = t->values.len;
-    // Copuamos todos los valores
-    for (size_t i = 0; i < o->values.len; i++) {
-        // printf("Copiando valor %zu ahora es %zu\n", i, offset + i);
-        void *value = vec_push(&t->values);
-        memcpy(value, vec_get(&o->values, i), t->values.t_size);
-    }
-
-    // Copiamos todas las relaciones
+    
+    HashSet inserted = hashset_new(sizeof(size_t), hash_size_t);
+    
+    // Clone all relations except the root and assign new root to new_parent
     for (size_t i = 0; i < o->relations.len; i++) {
         TreeEntry *te = (TreeEntry *)vec_get(&o->relations, i);
-        TreeEntry *new_te = (TreeEntry *)vec_push(&t->relations);
-        new_te->from = te->from + offset;
-        new_te->to = te->to + offset;
-        // printf("Copiando relacion %zu -> %zu ahora es %zu -> %zu\n",
-        // te->from, te->to, new_te->from, new_te->to);
+        size_t from = te->from;
+        size_t to = te->to;
+
+        if (from != sub_tree_root) {
+            tree_new_relation(t, from + offset, to + offset);
+        } else {
+            tree_new_relation(t, new_parent, to + offset);
+        }
+        hashset_insert(&inserted, &from);
+        hashset_insert(&inserted, &to);
     }
 
-    // Creamos la nueva relacion de la raiz (0) a childs_of
-    TreeEntry *new_te = (TreeEntry *)vec_push(&t->relations);
-    new_te->from = childs_of;
-    new_te->to = offset;
-    // printf("Creando relacion %zu -> %zu ahora es %zu -> %zu\n", childs_of,
-    // offset, new_te->from, new_te->to);
+    // Clone all values except the root that are in the hashset
+    for (size_t i = 0; i < o->values.len; i++) {
+        if (i == sub_tree_root)
+            continue;
+
+        if (hashset_contains(&inserted, &i)) {
+            size_t idx;
+            void *value = vec_get(&o->values, i);
+            void *new_node = tree_new_node(t, &idx);
+            memcpy(new_node, value, t->values.t_size);
+        }
+    }
+
+    hashset_drop(&inserted);
+    
 }
 
-void tree_root_extend(Tree *t, Tree *o) { tree_extend(t, o, 0); }
+void tree_extend(Tree *t, Tree *o, size_t sub_tree_root, size_t new_parent) {
+    if (t->values.t_size != o->values.t_size)
+        panic("Tree values size mismatch %zu != %zu", t->values.t_size,
+              o->values.t_size);
+
+    if (o->values.len == 0)
+        panic("Trying to join empty tree", t->values.t_size, o->values.t_size);
+
+    size_t offset = t->values.len;
+    
+    HashSet inserted = hashset_new(sizeof(size_t), hash_size_t);
+    
+    for (size_t i = 0; i < o->values.len; i++) {
+        size_t idx;
+        void *value = vec_get(&o->values, i);
+        void *new_node = tree_new_node(t, &idx);
+        memcpy(new_node, value, t->values.t_size);
+        hashset_insert(&inserted, &idx);
+    }
+
+    for (size_t i = 0; i < o->relations.len; i++) {
+        TreeEntry *te = (TreeEntry *)vec_get(&o->relations, i);
+        size_t from = te->from;
+        size_t to = te->to;
+        tree_new_relation(t, from + offset, to + offset);
+    }
+
+    
+    tree_new_relation(t, new_parent, sub_tree_root + offset);
+    
+    hashset_drop(&inserted);
+    
+}
+
+void tree_root_extend(Tree *t, Tree *o) { tree_extend(t, o, 0, 0); }
 
 int tree_iter_has_next(TreeIter *ti) { return ti->remaning.len != 0; }
 
@@ -75,7 +127,7 @@ TreeIterEntry tree_iter_next(TreeIter *ti) {
             ti->level -= 1;
         }
     } else {
-        ti->level -= 1;
+        ti->level = 0;
     }
 
     return top;
@@ -165,6 +217,10 @@ void *tree_last_node(Tree *t, size_t *self_idx) {
 
 TreeEntry *tree_new_relation(Tree *t, size_t from, size_t to) {
     TreeEntry *te = (TreeEntry *)vec_push(&t->relations);
+
+    if (from == to)
+        panic("Trying to create a relation from %zu to %zu", from, to);
+
     te->from = from;
     te->to = to;
     return te;

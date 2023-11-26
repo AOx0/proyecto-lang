@@ -9,8 +9,8 @@
 #include <stdlib.h>
 
 void tree_debug(Tree *t) {
+    
     for (size_t i = 0; i < t->values.len; i++) {
-        printf("Registered size: %zu\n", t->values.t_size);
         Node *n = (Node *)vec_get(&t->values, i);
         printf("%zu: ", i);
         node_type_debug(n->node_type);
@@ -18,7 +18,7 @@ void tree_debug(Tree *t) {
     }
 
     tree_relations_debug(t);
-
+    
     TreeIter ti = tree_iter_new(t, 0);
     while (1) {
         // Print tree with identation
@@ -28,8 +28,8 @@ void tree_debug(Tree *t) {
         }
 
         Node *n = (Node *)entry.value;
-        for (size_t i = 0; i < entry.level; i++) {
-            printf("  ");
+        for (size_t i = 1; i < entry.level; i++) {
+            printf("-");
         }
         node_type_debug(n->node_type);
         printf("\n");
@@ -273,6 +273,14 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         fprintf(f, "#include <stdio.h>\n");
         fprintf(f, "#include <stdlib.h>\n\n");
         Vec child = tree_get_childs(t, n->id);
+
+        // Print child ids 
+        for (size_t i = 0; i < child.len; i++) {
+            size_t *id = (size_t *)vec_get(&child, i);
+            printf("%zu, ", *id);
+        }
+        printf("\n");
+
         for (size_t i = 0; i < child.len; i++) {
             size_t *id = (size_t *)vec_get(&child, i);
             // printf("%zu\n", *id);
@@ -389,11 +397,16 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         break;
     }
     case NFor:
+        fprintf(f, "For");
+        break;
     case NWhile:
+        fprintf(f, "While");
         break;
     case NCall:
+        fprintf(f, "Call");
         break;
     case NVoid:
+        fprintf(f, "Void");
         break;
     }
 }

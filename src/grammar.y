@@ -317,45 +317,41 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
     hashset_insert(&tabla, &$3);
 
     size_t idx;
-    Node * node = (Node *)tree_new_node(&ast, &idx);
-    *node = (Node){ 
+    Node * root = (Node *)tree_new_node(&ast, &idx);
+    *root = (Node) {
         .node_type = NRoot,
-        .id = idx,
         .asoc_type = Void,
     };
 
-    size_t child_idx;
-    node = (Node *)tree_new_node(&ast, &child_idx);
-    *node = (Node) {
-        .node_type = NProgram,
-        .id = child_idx,
-        .value.fun = (FunctionNode) { .symbol = $3, .args = $5 },
-        .asoc_type = Void
-    };
-    tree_new_relation(&ast, idx, child_idx); 
+    Tree program;
+    tree_init(&program, sizeof(Node));
 
-    for (size_t i = 0; i < $8.len; i++) {
-        Symbol *s = vec_get(&$8, i);
-        node = (Node *)tree_new_node(&ast, &child_idx);
-
-        if (s->type == Variable) { 
-            *node = (Node) {
-                .node_type = NVar,
-                .id = child_idx,
-                .value.var = (VarNode) { .symbol = *s }, 
-            };
-        } else {
-            *node = (Node) {
-                .node_type = NConst,
-                .id = child_idx,
-                .value.cons = (ConstNode) { .symbol = *s, .value.bool = 1 }, 
-            };
+    Node * n = (Node *)tree_new_node(&program, NULL);
+    *n = (Node) {
+        .node_type = NFunction,
+        .asoc_type = Void,
+        .value.fun = (FunctionNode) {
+            .symbol = $3,
+            .args = $5,
         }
-        tree_new_relation(&ast, idx, child_idx); 
-    }
+    };
+    
+    tree_extend(&program, &$10, 0, 0);
+    tree_extend(&ast, &program, 0, 0);
 
-    tree_extend(&ast, &$9, 0);
+    tree_pull_extend(&ast, &$9, 0, 0);
 
+    n = (Node *)tree_new_node(&ast, &idx);
+    *n = (Node) {
+        .node_type = NFunction,
+        .asoc_type = Void,
+        .value.fun = (FunctionNode) {
+            .symbol = (Symbol) { .name = "main", .scope = 0, .line = 0, .nchar = 0, .refs = vec_new(sizeof(size_t)) },
+            .args = vec_new(sizeof(Symbol)),
+            .declarations = vec_new(sizeof(Symbol)),
+        }
+    };
+    tree_new_relation(&ast, idx, 0);
 
     #ifdef PRINT_TABLE
     size_t i = 0;
@@ -401,10 +397,11 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
     }
     #endif
 
-    if (err == 0)  {
-        // node_display_id(idx, OUT_FILE, &ast, &tabla);
+    #ifdef PRINT_TREE
         tree_debug(&ast);
-    }
+    #endif
+
+    if (err == 0)  node_display_id(idx, OUT_FILE, &ast, &tabla);
 
     // Al final liberamos la tabla de hashes de memoria
     vec_drop(&$5);
@@ -509,7 +506,7 @@ estandard_tipo : T_INT { $$ = (DataType){.type = Int, .size = 1}; }
 /* Subprograma */
 subprogramas : subprogramas subprograma_declaracion ';' {
     $$ = $1;
-    tree_extend(&$$, &$2, 0);
+    tree_extend(&$$, &$2, 0, 0);
 } | {
     tree_init(&$$, sizeof(Node));
 
@@ -532,7 +529,7 @@ subprograma_declaracion
     };
 
      // Add to tree subprogram declarations
-    tree_extend(&$$, &$3, 0);
+    tree_extend(&$$, &$3, 0, 0);
 
     Node * n = (Node *)tree_new_node(&$$, NULL);
     *n = (Node) {
@@ -544,7 +541,7 @@ subprograma_declaracion
         }
     };
 
-    tree_extend(&$$, &$4, 0);
+    tree_extend(&$$, &$4, 0, 0);
 };
 subprograma_encabezado : KW_FUNC IDENT {
     $2.type = Function;
@@ -632,7 +629,7 @@ instrucciones_opcionales : instrucciones_lista {
 
     for (size_t i = 0; i < $1.len; i--) {
         Tree *t2 = (Tree *)vec_get(&$1, i);
-        tree_extend(&$$, t2, 0);
+        tree_extend(&$$, t2, 0, 0);
     }
 } | {
     tree_init(&$$, sizeof(Node));
@@ -672,8 +669,8 @@ repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones {
 
     assert_tree_asoc_type_is($2, Bool);
 
-    tree_extend(&$$, &$2, 0);
-    tree_extend(&$$, &$4, 0);
+    tree_extend(&$$, &$2, 0, 0);
+    tree_extend(&$$, &$4, 0, 0);
 } | KW_FOR for_asignacion KW_TO expresion KW_DO instrucciones {
     tree_init(&$$, sizeof(Node));
 
@@ -686,8 +683,8 @@ repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones {
         }
     };
 
-    tree_extend(&$$, &$2, 0);
-    tree_extend(&$$, &$4, 0);
+    tree_extend(&$$, &$2, 0, 0);
+    tree_extend(&$$, &$4, 0, 0);
 } | KW_FOR for_asignacion KW_DOWNTO expresion KW_DO instrucciones {
     tree_init(&$$, sizeof(Node));
 
@@ -700,8 +697,8 @@ repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones {
         }
     };
 
-    tree_extend(&$$, &$2, 0);
-    tree_extend(&$$, &$4, 0);
+    tree_extend(&$$, &$2, 0, 0);
+    tree_extend(&$$, &$4, 0, 0);
 };
 
 /* Lectura */
@@ -865,7 +862,7 @@ escritura_instruccion : KW_WRITE '(' CONST_CADENA ')'{
     };
 
     tree_new_relation(&$$, 0, 1);
-    tree_extend(&$$, &$5, 0);
+    tree_extend(&$$, &$5, 0, 0);
 }
  | KW_WRITELN '(' CONST_CADENA ',' expresion ')' {
     assert_node_is_printable(tree_get_root(&$5));
@@ -888,7 +885,7 @@ escritura_instruccion : KW_WRITE '(' CONST_CADENA ')'{
     };
 
     tree_new_relation(&$$, 0, 1);
-    tree_extend(&$$, &$5, 0);
+    tree_extend(&$$, &$5, 0, 0);
 };
 
 escritura_instruccion : KW_WRITE '(' IDENT ',' IDENT ')' {
@@ -1052,7 +1049,7 @@ escritura_instruccion : KW_WRITE '(' IDENT ',' expresion ')' {
     };
 
     tree_new_relation(&$$, 0, 1);
-    tree_extend(&$$, &$5, 0);    
+    tree_extend(&$$, &$5, 0, 0);    
 };
 escritura_instruccion : KW_WRITELN '(' IDENT ',' expresion ')' {
     assert_sym_exists(&$3);
@@ -1080,7 +1077,7 @@ escritura_instruccion : KW_WRITELN '(' IDENT ',' expresion ')' {
     };
 
     tree_new_relation(&$$, 0, 1);
-    tree_extend(&$$, &$5, 0);
+    tree_extend(&$$, &$5, 0, 0);
 };
 if_instruccion : KW_IF relop_expresion KW_THEN instrucciones {
     assert_expr_type(tree_get_root(&$2), tree_get_root(&$4));
@@ -1095,8 +1092,8 @@ if_instruccion : KW_IF relop_expresion KW_THEN instrucciones {
         }
     };
 
-    tree_extend(&$$, &$2, 0);
-    tree_extend(&$$, &$4, 0);
+    tree_extend(&$$, &$2, 0, 0);
+    tree_extend(&$$, &$4, 0, 0);
 } | KW_IF relop_expresion KW_THEN instrucciones KW_ELSE instrucciones {
     
     assert_expr_type(tree_get_root(&$2), tree_get_root(&$4));
@@ -1111,9 +1108,9 @@ if_instruccion : KW_IF relop_expresion KW_THEN instrucciones {
         }
     };
 
-    tree_extend(&$$, &$2, 0);
-    tree_extend(&$$, &$4, 0);
-    tree_extend(&$$, &$6, 0);
+    tree_extend(&$$, &$2, 0, 0);
+    tree_extend(&$$, &$4, 0, 0);
+    tree_extend(&$$, &$6, 0, 0);
 };
 
 /* Asignacion */
@@ -1134,8 +1131,8 @@ variable_asignacion : variable OP_ASIGN expresion {
         }
     };
 
-    tree_extend(&$$, &$1, 0);
-    tree_extend(&$$, &$3, 0);
+    tree_extend(&$$, &$1, 0, 0);
+    tree_extend(&$$, &$3, 0, 0);
 };
 
 for_asignacion : variable_asignacion | variable;
@@ -1299,8 +1296,8 @@ relop_expresion : relop_expresion RELOP_OR relop_and {
         }
     };
 
-    tree_extend(&$$, &$1, 0);
-    tree_extend(&$$, &$3, 0);
+    tree_extend(&$$, &$1, 0, 0);
+    tree_extend(&$$, &$3, 0, 0);
 } | relop_and;
 
 relop_and : relop_and RELOP_AND relop_not {
@@ -1320,8 +1317,8 @@ relop_and : relop_and RELOP_AND relop_not {
         }
     };
 
-    tree_extend(&$$, &$1, 0);
-    tree_extend(&$$, &$3, 0);
+    tree_extend(&$$, &$1, 0, 0);
+    tree_extend(&$$, &$3, 0, 0);
 } | relop_not;
 
 relop_not : RELOP_NOT relop_not {
@@ -1339,7 +1336,7 @@ relop_not : RELOP_NOT relop_not {
         }
     };
 
-    tree_extend(&$$, &$2, 0);
+    tree_extend(&$$, &$2, 0, 0);
 } | relop_paren;
 
 relop_paren : '(' relop_expresion ')' { $$ = $2; } | relop_expresion_simple;
@@ -1358,8 +1355,8 @@ relop_expresion_simple : expresion relop expresion {
         .value.expr = $2,
     };
 
-    tree_extend(&$$, &$1, 0);
-    tree_extend(&$$, &$3, 0);
+    tree_extend(&$$, &$1, 0, 0);
+    tree_extend(&$$, &$3, 0, 0);
 };
 
 relop : RELOP_AND { $$ = (ExprNode) { .type = EOp, .value.op = OpAnd }; } 
@@ -1381,10 +1378,10 @@ expresion_lista : expresion {
         .id = 0,
     };
 
-    tree_extend(&$$, &$1, 0);
+    tree_extend(&$$, &$1, 0, 0);
 } | expresion_lista ',' expresion {
     $$ = $1;
-    tree_extend(&$$, &$3, 0);
+    tree_extend(&$$, &$3, 0, 0);
 } | {
     tree_init(&$$, sizeof(Node));
 };
@@ -1405,8 +1402,8 @@ expresion: termino | expresion ADDOP termino {
         }
     };
 
-    tree_extend(&$$, &$1, 0);
-    tree_extend(&$$, &$3, 0);
+    tree_extend(&$$, &$1, 0, 0);
+    tree_extend(&$$, &$3, 0, 0);
 };
 termino : factor | termino MULOP factor {
     tree_init(&$$, sizeof(Node));
@@ -1425,8 +1422,8 @@ termino : factor | termino MULOP factor {
         }
     };
 
-    tree_extend(&$$, &$1, 0);
-    tree_extend(&$$, &$3, 0);
+    tree_extend(&$$, &$1, 0, 0);
+    tree_extend(&$$, &$3, 0, 0);
 };
 llamado_funcion : IDENT '(' expresion_lista ')' { 
     Symbol * s = assert_sym_exists(&$1);
