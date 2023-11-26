@@ -1,29 +1,21 @@
 program principal(input, output);
-    
-    var a,b,c,d: integer;
+    var a,b: integer;
 
-    function Add(a: integer; b: integer) : integer;
+    procedure NumberRelation(numero1: integer; numero2: integer);
     begin
-        Add := a + b
-    end;
-
-    function Mult(c: integer; a: integer) : integer;
-    begin
-        Mult := c * a
-    end;
-
-    procedure multadd;
-    begin
-        c := Add(a, b);
-        d := Mult(c, a)
+        if(numero1>numero2) then
+            writeln(numero1)
+        else
+            begin
+                if(numero1 <numero2) then
+                    writeln(numero2)
+                else
+                    writeln(numero2)
+            end
     end;
 
 begin
-    a := 5;
-    b := 3;
-    multadd;
-    while (a and b) do
-      b := b + 1;
-    writeln("c");
-    writeln("d")
+    a:=5;
+    b:=3;
+    NumberRelation(a,b)
 end.

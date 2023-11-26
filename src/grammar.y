@@ -26,11 +26,11 @@
     HashSet tabla;
     String wrn_buff;
 
-    Node * tree_get_root(Tree *t) {
+    Node * ast_get_root(Tree *t) {
         return (Node *)vec_get(&t->values, 0);
     }
 
-    Node * tree_get_node(Tree *t, size_t id) {
+    Node * ast_get_node(Tree *t, size_t id) {
         return (Node *)vec_get(&t->values, id);
     }
 
@@ -137,7 +137,7 @@
     }
 
     void assert_tree_asoc_type_is(Tree t, DataTypeE type) {
-        Node *n = tree_get_root(&t);
+        Node *n = ast_get_root(&t);
 
         if (n->asoc_type != type) {
             str_clear(&wrn_buff);
@@ -150,7 +150,7 @@
     }
 
     void assert_tree_node_type_is(Tree t, NodeType type) {
-        Node *n = tree_get_root(&t);
+        Node *n = ast_get_root(&t);
 
         if (n->node_type != type) {
             str_clear(&wrn_buff);
@@ -320,22 +320,6 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
     root->node_type = NRoot;
     root->asoc_type = Void;
 
-    Tree program;
-    tree_init(&program, sizeof(Node));
-
-    Node * n = ast_create_node(&program);
-    n->node_type = NFunction;
-    n->asoc_type = Void;
-    n->value.fun = (FunctionNode) {
-        .symbol = $3,
-        .args = $5,
-    };
-    
-    tree_extend_with_subtree(&program, &$10, 0, 0);
-    tree_extend_with_subtree(&ast, &program, 0, 0);
-
-    tree_extend_with_subtree(&ast, &$9, 0, 0);
-
     for (size_t i = 0; i < $8.len; i++) {
         Symbol *s = vec_get(&$8, i);
         Node * node = ast_create_node(&ast);
@@ -351,6 +335,23 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
 
         tree_new_relation(&ast, 0, node->id); 
     }
+
+    tree_extend_with_subtree(&ast, &$9, 0, 0);
+
+    Tree program;
+    tree_init(&program, sizeof(Node));
+
+    Node * n = ast_create_node(&program);
+    n->node_type = NFunction;
+    n->asoc_type = Void;
+    n->value.fun = (FunctionNode) {
+        .symbol = $3,
+        .args = $5,
+    };
+    
+    tree_extend_with_subtree(&ast, &program, 0, 0);
+    tree_extend_with_subtree(&program, &$10, 0, 0);
+    
 
     #ifdef PRINT_TABLE
     size_t i = 0;
@@ -395,6 +396,8 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
         }
     }
     #endif
+
+    flip_tree_relations(&ast);
 
     #ifdef PRINT_TREE
         tree_debug(&ast, &tabla);
@@ -612,8 +615,12 @@ instrucciones_opcionales : instrucciones_lista {
     n->node_type = NVoid;
     n->asoc_type = Void;
 
-    for (size_t i = 0; i < $1.len; i--) {
+    for (size_t i = 0; i < $1.len; i++) {
         Tree *t2 = (Tree *)vec_get(&$1, i);
+
+        if (t2->values.len == 0)
+            continue;
+
         tree_extend_with_subtree(&$$, t2, 0, 0);
     }
 } | {
@@ -794,7 +801,7 @@ escritura_instruccion : KW_WRITE '(' CONST_CADENA ')'{
 
     tree_new_relation(&$$, 0, 1);
  } | KW_WRITE '(' CONST_CADENA ',' expresion ')' {
-    assert_node_is_printable(tree_get_root(&$5));
+    assert_node_is_printable(ast_get_root(&$5));
     tree_init(&$$, sizeof(Node));
 
     Node * n = ast_create_node(&$$);
@@ -813,7 +820,7 @@ escritura_instruccion : KW_WRITE '(' CONST_CADENA ')'{
     tree_extend_with_subtree(&$$, &$5, 0, 0);
 }
  | KW_WRITELN '(' CONST_CADENA ',' expresion ')' {
-    assert_node_is_printable(tree_get_root(&$5));
+    assert_node_is_printable(ast_get_root(&$5));
     tree_init(&$$, sizeof(Node));
 
     Node * n = ast_create_node(&$$);
@@ -950,7 +957,7 @@ escritura_instruccion : KW_WRITELN '(' IDENT ')' {
 
 escritura_instruccion : KW_WRITE '(' IDENT ',' expresion ')' {
     Symbol * s = assert_sym_exists(&$3);
-    assert_node_is_printable(tree_get_root(&$5));
+    assert_node_is_printable(ast_get_root(&$5));
     assert_ident_is_printable(&$3);
     tree_init(&$$, sizeof(Node));
 
@@ -974,7 +981,7 @@ escritura_instruccion : KW_WRITE '(' IDENT ',' expresion ')' {
 };
 escritura_instruccion : KW_WRITELN '(' IDENT ',' expresion ')' {
     Symbol * s = assert_sym_exists(&$3);
-    assert_node_is_printable(tree_get_root(&$5));
+    assert_node_is_printable(ast_get_root(&$5));
     assert_ident_is_printable(&$3);
     tree_init(&$$, sizeof(Node));
 
@@ -997,7 +1004,6 @@ escritura_instruccion : KW_WRITELN '(' IDENT ',' expresion ')' {
     tree_extend_with_subtree(&$$, &$5, 0, 0);
 };
 if_instruccion : KW_IF relop_expresion KW_THEN instrucciones {
-    assert_expr_type(tree_get_root(&$2), tree_get_root(&$4));
     tree_init(&$$, sizeof(Node));
 
     Node * n = ast_create_node(&$$);
@@ -1010,8 +1016,6 @@ if_instruccion : KW_IF relop_expresion KW_THEN instrucciones {
     tree_extend_with_subtree(&$$, &$2, 0, 0);
     tree_extend_with_subtree(&$$, &$4, 0, 0);
 } | KW_IF relop_expresion KW_THEN instrucciones KW_ELSE instrucciones {
-    
-    assert_expr_type(tree_get_root(&$2), tree_get_root(&$4));
     tree_init(&$$, sizeof(Node));
 
     Node * n = ast_create_node(&$$);
@@ -1028,8 +1032,8 @@ if_instruccion : KW_IF relop_expresion KW_THEN instrucciones {
 
 /* Asignacion */
 variable_asignacion : variable OP_ASIGN expresion {
-    Node * var = tree_get_root(&$1);
-    Node * expr = tree_get_root(&$3);
+    Node * var = ast_get_root(&$1);
+    Node * expr = ast_get_root(&$3);
 
     assert_variable_assigned_type(var, expr);
     tree_init(&$$, sizeof(Node));
@@ -1181,8 +1185,8 @@ procedure_instruccion : IDENT '(' expresion_lista ')' {
 relop_expresion : relop_expresion RELOP_OR relop_and {
     tree_init(&$$, sizeof(Node));
 
-    Node * lhs = tree_get_root(&$1);
-    Node * rhs = tree_get_root(&$3);
+    Node * lhs = ast_get_root(&$1);
+    Node * rhs = ast_get_root(&$3);
     assert_expr_type(lhs, rhs);
 
     Node * n = ast_create_node(&$$);
@@ -1200,8 +1204,8 @@ relop_expresion : relop_expresion RELOP_OR relop_and {
 relop_and : relop_and RELOP_AND relop_not {
     tree_init(&$$, sizeof(Node));
 
-    Node * lhs = tree_get_root(&$1);
-    Node * rhs = tree_get_root(&$3);
+    Node * lhs = ast_get_root(&$1);
+    Node * rhs = ast_get_root(&$3);
     assert_expr_type(lhs, rhs);
 
     Node * n = ast_create_node(&$$);
@@ -1219,7 +1223,7 @@ relop_and : relop_and RELOP_AND relop_not {
 relop_not : RELOP_NOT relop_not {
     tree_init(&$$, sizeof(Node));
 
-    Node * lhs = tree_get_root(&$2);
+    Node * lhs = ast_get_root(&$2);
 
     Node * n = ast_create_node(&$$);
     n->node_type = NExpr;
@@ -1237,8 +1241,8 @@ relop_paren : '(' relop_expresion ')' { $$ = $2; } | relop_expresion_simple;
 relop_expresion_simple : expresion relop expresion {
     tree_init(&$$, sizeof(Node));
 
-    Node * lhs = tree_get_root(&$1);
-    Node * rhs = tree_get_root(&$3);
+    Node * lhs = ast_get_root(&$1);
+    Node * rhs = ast_get_root(&$3);
     assert_expr_type(lhs, rhs);
 
     Node * n = ast_create_node(&$$);
@@ -1278,8 +1282,8 @@ expresion_lista : expresion {
 expresion: termino | expresion ADDOP termino {
     tree_init(&$$, sizeof(Node));
 
-    Node * lhs = tree_get_root(&$1);
-    Node * rhs = tree_get_root(&$3);
+    Node * lhs = ast_get_root(&$1);
+    Node * rhs = ast_get_root(&$3);
     assert_expr_type(lhs, rhs);
 
     Node * n = ast_create_node(&$$);
@@ -1296,8 +1300,8 @@ expresion: termino | expresion ADDOP termino {
 termino : factor | termino MULOP factor {
     tree_init(&$$, sizeof(Node));
 
-    Node * lhs = tree_get_root(&$1);
-    Node * rhs = tree_get_root(&$3);
+    Node * lhs = ast_get_root(&$1);
+    Node * rhs = ast_get_root(&$3);
     assert_expr_type(lhs, rhs);
 
     Node * n = ast_create_node(&$$);
@@ -1346,7 +1350,7 @@ llamado_funcion : IDENT '(' expresion_lista ')' {
 
         
         for (size_t n_arg = 0; n_arg < children.len; n_arg++) {
-            Node * arg = tree_get_node(&$3, *(size_t *)vec_get(&children, n_arg));
+            Node * arg = ast_get_node(&$3, *(size_t *)vec_get(&children, n_arg));
             Symbol * arg_sym = (Symbol *)vec_get(&s->info.fun.args, n_arg);
 
             if (arg->asoc_type != arg_sym->asoc_type.type) {
@@ -1456,7 +1460,7 @@ factor : CONST_REAL {
 factor : ADDOP factor {
     tree_init(&$$, sizeof(Node));
 
-    Node * past_root = tree_get_root(&$2);
+    Node * past_root = ast_get_root(&$2);
 
     Node * n = ast_create_node(&$$);
     n->node_type = NExpr;

@@ -14,14 +14,14 @@ program principal(input, output, entrada);
     function Add(a: integer; b: integer) : integer;
     var zz: integer;
     begin
-        writeln(c);
+        writeln(a, c);
         Add := a + b
     end;
 
     (* Multiplica numeros *)
     function Mult(z: integer; a: integer) : integer;
     begin
-        write(z);
+        (* write(z); *)
         Mult := c * a
     end;
 

@@ -10,7 +10,7 @@ HashIdx hash_symbol(void *s) {
 
     Symbol *sy = (Symbol *)s;
 
-    for (size_t i = 0; i < sy->name.len && i < 5; i++) {
+    for (size_t i = 0; i < sy->name.len; i++) {
         res.idx += sy->name.ptr[i] * (i + 1);
     }
 

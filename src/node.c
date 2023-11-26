@@ -13,6 +13,25 @@
 
 #define UNUSED(x) (void)(x)
 
+// So (1, 2), (1, 3) becomes (1, 3), (1, 2)
+void flip_tree_relations(Tree *t) {
+    Vec new_relations = vec_new(sizeof(TreeEntry));
+    
+    for (size_t i = t->relations.len - 1; i >= 0; i--) {
+        TreeEntry * te = (TreeEntry *)vec_get(&t->relations, i);
+        
+        TreeEntry * new = (TreeEntry *)vec_push(&new_relations);
+        new->from = te->from;
+        new->to = te->to; 
+
+        if (i == 0)
+            break;
+    }
+
+    vec_drop(&t->relations);
+    t->relations = new_relations;
+}
+
 Node *ast_create_node(Tree *t) {
     size_t id = 0;
     void *res = tree_new_node(t, &id);
@@ -35,7 +54,7 @@ void tree_extend_with_subtree(Tree *t, Tree *o, size_t sub_tree_root,
 
     for (size_t i = 0; i < o->values.len; i++) {
         Node *value = (Node *)vec_get(&o->values, i);
-        size_t id_was = value->id;
+        //size_t id_was = value->id;
         Node *new_node = ast_create_node(t);
         size_t new_id_is = new_node->id;
         memcpy(new_node, value, t->values.t_size);
@@ -43,7 +62,7 @@ void tree_extend_with_subtree(Tree *t, Tree *o, size_t sub_tree_root,
         Node *n = vec_get(&t->values, new_id_is);
         n->id = new_id_is;
 
-        printf("New id for %zu is %zu\n", id_was, new_id_is);
+        // printf("New id for %zu is %zu\n", id_was, new_id_is);
     }
 
     for (size_t i = 0; i < o->relations.len; i++) {
@@ -217,14 +236,75 @@ void node_type_debug(NodeType nt) {
     }
 }
 
+void display_optype(FILE * f, OpType t) {
+    switch (t) {
+        case OpAdd: {
+            fprintf(f, " + ");
+            break;
+        }
+        case OpSub: {
+            fprintf(f, " - ");
+            break;
+        }
+        case OpMul: {
+            fprintf(f, " * ");
+            break;
+        }
+        case OpDiv: {
+            fprintf(f, " / ");
+            break;
+        }
+        case OpMod: {
+            fprintf(f, " %% ");
+            break;
+        }
+        case OpEq: {
+            fprintf(f, " == ");
+            break;
+        }
+        case OpNeq: {
+            fprintf(f, " != ");
+            break;
+        }
+        case OpBt: {
+            fprintf(f, " > ");
+            break;
+        }
+        case OpLt: {
+            fprintf(f, " < ");
+            break;
+        }
+        case OpEbt: {
+            fprintf(f, " >= ");
+            break;
+        }
+        case OpElt: {
+            fprintf(f, " <= ");
+            break;
+        }
+        case OpAnd: {
+            fprintf(f, " && ");
+            break;
+        }
+        case OpOr: {
+            fprintf(f, " || ");
+            break;
+        }
+        case OpNot: {
+            fprintf(f, "!");
+            break;
+        }
+    }
+}
+
 void node_display_id(size_t id, FILE *f, Tree *t, HashSet *tabla) {
     Node *node = (Node *)vec_get(&t->values, id);
     node_display(node, f, t, tabla);
 }
 
 void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
-    // node_type_debug(&n->node_type);
-    // printf("\n");
+    //node_type_debug(n->node_type);
+    //printf("\n");
 
     switch (n->node_type) {
     case NIf: {
@@ -234,6 +314,28 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         Node *v = (Node *)vec_get(&t->values, *id);
         node_display_id(v->id, f, t, tabla);
         fprintf(f, ") {\n");
+
+        id = (size_t *)vec_get(&child, 1);
+        v = (Node *)vec_get(&t->values, *id);
+
+        fprintf(f, "    ");
+        node_display_id(v->id, f, t, tabla);
+
+        fprintf(f, "}");
+
+        if (child.len == 3) {
+            fprintf(f, " else {\n");
+            id = (size_t *)vec_get(&child, 2);
+            v = (Node *)vec_get(&t->values, *id);
+            fprintf(f, "    ");
+            node_display_id(v->id, f, t, tabla);
+            fprintf(f, "}\n");
+        } else {
+            fprintf(f, "\n");
+        }
+
+        vec_drop(&child);
+
         break;
     }
     case NExpr: {
@@ -305,7 +407,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             //  }
 
             Node *derecha =
-                (Node *)vec_get(&t->values, *(size_t *)vec_get(&hijos, 1));
+                (Node *)vec_get(&t->values, *(size_t *)vec_get(&hijos, 0));
 
             if (derecha->node_type != NExpr) {
                 panic("Esperaba una expresion");
@@ -314,11 +416,11 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             node_display_id(derecha->id, f, t, tabla);
 
             // Luego el operador
-            fprintf(f, " %c ", n->value.expr.value.op);
+            display_optype(f, n->value.expr.value.op);
 
             // Y por ultimo la izquierda
             Node *izquierda =
-                (Node *)vec_get(&t->values, *(size_t *)vec_get(&hijos, 0));
+                (Node *)vec_get(&t->values, *(size_t *)vec_get(&hijos,1));
             node_display_id(izquierda->id, f, t, tabla);
 
             break;
@@ -363,6 +465,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
                                       .args = s->info.fun.args,
                                       .symbol = *s,
                                   }};
+
                         node_display(&n, f, t, tabla);
                         fprintf(f, ";\n");
                         break;
@@ -403,8 +506,9 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         break;
     }
     case NFunction: {
+        fprintf(f, "\n");
         FunctionNode node = n->value.fun;
-        data_type_e_display_return(node.symbol.asoc_type.type);
+        fprintf(f, "%s", data_type_e_display_return(node.symbol.asoc_type.type));
         fprintf(f, " %.*s(", (int)node.symbol.name.len, node.symbol.name.ptr);
 
         if (node.symbol.info.fun.args.len != 0) {
@@ -423,6 +527,9 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
         fprintf(f, ") {\n");
 
         Vec child = tree_get_childs(t, n->id);
+
+        //printf("Numero de anidados: %zu\n", child.len);
+
         for (size_t i = 0; i < child.len; i++) {
             size_t *id = (size_t *)vec_get(&child, i);
             Node *v = (Node *)vec_get(&t->values, *id);
@@ -475,6 +582,8 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             size_t *id = (size_t *)vec_get(&child, i);
             printf("%zu\n", *id);
             Node *v = (Node *)vec_get(&t->values, *id);
+
+            fprintf(f, "    ");
             node_display_id(v->id, f, t, tabla);
         }
         vec_drop(&child);
@@ -496,45 +605,61 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
 
             switch (v->value.expr.type) {
             case EIntValue: {
-                data_type_e_display_scan(Int);
+                fprintf(f, "%s", data_type_e_display_scan(Int));
                 break;
             }
             case ERealValue: {
-                data_type_e_display_scan(Real);
+                fprintf(f, "%s", data_type_e_display_scan(Real));
                 break;
             }
             case EStringValue: {
-                data_type_e_display_scan(Str);
+                fprintf(f, "%s", data_type_e_display_scan(Str));
                 break;
             }
             case ESymbol: {
                 Symbol *s =
                     (Symbol *)hashset_get(tabla, &v->value.expr.value.symbol);
-                data_type_e_display_scan(s->asoc_type.type);
+                fprintf(f, "%s", data_type_e_display_scan(s->asoc_type.type));
+
                 break;
             }
             case ESymbolIdx: {
                 Symbol *s = (Symbol *)hashset_get(
                     tabla, &v->value.expr.value.symbol_idx.symbol);
-                data_type_e_display_scan(s->asoc_type.type);
+                fprintf(f, "%s", data_type_e_display_scan(s->asoc_type.type));
                 break;
             }
             case EFunctionCall: {
                 Symbol *s = (Symbol *)hashset_get(
                     tabla, &v->value.expr.value.function_call.symbol);
-                data_type_e_display_scan(s->asoc_type.type);
+                fprintf(f, "%s", data_type_e_display_scan(s->asoc_type.type));
                 break;
             }
             case EOp: {
-                data_type_e_display_scan(n->asoc_type);
+                fprintf(f, "%s", data_type_e_display_scan(n->asoc_type));
                 break;
             }
             case EUnaryOp: {
-                data_type_e_display_scan(n->asoc_type);
+                fprintf(f, "%s", data_type_e_display_scan(n->asoc_type));
                 break;
             }
             }
         }
+
+        fprintf(f, "\", ");
+
+        Vec childs = tree_get_childs(t, n->id);
+        for (size_t i = 0; i < childs.len; i++) {
+            size_t *id = (size_t *)vec_get(&childs, i);
+            Node *v = (Node *)vec_get(&t->values, *id);
+            node_display_id(v->id, f, t, tabla);
+            if (i + 1 != childs.len) {
+                fprintf(f, ", ");
+            }
+        }
+        fprintf(f, ");\n");
+
+        vec_drop(&childs);
 
         break;
     }
@@ -554,13 +679,19 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
     }
     case NAssign: {
         Vec child = tree_get_childs(t, n->id);
-        size_t *id = (size_t *)vec_get(&child, 1);
+        size_t *id = (size_t *)vec_get(&child, 0);
         Node *v = (Node *)vec_get(&t->values, *id);
 
-        node_display_id(v->id, f, t, tabla);
-        fprintf(f, " = ");
+        Symbol * s = (Symbol *)hashset_get(tabla, &v->value.expr.value.symbol);
 
-        id = (size_t *)vec_get(&child, 0);
+        if (s->type == Function || s->type == Procedure) {
+            fprintf(f, "return ");
+        } else {
+            node_display_id(v->id, f, t, tabla);
+            fprintf(f, " = ");
+        }
+
+        id = (size_t *)vec_get(&child, 1);
         v = (Node *)vec_get(&t->values, *id);
         node_display_id(v->id, f, t, tabla);
         fprintf(f, ";\n");
@@ -573,13 +704,15 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
     case NWhile:
         fprintf(f, "while (");
         Vec child = tree_get_childs(t, n->id);
-        size_t *id = (size_t *)vec_get(&child, 0);
+        size_t *id = (size_t *)vec_get(&child, 1);
         Node *v = (Node *)vec_get(&t->values, *id);
         node_display_id(v->id, f, t, tabla);
         fprintf(f, ") {\n");
 
-        id = (size_t *)vec_get(&child, 1);
+        id = (size_t *)vec_get(&child, 0);
         v = (Node *)vec_get(&t->values, *id);
+
+        fprintf(f, "    ");
         node_display_id(v->id, f, t, tabla);
 
         fprintf(f, "}\n");
