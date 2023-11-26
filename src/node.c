@@ -9,7 +9,6 @@
 #include <stdlib.h>
 
 void tree_debug(Tree *t) {
-
     for (size_t i = 0; i < t->values.len; i++) {
         printf("Registered size: %zu\n", t->values.t_size);
         Node *n = (Node *)vec_get(&t->values, i);
@@ -23,18 +22,19 @@ void tree_debug(Tree *t) {
     TreeIter ti = tree_iter_new(t, 0);
     while (1) {
         // Print tree with identation
-        TreeIterEntry entry = tree_iter_next(&ti);
-        if (entry.value == NULL) {
+        uint8_t buff[sizeof(Node)] = {0};
+        Node *value = (Node *)&buff[0];
+        TreeIterEntry entry = tree_iter_next(&ti, buff);
+        if (entry.did_set == 0) {
             break;
         }
-        
-        Node *n = (Node *)entry.value;
+
+        Node *n = (Node *)value;
         for (size_t i = 0; i < entry.level; i++) {
             printf("  ");
         }
         node_type_debug(n->node_type);
         printf("\n");
-
     }
 }
 
@@ -213,11 +213,13 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Tree args = n->value.expr.value.function_call.args;
             TreeIter ti = tree_iter_new(&args, 0);
             while (1) {
-                TreeIterEntry entry = tree_iter_next(&ti);
-                if (entry.value == NULL) {
+                uint8_t buff[sizeof(Node)] = {0};
+                Node *value = (Node *)&buff[0];
+                tree_iter_next(&ti, buff);
+                if (value == NULL) {
                     break;
                 }
-                Node *n = (Node *)vec_get(&args.values, *(size_t *)entry.value);
+                Node *n = (Node *)vec_get(&args.values, *(size_t *)value);
                 node_display(n, f, &args, tabla);
                 if (tree_iter_has_next(&ti)) {
                     fprintf(f, ", ");

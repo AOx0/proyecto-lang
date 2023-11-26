@@ -9,6 +9,9 @@ void tree_extend(Tree *t, Tree *o, size_t childs_of) {
         panic("Tree values size mismatch %zu != %zu", t->values.t_size,
               o->values.t_size);
 
+    if (o->values.len == 0)
+        panic("Trying to join empty tree", t->values.t_size, o->values.t_size);
+
     size_t offset = t->values.len;
     // Copuamos todos los valores
     for (size_t i = 0; i < o->values.len; i++) {
@@ -35,18 +38,21 @@ void tree_extend(Tree *t, Tree *o, size_t childs_of) {
     // offset, new_te->from, new_te->to);
 }
 
+void tree_root_extend(Tree *t, Tree *o) { tree_extend(t, o, 0); }
+
 int tree_iter_has_next(TreeIter *ti) { return ti->parents.len != 0; }
 
-TreeIterEntry tree_iter_next(TreeIter *ti) {
-    if (ti->parents.len == 0)
-        return (TreeIterEntry){.level = 0, .value = NULL, .parent = 0};
+TreeIterEntry tree_iter_next(TreeIter *ti, void *value_buff) {
+    memset(value_buff, 0, ti->tree->values.t_size);
+    if (ti->parents.len == 0) {
+        return (TreeIterEntry){.level = 0, .did_set = 0, .parent = 0};
+    }
 
     size_t max_child = ti->tree->relations.len;
     size_t curr = *(size_t *)vec_last(&ti->parents);
 
     void *pt = vec_get(&ti->tree->values, curr);
-    void *temp = &ti->tmp.ptr;
-    memcpy(temp, pt, ti->tree->values.t_size);
+    memcpy(value_buff, pt, ti->tree->values.t_size);
 
     vec_pop(&ti->parents);
 
@@ -63,7 +69,8 @@ TreeIterEntry tree_iter_next(TreeIter *ti) {
         }
     }
 
-    return (TreeIterEntry){.level = ti->parents.len, .value = temp, .parent = curr};
+    return (TreeIterEntry){
+        .level = ti->parents.len, .did_set = 1, .parent = curr};
 }
 
 size_t tree_num_child(Tree *t, size_t root) {
@@ -121,7 +128,6 @@ TreeIter tree_iter_new(Tree *t, size_t root) {
     size_t *rootn = (size_t *)vec_push(&res.parents);
     *rootn = root;
     res.tree = t;
-    res.tmp = vec_with_cap(t->values.t_size, 1);
     return res;
 }
 
@@ -137,10 +143,7 @@ void *tree_new_node(Tree *t, size_t *self_idx) {
     return node;
 }
 
-void tree_iter_drop(TreeIter *ti) {
-    vec_drop(&ti->parents);
-    vec_drop(&ti->tmp);
-}
+void tree_iter_drop(TreeIter *ti) { vec_drop(&ti->parents); }
 
 void *tree_last_node(Tree *t, size_t *self_idx) {
     *self_idx = t->values.len - 1;
