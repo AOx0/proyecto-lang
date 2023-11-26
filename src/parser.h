@@ -41,7 +41,7 @@ extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
 /* Line 2060 of yacc.c  */
-#line 166 "src/grammar.y"
+#line 213 "src/grammar.y"
 
 
     #ifndef LNG_PARSERH
@@ -132,7 +132,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2060 of yacc.c  */
-#line 196 "src/grammar.y"
+#line 243 "src/grammar.y"
 
     int64_t snum;
     uint64_t unum;

@@ -47,7 +47,7 @@ begin
     b := arr[9];
     b := 3 + Add(a, b);
     (*b := multadd();*)
-    multadd;
+    multadd();
     while (a > b) do
       b := b + 2 + 1;
     writeln(c);

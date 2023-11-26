@@ -93,7 +93,7 @@
         nchar = tnchar;
     }
 
-    void assert_variable_assigned_type(Node *var, Node *val) {
+    int assert_variable_assigned_type(Node *var, Node *val) {
         if (var->asoc_type != val->asoc_type) {
             str_clear(&wrn_buff);
             str_push(&wrn_buff, "Error: Se intento asignar una expresion de tipo distinto a una variable: ");
@@ -103,10 +103,13 @@
             str_push(&wrn_buff, " y la expresion es de tipo ");
             str_push(&wrn_buff, data_type_e_display_return(val->asoc_type));
             yyerror(str_as_ref(&wrn_buff));
+            return 0;
         }
+
+        return 1;
     }
 
-    void assert_expr_type(Node *a, Node *b) {
+    int assert_expr_type(Node *a, Node *b) {
         if (a->asoc_type != b->asoc_type) {
             str_clear(&wrn_buff);
             str_push(&wrn_buff, "Error: Se intento realizar operaciones entre expresiones de tipos distintos: ");
@@ -115,28 +118,37 @@
             str_push(&wrn_buff, " y el segundo es de tipo ");
             str_push(&wrn_buff, data_type_e_display_return(b->asoc_type));
             yyerror(str_as_ref(&wrn_buff));
+            return 0;
         }
+
+        return 1;
     }
 
-    void assert_node_is_printable(Node *n) {
+    int assert_node_is_printable(Node *n) {
         if (n->asoc_type == Void || n->asoc_type == Ukw) {
             str_clear(&wrn_buff);
             str_push(&wrn_buff, "Error: Se intento imprimir una expresion de tipo no imprimible, la expresion es de tipo ");
             str_push(&wrn_buff, data_type_e_display_return(n->asoc_type));
             yyerror(str_as_ref(&wrn_buff));
+            return 0;
         }
+
+        return 1;
     }
 
-    void assert_ident_is_printable(Symbol *s) {
+    int assert_ident_is_printable(Symbol *s) {
         if (s->asoc_type.type == Void || s->asoc_type.type == Ukw) {
             str_clear(&wrn_buff);
             str_push(&wrn_buff, "Error: Se intento imprimir un identificador de tipo no imprimible, la expresion es de tipo ");
             str_push(&wrn_buff, data_type_e_display_return(s->asoc_type.type));
             yyerror(str_as_ref(&wrn_buff));
+            return 0;
         }
+
+        return 1;
     }
 
-    void assert_tree_asoc_type_is(Tree t, DataTypeE type) {
+    int assert_tree_asoc_type_is(Tree t, DataTypeE type) {
         Node *n = ast_get_root(&t);
 
         if (n->asoc_type != type) {
@@ -146,10 +158,13 @@
             str_push(&wrn_buff, " pero se recibio una expresion de tipo ");
             str_push(&wrn_buff, data_type_e_display_return(n->asoc_type));
             yyerror(str_as_ref(&wrn_buff));
+            return 0;
         }
+
+        return 1;
     }
 
-    void assert_tree_node_type_is(Tree t, NodeType type) {
+    int assert_tree_node_type_is(Tree t, NodeType type) {
         Node *n = ast_get_root(&t);
 
         if (n->node_type != type) {
@@ -159,7 +174,39 @@
             str_push(&wrn_buff, " pero se recibió ");
             str_push(&wrn_buff, node_type_display(n->node_type));
             yyerror(str_as_ref(&wrn_buff));
+            return 0;
         }
+
+        return 1;
+    }
+
+    int assert_sym_is_callable(Symbol *n) {
+        if (n->type != Function && n->type != Procedure) {
+            str_clear(&wrn_buff);
+            str_push(&wrn_buff, "Error: Se intento llamar a un identificador que no es una funcion o procedimiento, el identificador es ");
+            str_push_n(&wrn_buff, n->name.ptr, n->name.len);
+            yyerror(str_as_ref(&wrn_buff));
+
+            return 0;
+        }
+
+        return 1;
+    }
+
+    int assert_arguments_length(Symbol *s, size_t len) {
+        if (s->info.fun.args.len != len) {
+            str_clear(&wrn_buff);
+            str_push(&wrn_buff, "Error: Se intento referenciar la función ");
+            str_push_n(&wrn_buff, s->name.ptr, s->name.len);
+            str_push(&wrn_buff, " con una cantidad de argumentos distinta a la declarada, se esperaban ");
+            str_push_sizet(&wrn_buff, s->info.fun.args.len);
+            str_push(&wrn_buff, " argumentos pero se recibieron ");
+            str_push_sizet(&wrn_buff, len);
+            yyerror(str_as_ref(&wrn_buff));
+            return 0;
+        }
+
+        return 1;
     }
 }
 
@@ -1050,23 +1097,10 @@ procedure_instruccion : IDENT {
 
 procedure_instruccion : IDENT '(' expresion_lista ')' {
     Symbol * s = assert_sym_exists(&$1);
+    assert_sym_is_callable(s);
 
     Vec children = tree_get_childs(&$3, 0);
-
-    // Checamos que los tipos de datos de los argumentos hacen match con los del simbolo 
-    if (s->info.fun.args.len != children.len) {
-        str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Error: Se intento llamar a una funcion con una cantidad de argumentos distinta a la declarada: ");
-        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
-        str_push(&wrn_buff, ", se esperaban ");
-        str_push_sizet(&wrn_buff, s->info.fun.args.len);
-        str_push(&wrn_buff, " argumentos y se pasaron ");
-        str_push_sizet(&wrn_buff, children.len);
-        yyerror(str_as_ref(&wrn_buff));
-    }
-
-
-    if (children.len > 0) {
+    if (assert_arguments_length(s, children.len) == 1 && children.len > 0) {
         Node * void_root = (Node *)vec_get(&$3.values, 0);
 
         if (void_root->node_type != NVoid) {
@@ -1227,28 +1261,10 @@ termino : factor | termino MULOP factor {
 };
 llamado_funcion : IDENT '(' expresion_lista ')' { 
     Symbol * s = assert_sym_exists(&$1);
-    if (s->type != Function) {
-        str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Error: Se intento llamar a una variable como si fuera una funcion: ");
-        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
-        yyerror(str_as_ref(&wrn_buff));
-    }
+    assert_sym_is_callable(s);
 
     Vec children = tree_get_childs(&$3, 0);
-
-    // Checamos que los tipos de datos de los argumentos hacen match con los del simbolo 
-        if (s->info.fun.args.len != children.len) {
-            str_clear(&wrn_buff);
-            str_push(&wrn_buff, "Error: Se intento llamar a una funcion con una cantidad de argumentos distinta a la declarada: ");
-            str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
-            str_push(&wrn_buff, ", se esperaban ");
-            str_push_sizet(&wrn_buff, s->info.fun.args.len);
-            str_push(&wrn_buff, " argumentos y se pasaron ");
-            str_push_sizet(&wrn_buff, children.len);
-            yyerror(str_as_ref(&wrn_buff));
-        }
-
-    if (children.len > 0) {
+    if (assert_arguments_length(s, children.len) == 1 && children.len > 0) {
         Node * void_root = (Node *)vec_get(&$3.values, 0);
 
         if (void_root->node_type != NVoid) {
