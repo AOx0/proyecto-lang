@@ -20,7 +20,7 @@ typedef struct TreeEntry TreeEntry;
 struct TreeIter {
         Tree *tree;
         size_t level;
-        Vec parents;
+        Vec remaning;
 };
 typedef struct TreeIter TreeIter;
 
@@ -34,7 +34,7 @@ struct TreeIterEntry {
 typedef struct TreeIterEntry TreeIterEntry;
 
 void tree_relations_debug(Tree *t);
-TreeIterEntry tree_iter_next(TreeIter *ti, void *value_buff);
+TreeIterEntry tree_iter_next(TreeIter *ti);
 int tree_iter_has_next(TreeIter *ti);
 void tree_extend(Tree *t, Tree *o, size_t childs_of);
 void tree_root_extend(Tree *t, Tree *o);

@@ -22,14 +22,12 @@ void tree_debug(Tree *t) {
     TreeIter ti = tree_iter_new(t, 0);
     while (1) {
         // Print tree with identation
-        uint8_t buff[sizeof(Node)] = {0};
-        Node *value = (Node *)&buff[0];
-        TreeIterEntry entry = tree_iter_next(&ti, buff);
+        TreeIterEntry entry = tree_iter_next(&ti);
         if (entry.did_set == 0) {
             break;
         }
 
-        Node *n = (Node *)value;
+        Node *n = (Node *)entry.value;
         for (size_t i = 0; i < entry.level; i++) {
             printf("  ");
         }
@@ -80,9 +78,9 @@ char *node_type_display(NodeType nt) {
         return "bucle while";
     }
     case NCall:
-        break;
+        return "llamada a funcion";
     case NRoot:
-        break;
+        return "root";
     }
 
     panic("Invalid node type");
@@ -144,8 +142,10 @@ void node_type_debug(NodeType nt) {
         break;
     }
     case NCall:
+        printf("NCall");
         break;
     case NRoot:
+        printf("NRoot");
         break;
     }
 }
@@ -213,13 +213,11 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla) {
             Tree args = n->value.expr.value.function_call.args;
             TreeIter ti = tree_iter_new(&args, 0);
             while (1) {
-                uint8_t buff[sizeof(Node)] = {0};
-                Node *value = (Node *)&buff[0];
-                tree_iter_next(&ti, buff);
-                if (value == NULL) {
+                TreeIterEntry entry = tree_iter_next(&ti);
+                if (entry.did_set == 0) {
                     break;
                 }
-                Node *n = (Node *)vec_get(&args.values, *(size_t *)value);
+                Node *n = (Node *)vec_get(&args.values, *(size_t *)entry.value);
                 node_display(n, f, &args, tabla);
                 if (tree_iter_has_next(&ti)) {
                     fprintf(f, ", ");

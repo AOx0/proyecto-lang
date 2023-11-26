@@ -40,37 +40,45 @@ void tree_extend(Tree *t, Tree *o, size_t childs_of) {
 
 void tree_root_extend(Tree *t, Tree *o) { tree_extend(t, o, 0); }
 
-int tree_iter_has_next(TreeIter *ti) { return ti->parents.len != 0; }
+int tree_iter_has_next(TreeIter *ti) { return ti->remaning.len != 0; }
 
-TreeIterEntry tree_iter_next(TreeIter *ti, void *value_buff) {
-    memset(value_buff, 0, ti->tree->values.t_size);
-    if (ti->parents.len == 0) {
-        return (TreeIterEntry){.level = 0, .did_set = 0, .parent = 0};
-    }
+TreeIterEntry tree_iter_next(TreeIter *ti) {
+    if (ti->remaning.len == 0)
+        return (TreeIterEntry){
+            .level = 0, .did_set = 0, .parent = 0, .child = 0, .value = NULL};
 
     size_t max_child = ti->tree->relations.len;
-    size_t curr = *(size_t *)vec_last(&ti->parents);
-
-    void *pt = vec_get(&ti->tree->values, curr);
-    memcpy(value_buff, pt, ti->tree->values.t_size);
-
-    vec_pop(&ti->parents);
+    TreeIterEntry top = *(TreeIterEntry *)vec_pop(&ti->remaning);
 
     if (ti->tree->relations.len != 0) {
+        ti->level += 1;
+        int did_add = 0;
         // Agregamos todos los hijos
         for (size_t child = max_child - 1; child >= 0; child--) {
             TreeEntry *te = (TreeEntry *)vec_get(&ti->tree->relations, child);
 
-            if (curr == te->from)
-                *(size_t *)vec_push(&ti->parents) = te->to;
+            if (top.child == te->from) {
+                did_add = 1;
+                *(TreeIterEntry *)vec_push(&ti->remaning) = (TreeIterEntry){
+                    .level = ti->level,
+                    .did_set = 1,
+                    .parent = top.child,
+                    .child = te->to,
+                    .value = vec_get(&ti->tree->values, te->to)};
+            }
 
             if (child == 0)
                 break;
         }
+
+        if (!did_add) {
+            ti->level -= 1;
+        }
+    } else {
+        ti->level -= 1;
     }
 
-    return (TreeIterEntry){
-        .level = ti->parents.len, .did_set = 1, .parent = curr};
+    return top;
 }
 
 size_t tree_num_child(Tree *t, size_t root) {
@@ -124,9 +132,14 @@ Vec tree_get_childs(Tree *t, size_t parent_id) {
 
 TreeIter tree_iter_new(Tree *t, size_t root) {
     TreeIter res;
-    res.parents = vec_new(sizeof(size_t));
-    size_t *rootn = (size_t *)vec_push(&res.parents);
-    *rootn = root;
+    res.remaning = vec_new(sizeof(TreeIterEntry));
+    TreeIterEntry *rootn = (TreeIterEntry *)vec_push(&res.remaning);
+    res.level = 1;
+    *rootn = (TreeIterEntry){.level = 0,
+                             .did_set = 1,
+                             .parent = 0,
+                             .child = root,
+                             .value = vec_get(&t->values, root)};
     res.tree = t;
     return res;
 }
@@ -143,7 +156,7 @@ void *tree_new_node(Tree *t, size_t *self_idx) {
     return node;
 }
 
-void tree_iter_drop(TreeIter *ti) { vec_drop(&ti->parents); }
+void tree_iter_drop(TreeIter *ti) { vec_drop(&ti->remaning); }
 
 void *tree_last_node(Tree *t, size_t *self_idx) {
     *self_idx = t->values.len - 1;
