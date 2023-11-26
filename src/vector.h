@@ -51,6 +51,12 @@ typedef struct VecSlice VecSlice;
 /// su creación usar `vec_with_cap` o `vec_init_with_cap`, etc.
 Vec vec_new(size_t t_size);
 
+/// `vec_new_with_cap`
+///
+/// Crea un vector que reserva la cantidad de memoria necesaria para almacenar
+/// `cap` número de elementos.
+Vec vec_flip_order(Vec *v);
+
 /// `vec_grow`
 ///
 /// Asegura que el vector tiene espacio para almacenar `cap` elementos

@@ -10,6 +10,20 @@ Vec vec_new(size_t t_size) {
     return res;
 }
 
+Vec vec_flip_order(Vec *v) {
+    Vec res = vec_with_cap(v->t_size, v->len);
+
+    for (size_t i = v->len - 1; i >= 0; i--) {
+        void *top = vec_push(&res);
+        memcpy(top, vec_get(v, i), v->t_size);
+
+        if (i == 0)
+            break;
+    }
+
+    return res;
+}
+
 void vec_init(Vec *v, size_t t_size) {
     v->ptr = 0;
     v->cap = 0;

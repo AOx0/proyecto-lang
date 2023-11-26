@@ -324,7 +324,6 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
         Symbol *s = vec_get(&$8, i);
         Node * node = ast_create_node(&ast);
 
-
         if (s->type == Variable) { 
             node->node_type = NVar;
             node->value.var = (VarNode) { .symbol = *s };
@@ -349,8 +348,9 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
         .args = $5,
     };
     
-    tree_extend_with_subtree(&ast, &program, 0, 0);
     tree_extend_with_subtree(&program, &$10, 0, 0);
+    tree_extend_with_subtree(&ast, &program, 0, 0);
+   
     
 
     #ifdef PRINT_TABLE
@@ -403,7 +403,7 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
         tree_debug(&ast, &tabla);
     #endif
 
-    if (err == 0)  node_display_id(0, OUT_FILE, &ast, &tabla);
+    if (err == 0)  node_display_id(0, OUT_FILE, &ast, &tabla, 0);
 
     // Al final liberamos la tabla de hashes de memoria
     vec_drop(&$5);

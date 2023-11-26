@@ -21,7 +21,7 @@ program principal(input, output, entrada);
     (* Multiplica numeros *)
     function Mult(z: integer; a: integer) : integer;
     begin
-        (* write(z); *)
+        write(z);
         Mult := c * a
     end;
 
@@ -48,8 +48,8 @@ begin
     b := 3 + Add(a, b);
     (*b := multadd();*)
     multadd;
-    while ((a > b) and (4.0 == 4.0)) do
-      b := b + 1 + 1;
+    while (a > b) do
+      b := b + 2 + 1;
     writeln(c);
     writeln(d)
 end.
