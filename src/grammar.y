@@ -1068,19 +1068,8 @@ variable : IDENT '[' CONST_ENTERA ']' {
 
 procedure_instruccion : IDENT { 
     Symbol * s = assert_sym_exists(&$1);
-    if (s->type != Procedure) {
-        str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Error: Se intento llamar a una variable como si fuera una funcion: ");
-        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
-        yyerror(str_as_ref(&wrn_buff));
-    }
-
-    if (s->info.fun.args.len != 0) {
-        str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Error: Se intento llamar a una funcion con argumentos sin pasarle argumentos: ");
-        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
-        yyerror(str_as_ref(&wrn_buff));
-    }
+    assert_sym_is_callable(s);
+    assert_arguments_length(s, 0);
 
     tree_init(&$$, sizeof(Node));
 
