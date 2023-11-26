@@ -38,10 +38,12 @@ void flip_tree_relations(Tree *t) {
     t->relations = new_relations;
 }
 
-Node *ast_create_node(Tree *t) {
+Node *ast_create_node(Tree *t, NodeType nt, DataTypeE asoc_type) {
     size_t id = 0;
     void *res = tree_new_node(t, &id);
     ((Node *)res)->id = id;
+    ((Node *)res)->node_type = nt;
+    ((Node *)res)->asoc_type = asoc_type;
     return res;
 }
 
@@ -61,7 +63,7 @@ void tree_extend_with_subtree(Tree *t, Tree *o, size_t sub_tree_root,
     for (size_t i = 0; i < o->values.len; i++) {
         Node *value = (Node *)vec_get(&o->values, i);
         // size_t id_was = value->id;
-        Node *new_node = ast_create_node(t);
+        Node *new_node = ast_create_node(t, value->node_type, value->asoc_type);
         size_t new_id_is = new_node->id;
         memcpy(new_node, value, t->values.t_size);
 

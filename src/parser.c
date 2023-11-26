@@ -748,16 +748,16 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   294,   294,   294,   415,   420,   427,   427,   427,   429,
-     444,   461,   478,   498,   499,   503,   504,   505,   506,   509,
-     512,   520,   536,   536,   549,   549,   564,   577,   580,   591,
-     608,   611,   626,   633,   638,   645,   646,   646,   646,   647,
-     647,   647,   650,   661,   673,   688,   700,   714,   742,   771,
-     787,   803,   822,   842,   876,   911,   934,   958,   982,  1006,
-    1018,  1034,  1049,  1049,  1051,  1064,  1093,  1124,  1185,  1202,
-    1204,  1221,  1223,  1237,  1239,  1239,  1241,  1257,  1258,  1259,
-    1260,  1261,  1262,  1263,  1264,  1267,  1276,  1279,  1282,  1282,
-    1300,  1300,  1318,  1379,  1392,  1420,  1438,  1449,  1460,  1475
+       0,   294,   294,   294,   410,   415,   422,   422,   422,   424,
+     439,   456,   473,   493,   494,   498,   499,   500,   501,   504,
+     507,   513,   527,   527,   540,   540,   555,   568,   571,   582,
+     599,   602,   615,   620,   625,   632,   633,   633,   633,   634,
+     634,   634,   637,   646,   656,   669,   679,   691,   716,   742,
+     757,   772,   790,   809,   837,   866,   885,   905,   925,   945,
+     955,   969,   982,   982,   984,   995,  1022,  1051,  1110,  1125,
+    1127,  1142,  1144,  1156,  1158,  1158,  1160,  1174,  1175,  1176,
+    1177,  1178,  1179,  1180,  1181,  1184,  1190,  1193,  1196,  1196,
+    1212,  1212,  1228,  1289,  1300,  1326,  1342,  1351,  1360,  1373
 };
 #endif
 
@@ -1857,16 +1857,13 @@ yyreduce:
     assert_not_sym_exists(&(yyvsp[(3) - (11)].symbol));
     hashset_insert(&tabla, &(yyvsp[(3) - (11)].symbol));
 
-    Node * root = ast_create_node(&ast);
-    root->node_type = NRoot;
-    root->asoc_type = Void;
+    ast_create_node(&ast, NRoot, Void);
 
     for (size_t i = 0; i < (yyvsp[(8) - (11)].idents).len; i++) {
         Symbol *s = vec_get(&(yyvsp[(8) - (11)].idents), i);
-        Node * node = ast_create_node(&ast);
+        Node * node = ast_create_node(&ast, NVar, Void);
 
         if (s->type == Variable) { 
-            node->node_type = NVar;
             node->value.var = (VarNode) { .symbol = *s };
         } else {
             node->node_type = NConst;
@@ -1881,9 +1878,7 @@ yyreduce:
     Tree program;
     tree_init(&program, sizeof(Node));
 
-    Node * n = ast_create_node(&program);
-    n->node_type = NFunction;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&program, NFunction, Void);
     n->value.fun = (FunctionNode) {
         .symbol = (yyvsp[(3) - (11)].symbol),
         .args = (yyvsp[(5) - (11)].idents),
@@ -1956,7 +1951,7 @@ yyreduce:
 
   case 4:
 /* Line 1802 of yacc.c  */
-#line 415 "src/grammar.y"
+#line 410 "src/grammar.y"
     {
     (yyval.idents) = (yyvsp[(3) - (3)].idents);
     Symbol *s = vec_push(&(yyval.idents));
@@ -1966,7 +1961,7 @@ yyreduce:
 
   case 5:
 /* Line 1802 of yacc.c  */
-#line 420 "src/grammar.y"
+#line 415 "src/grammar.y"
     {
     (yyval.idents) = vec_new(sizeof(Symbol));
     Symbol *s = vec_push(&(yyval.idents));
@@ -1976,13 +1971,13 @@ yyreduce:
 
   case 8:
 /* Line 1802 of yacc.c  */
-#line 427 "src/grammar.y"
+#line 422 "src/grammar.y"
     { (yyval.idents) = vec_new(sizeof(Symbol)); }
     break;
 
   case 9:
 /* Line 1802 of yacc.c  */
-#line 429 "src/grammar.y"
+#line 424 "src/grammar.y"
     {
     for (size_t i = 0; i < (yyvsp[(3) - (6)].idents).len; i++) {
         Symbol *s = vec_get(&(yyvsp[(3) - (6)].idents), i);
@@ -2001,7 +1996,7 @@ yyreduce:
 
   case 10:
 /* Line 1802 of yacc.c  */
-#line 444 "src/grammar.y"
+#line 439 "src/grammar.y"
     {
     (yyvsp[(3) - (6)].symbol).type = Constant;
     (yyvsp[(3) - (6)].symbol).asoc_type = (DataType){
@@ -2023,7 +2018,7 @@ yyreduce:
 
   case 11:
 /* Line 1802 of yacc.c  */
-#line 461 "src/grammar.y"
+#line 456 "src/grammar.y"
     {
     (yyvsp[(3) - (6)].symbol).type = Constant;
     (yyvsp[(3) - (6)].symbol).asoc_type = (DataType){
@@ -2045,7 +2040,7 @@ yyreduce:
 
   case 12:
 /* Line 1802 of yacc.c  */
-#line 478 "src/grammar.y"
+#line 473 "src/grammar.y"
     {
     (yyvsp[(3) - (6)].symbol).type = Constant;
     (yyvsp[(3) - (6)].symbol).asoc_type = (DataType){
@@ -2068,13 +2063,13 @@ yyreduce:
 
   case 13:
 /* Line 1802 of yacc.c  */
-#line 498 "src/grammar.y"
+#line 493 "src/grammar.y"
     { (yyval.type) = (yyvsp[(1) - (1)].type); }
     break;
 
   case 14:
 /* Line 1802 of yacc.c  */
-#line 499 "src/grammar.y"
+#line 494 "src/grammar.y"
     {
     (yyval.type) = (yyvsp[(8) - (8)].type);
     (yyval.type).size = (yyval.type).size * ((yyvsp[(5) - (8)].snum) - (yyvsp[(3) - (8)].snum));
@@ -2083,31 +2078,31 @@ yyreduce:
 
   case 15:
 /* Line 1802 of yacc.c  */
-#line 503 "src/grammar.y"
+#line 498 "src/grammar.y"
     { (yyval.type) = (DataType){.type = Int, .size = 1}; }
     break;
 
   case 16:
 /* Line 1802 of yacc.c  */
-#line 504 "src/grammar.y"
+#line 499 "src/grammar.y"
     { (yyval.type) = (DataType){.type = Real, .size = 1}; }
     break;
 
   case 17:
 /* Line 1802 of yacc.c  */
-#line 505 "src/grammar.y"
+#line 500 "src/grammar.y"
     { (yyval.type) = (DataType){.type = Str, .size = 1}; }
     break;
 
   case 18:
 /* Line 1802 of yacc.c  */
-#line 506 "src/grammar.y"
+#line 501 "src/grammar.y"
     { (yyval.type) = (DataType){.type = Bool, .size = 1}; }
     break;
 
   case 19:
 /* Line 1802 of yacc.c  */
-#line 509 "src/grammar.y"
+#line 504 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (3)].subtree);
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(2) - (3)].subtree), 0, 0);
@@ -2116,27 +2111,23 @@ yyreduce:
 
   case 20:
 /* Line 1802 of yacc.c  */
-#line 512 "src/grammar.y"
+#line 507 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NVoid;
-    n->asoc_type = Void;
+    ast_create_node(&(yyval.subtree), NVoid, Void);
 }
     break;
 
   case 21:
 /* Line 1802 of yacc.c  */
-#line 520 "src/grammar.y"
+#line 513 "src/grammar.y"
     {
     scope -= fun_id;
 
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NFunction;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NFunction, Void);
     n->value.fun = (FunctionNode) {
         .symbol = (yyvsp[(1) - (4)].symbol),
         .args = (yyvsp[(2) - (4)].idents),
@@ -2149,7 +2140,7 @@ yyreduce:
 
   case 22:
 /* Line 1802 of yacc.c  */
-#line 536 "src/grammar.y"
+#line 527 "src/grammar.y"
     {
     (yyvsp[(2) - (2)].symbol).type = Function;
     assert_not_sym_exists(&(yyvsp[(2) - (2)].symbol));
@@ -2161,7 +2152,7 @@ yyreduce:
 
   case 23:
 /* Line 1802 of yacc.c  */
-#line 543 "src/grammar.y"
+#line 534 "src/grammar.y"
     {
     Symbol *s = (Symbol *)hashset_get(&tabla, &(yyvsp[(2) - (7)].symbol));
     s->asoc_type = (yyvsp[(6) - (7)].type);
@@ -2172,7 +2163,7 @@ yyreduce:
 
   case 24:
 /* Line 1802 of yacc.c  */
-#line 549 "src/grammar.y"
+#line 540 "src/grammar.y"
     {
     (yyvsp[(2) - (2)].symbol).type = Procedure;
     assert_not_sym_exists(&(yyvsp[(2) - (2)].symbol));
@@ -2184,7 +2175,7 @@ yyreduce:
 
   case 25:
 /* Line 1802 of yacc.c  */
-#line 556 "src/grammar.y"
+#line 547 "src/grammar.y"
     {
     Symbol *s = (Symbol *)hashset_get(&tabla, &(yyvsp[(2) - (5)].symbol));
     s->asoc_type = (DataType) { .type = Void, .size = 0};
@@ -2195,7 +2186,7 @@ yyreduce:
 
   case 26:
 /* Line 1802 of yacc.c  */
-#line 564 "src/grammar.y"
+#line 555 "src/grammar.y"
     {
     // printf("Argumentos: %zu\n", $2.len);
     for (size_t i = 0; i < (yyvsp[(2) - (3)].idents).len; i++) {
@@ -2213,7 +2204,7 @@ yyreduce:
 
   case 27:
 /* Line 1802 of yacc.c  */
-#line 577 "src/grammar.y"
+#line 568 "src/grammar.y"
     {
     (yyval.idents) = vec_new(sizeof(Symbol));
 }
@@ -2221,7 +2212,7 @@ yyreduce:
 
   case 28:
 /* Line 1802 of yacc.c  */
-#line 580 "src/grammar.y"
+#line 571 "src/grammar.y"
     {
     for (size_t i = 0; i < (yyvsp[(1) - (3)].idents).len; i++) {
         Symbol *s = (Symbol *)vec_get(&(yyvsp[(1) - (3)].idents), i);
@@ -2237,7 +2228,7 @@ yyreduce:
 
   case 29:
 /* Line 1802 of yacc.c  */
-#line 591 "src/grammar.y"
+#line 582 "src/grammar.y"
     {
     (yyval.idents) = (yyvsp[(1) - (5)].idents);
 
@@ -2257,7 +2248,7 @@ yyreduce:
 
   case 30:
 /* Line 1802 of yacc.c  */
-#line 608 "src/grammar.y"
+#line 599 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(2) - (3)].subtree);
 }
@@ -2265,13 +2256,11 @@ yyreduce:
 
   case 31:
 /* Line 1802 of yacc.c  */
-#line 611 "src/grammar.y"
+#line 602 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NVoid;
-    n->asoc_type = Void;
+    ast_create_node(&(yyval.subtree), NVoid, Void);
 
     for (size_t i = 0; i < (yyvsp[(1) - (1)].instructions).len; i++) {
         Tree *t2 = (Tree *)vec_get(&(yyvsp[(1) - (1)].instructions), i);
@@ -2286,19 +2275,17 @@ yyreduce:
 
   case 32:
 /* Line 1802 of yacc.c  */
-#line 626 "src/grammar.y"
+#line 615 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NVoid;
-    n->asoc_type = Void;
+    ast_create_node(&(yyval.subtree), NVoid, Void);
 }
     break;
 
   case 33:
 /* Line 1802 of yacc.c  */
-#line 633 "src/grammar.y"
+#line 620 "src/grammar.y"
     {
     vec_init(&(yyval.instructions), sizeof(Tree));
 
@@ -2309,7 +2296,7 @@ yyreduce:
 
   case 34:
 /* Line 1802 of yacc.c  */
-#line 638 "src/grammar.y"
+#line 625 "src/grammar.y"
     {
     (yyval.instructions) = (yyvsp[(1) - (3)].instructions);
     vec_push(&(yyval.instructions));
@@ -2321,13 +2308,11 @@ yyreduce:
 
   case 42:
 /* Line 1802 of yacc.c  */
-#line 650 "src/grammar.y"
+#line 637 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWhile;
-    n->asoc_type = Void;
+    ast_create_node(&(yyval.subtree), NWhile, Void);
 
     assert_tree_asoc_type_is((yyvsp[(2) - (4)].subtree), Bool);
 
@@ -2338,13 +2323,11 @@ yyreduce:
 
   case 43:
 /* Line 1802 of yacc.c  */
-#line 661 "src/grammar.y"
+#line 646 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NFor;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NFor, Void);
     n->value.forn = (ForNode) {
         .down = 0,
     };
@@ -2356,13 +2339,11 @@ yyreduce:
 
   case 44:
 /* Line 1802 of yacc.c  */
-#line 673 "src/grammar.y"
+#line 656 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NFor;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NFor, Void);
     n->value.forn = (ForNode) {
         .down = 1,
     };
@@ -2374,14 +2355,12 @@ yyreduce:
 
   case 45:
 /* Line 1802 of yacc.c  */
-#line 688 "src/grammar.y"
+#line 669 "src/grammar.y"
     { 
     assert_sym_exists(&(yyvsp[(3) - (4)].symbol));
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NRead;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NRead, Void);
     n->value.read = (ReadNode){
         .newline = 0,
         .target_symbol = (yyvsp[(3) - (4)].symbol),
@@ -2391,14 +2370,12 @@ yyreduce:
 
   case 46:
 /* Line 1802 of yacc.c  */
-#line 700 "src/grammar.y"
+#line 679 "src/grammar.y"
     { 
     assert_sym_exists(&(yyvsp[(3) - (4)].symbol)); 
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NRead;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NRead, Void);
     n->value.read = (ReadNode){
         .newline = 1,
         .target_symbol = (yyvsp[(3) - (4)].symbol),
@@ -2408,27 +2385,24 @@ yyreduce:
 
   case 47:
 /* Line 1802 of yacc.c  */
-#line 714 "src/grammar.y"
+#line 691 "src/grammar.y"
     {
     Symbol * s = assert_sym_exists(&(yyvsp[(5) - (6)].symbol));
     assert_ident_is_printable(&(yyvsp[(5) - (6)].symbol));
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NWrite, Void);
     n->value.write = (WriteNode) {
         .newline = 0,
     };
 
-    Node * str = ast_create_node(&(yyval.subtree));
-    str->node_type = NConst;
-    str->asoc_type = Str;
-    str->value.cons = (ConstNode) { .symbol = (yyvsp[(3) - (6)].slice), .value.str = (yyvsp[(3) - (6)].slice) };
+    Node * str = ast_create_node(&(yyval.subtree), NConst, Str);
+    str->value.cons = (ConstNode) { 
+        .symbol = (yyvsp[(3) - (6)].slice), 
+        .value.str = (yyvsp[(3) - (6)].slice)
+    };
 
-    Node * var = ast_create_node(&(yyval.subtree));
-    var->node_type = NExpr;
-    var->asoc_type = (yyvsp[(5) - (6)].symbol).asoc_type.type;
+    Node * var = ast_create_node(&(yyval.subtree), NExpr, (yyvsp[(5) - (6)].symbol).asoc_type.type);
     var->value.expr = (ExprNode) {
         .type = ESymbol,
         .value.symbol = *s,
@@ -2441,27 +2415,24 @@ yyreduce:
 
   case 48:
 /* Line 1802 of yacc.c  */
-#line 742 "src/grammar.y"
+#line 716 "src/grammar.y"
     {
     Symbol * s = assert_sym_exists(&(yyvsp[(5) - (6)].symbol));
     assert_ident_is_printable(&(yyvsp[(5) - (6)].symbol));
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NWrite, Void);
     n->value.write = (WriteNode) {
         .newline = 1,
     };
 
-    Node * str = ast_create_node(&(yyval.subtree));
-    str->node_type = NConst;
-    str->asoc_type = Str;
-    str->value.cons = (ConstNode) { .symbol = (yyvsp[(3) - (6)].slice), .value.str = (yyvsp[(3) - (6)].slice) };
+    Node * str = ast_create_node(&(yyval.subtree), NConst, Str);
+    str->value.cons = (ConstNode) { 
+        .symbol = (yyvsp[(3) - (6)].slice), 
+        .value.str = (yyvsp[(3) - (6)].slice)
+    };
 
-    Node * var = ast_create_node(&(yyval.subtree));
-    var->node_type = NExpr;
-    var->asoc_type = (yyvsp[(5) - (6)].symbol).asoc_type.type;
+    Node * var = ast_create_node(&(yyval.subtree), NExpr, (yyvsp[(5) - (6)].symbol).asoc_type.type);
     var->value.expr = (ExprNode) {
         .type = ESymbol,
         .value.symbol = *s,
@@ -2474,21 +2445,20 @@ yyreduce:
 
   case 49:
 /* Line 1802 of yacc.c  */
-#line 771 "src/grammar.y"
+#line 742 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NWrite, Void);
     n->value.write = (WriteNode) {
         .newline = 0,
     };
 
-    Node * str = ast_create_node(&(yyval.subtree));
-    str->node_type = NConst;
-    str->asoc_type = Str;
-    str->value.cons = (ConstNode) { .symbol = (yyvsp[(3) - (4)].slice), .value.str = (yyvsp[(3) - (4)].slice) };
+    Node * str = ast_create_node(&(yyval.subtree), NConst, Str);
+    str->value.cons = (ConstNode) { 
+        .symbol = (yyvsp[(3) - (4)].slice), 
+        .value.str = (yyvsp[(3) - (4)].slice) 
+    };
 
     tree_new_relation(&(yyval.subtree), 0, 1);
 }
@@ -2496,21 +2466,20 @@ yyreduce:
 
   case 50:
 /* Line 1802 of yacc.c  */
-#line 787 "src/grammar.y"
+#line 757 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NWrite, Void);
     n->value.write = (WriteNode) {
         .newline = 1,
     };
 
-    Node * str = ast_create_node(&(yyval.subtree));
-    str->node_type = NConst;
-    str->asoc_type = Str;
-    str->value.cons = (ConstNode) { .symbol = (yyvsp[(3) - (4)].slice), .value.str = (yyvsp[(3) - (4)].slice) };
+    Node * str = ast_create_node(&(yyval.subtree), NConst, Str);
+    str->value.cons = (ConstNode) { 
+        .symbol = (yyvsp[(3) - (4)].slice), 
+        .value.str = (yyvsp[(3) - (4)].slice) 
+    };
 
     tree_new_relation(&(yyval.subtree), 0, 1);
  }
@@ -2518,22 +2487,21 @@ yyreduce:
 
   case 51:
 /* Line 1802 of yacc.c  */
-#line 803 "src/grammar.y"
+#line 772 "src/grammar.y"
     {
     assert_node_is_printable(ast_get_root(&(yyvsp[(5) - (6)].subtree)));
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NWrite, Void);
     n->value.write = (WriteNode) {
         .newline = 0,
     };
 
-    Node * str = ast_create_node(&(yyval.subtree));
-    str->node_type = NConst;
-    str->asoc_type = Str;
-    str->value.cons = (ConstNode) { .symbol = (yyvsp[(3) - (6)].slice), .value.str = (yyvsp[(3) - (6)].slice) };
+    Node * str = ast_create_node(&(yyval.subtree), NConst, Str);
+    str->value.cons = (ConstNode) { 
+        .symbol = (yyvsp[(3) - (6)].slice), 
+        .value.str = (yyvsp[(3) - (6)].slice) 
+    };
 
     tree_new_relation(&(yyval.subtree), 0, 1);
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(5) - (6)].subtree), 0, 0);
@@ -2542,22 +2510,21 @@ yyreduce:
 
   case 52:
 /* Line 1802 of yacc.c  */
-#line 822 "src/grammar.y"
+#line 790 "src/grammar.y"
     {
     assert_node_is_printable(ast_get_root(&(yyvsp[(5) - (6)].subtree)));
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NWrite, Void);
     n->value.write = (WriteNode) {
         .newline = 1,
     };
 
-    Node * str = ast_create_node(&(yyval.subtree));
-    str->node_type = NConst;
-    str->asoc_type = Str;
-    str->value.cons = (ConstNode) { .symbol = (yyvsp[(3) - (6)].slice), .value.str = (yyvsp[(3) - (6)].slice) };
+    Node * str = ast_create_node(&(yyval.subtree), NConst, Str);
+    str->value.cons = (ConstNode) { 
+        .symbol = (yyvsp[(3) - (6)].slice), 
+        .value.str = (yyvsp[(3) - (6)].slice),
+    };
 
     tree_new_relation(&(yyval.subtree), 0, 1);
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(5) - (6)].subtree), 0, 0);
@@ -2566,7 +2533,7 @@ yyreduce:
 
   case 53:
 /* Line 1802 of yacc.c  */
-#line 842 "src/grammar.y"
+#line 809 "src/grammar.y"
     {
     Symbol * s3 = assert_sym_exists(&(yyvsp[(3) - (6)].symbol));
     Symbol * s = assert_sym_exists(&(yyvsp[(5) - (6)].symbol));
@@ -2574,24 +2541,18 @@ yyreduce:
     assert_ident_is_printable(&(yyvsp[(3) - (6)].symbol));
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NWrite, Void);
     n->value.write = (WriteNode){
         .newline = 0,
     };
 
-    Node * var = ast_create_node(&(yyval.subtree));
-    var->node_type = NExpr;
-    var->asoc_type = (yyvsp[(3) - (6)].symbol).asoc_type.type;
+    Node * var = ast_create_node(&(yyval.subtree), NExpr, (yyvsp[(3) - (6)].symbol).asoc_type.type);
     var->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s3,
     };
 
-    Node * var2 = ast_create_node(&(yyval.subtree));
-    var2->node_type = NExpr;
-    var2->asoc_type = (yyvsp[(5) - (6)].symbol).asoc_type.type;
+    Node * var2 = ast_create_node(&(yyval.subtree), NExpr, (yyvsp[(5) - (6)].symbol).asoc_type.type);
     var2->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s,
@@ -2604,7 +2565,7 @@ yyreduce:
 
   case 54:
 /* Line 1802 of yacc.c  */
-#line 876 "src/grammar.y"
+#line 837 "src/grammar.y"
     {
     Symbol * s3 =assert_sym_exists(&(yyvsp[(3) - (6)].symbol));
     Symbol * s = assert_sym_exists(&(yyvsp[(5) - (6)].symbol));
@@ -2613,24 +2574,18 @@ yyreduce:
 
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NWrite, Void);
     n->value.write = (WriteNode){
         .newline = 1,
     };
 
-    Node * var = ast_create_node(&(yyval.subtree));
-    var->node_type = NExpr;
-    var->asoc_type = (yyvsp[(3) - (6)].symbol).asoc_type.type;
+    Node * var = ast_create_node(&(yyval.subtree), NExpr, (yyvsp[(3) - (6)].symbol).asoc_type.type);
     var->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s3,
     };
 
-    Node * var2 = ast_create_node(&(yyval.subtree));
-    var2->node_type = NExpr;
-    var2->asoc_type = (yyvsp[(5) - (6)].symbol).asoc_type.type;
+    Node * var2 = ast_create_node(&(yyval.subtree), NExpr, (yyvsp[(5) - (6)].symbol).asoc_type.type);
     var2->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s,
@@ -2643,22 +2598,18 @@ yyreduce:
 
   case 55:
 /* Line 1802 of yacc.c  */
-#line 911 "src/grammar.y"
+#line 866 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(3) - (4)].symbol));
     assert_ident_is_printable(&(yyvsp[(3) - (4)].symbol));
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NWrite, Void);
     n->value.write = (WriteNode){
         .newline = 0,
     };
 
-    Node * var = ast_create_node(&(yyval.subtree));
-    var->node_type = NExpr;
-    var->asoc_type = (yyvsp[(3) - (4)].symbol).asoc_type.type;
+    Node * var = ast_create_node(&(yyval.subtree), NExpr, (yyvsp[(3) - (4)].symbol).asoc_type.type);
     var->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s,
@@ -2670,23 +2621,19 @@ yyreduce:
 
   case 56:
 /* Line 1802 of yacc.c  */
-#line 934 "src/grammar.y"
+#line 885 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(3) - (4)].symbol));
     assert_ident_is_printable(&(yyvsp[(3) - (4)].symbol));
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NWrite, Void);
     n->value.write = (WriteNode){
         .newline = 1,
     };
 
 
-    Node * ident = ast_create_node(&(yyval.subtree));
-    ident->node_type = NExpr;
-    ident->asoc_type = (yyvsp[(3) - (4)].symbol).asoc_type.type;
+    Node * ident = ast_create_node(&(yyval.subtree), NExpr, (yyvsp[(3) - (4)].symbol).asoc_type.type);
     ident->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s,
@@ -2698,23 +2645,19 @@ yyreduce:
 
   case 57:
 /* Line 1802 of yacc.c  */
-#line 958 "src/grammar.y"
+#line 905 "src/grammar.y"
     {
     Symbol * s = assert_sym_exists(&(yyvsp[(3) - (6)].symbol));
     assert_node_is_printable(ast_get_root(&(yyvsp[(5) - (6)].subtree)));
     assert_ident_is_printable(&(yyvsp[(3) - (6)].symbol));
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NWrite, Void);
     n->value.write = (WriteNode){
         .newline = 0,
     };
 
-    Node * ident = ast_create_node(&(yyval.subtree));
-    ident->node_type = NExpr;
-    ident->asoc_type = (yyvsp[(3) - (6)].symbol).asoc_type.type;
+    Node * ident = ast_create_node(&(yyval.subtree), NExpr, (yyvsp[(3) - (6)].symbol).asoc_type.type);
     ident->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s,
@@ -2727,23 +2670,19 @@ yyreduce:
 
   case 58:
 /* Line 1802 of yacc.c  */
-#line 982 "src/grammar.y"
+#line 925 "src/grammar.y"
     {
     Symbol * s = assert_sym_exists(&(yyvsp[(3) - (6)].symbol));
     assert_node_is_printable(ast_get_root(&(yyvsp[(5) - (6)].subtree)));
     assert_ident_is_printable(&(yyvsp[(3) - (6)].symbol));
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NWrite, Void);
     n->value.write = (WriteNode){
         .newline = 1,
     };
 
-    Node * ident = ast_create_node(&(yyval.subtree));
-    ident->node_type = NExpr;
-    ident->asoc_type = (yyvsp[(3) - (6)].symbol).asoc_type.type;
+    Node * ident = ast_create_node(&(yyval.subtree), NExpr, (yyvsp[(3) - (6)].symbol).asoc_type.type);
     ident->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s,
@@ -2756,13 +2695,11 @@ yyreduce:
 
   case 59:
 /* Line 1802 of yacc.c  */
-#line 1006 "src/grammar.y"
+#line 945 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NIf;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NIf, Void);
     n->value.ifn = (IfNode){
         .blocks = 1
     };
@@ -2774,13 +2711,11 @@ yyreduce:
 
   case 60:
 /* Line 1802 of yacc.c  */
-#line 1018 "src/grammar.y"
+#line 955 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NIf;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&(yyval.subtree), NIf, Void);
     n->value.ifn = (IfNode){
         .blocks = 2
     };
@@ -2793,7 +2728,7 @@ yyreduce:
 
   case 61:
 /* Line 1802 of yacc.c  */
-#line 1034 "src/grammar.y"
+#line 969 "src/grammar.y"
     {
     Node * var = ast_get_root(&(yyvsp[(1) - (3)].subtree));
     Node * expr = ast_get_root(&(yyvsp[(3) - (3)].subtree));
@@ -2801,9 +2736,7 @@ yyreduce:
     assert_variable_assigned_type(var, expr);
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NAssign;
-    n->asoc_type = Void;
+    ast_create_node(&(yyval.subtree), NAssign, Void);
 
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(1) - (3)].subtree), 0, 0);
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(3) - (3)].subtree), 0, 0);
@@ -2812,14 +2745,12 @@ yyreduce:
 
   case 64:
 /* Line 1802 of yacc.c  */
-#line 1051 "src/grammar.y"
+#line 984 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (1)].symbol));
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
-    n->asoc_type = s->asoc_type.type;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, s->asoc_type.type);
     n->value.expr = (ExprNode) {
         .type = ESymbol,
         .value.symbol = *s,
@@ -2829,7 +2760,7 @@ yyreduce:
 
   case 65:
 /* Line 1802 of yacc.c  */
-#line 1064 "src/grammar.y"
+#line 995 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (4)].symbol)); 
 
@@ -2847,8 +2778,7 @@ yyreduce:
 
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, s->asoc_type.type);
     n->value.expr = (ExprNode) {
         .type = ESymbolIdx,
         .value.symbol_idx = (IndexedSymbol) {
@@ -2856,13 +2786,12 @@ yyreduce:
             .index = (yyvsp[(3) - (4)].snum)
         }
     };
-    n->asoc_type = s->asoc_type.type;
 }
     break;
 
   case 66:
 /* Line 1802 of yacc.c  */
-#line 1093 "src/grammar.y"
+#line 1022 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (1)].symbol));
     if (s->type != Procedure) {
@@ -2884,9 +2813,7 @@ yyreduce:
     Tree args;
     tree_init(&args, sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NCall;
-    n->asoc_type = s->asoc_type.type;
+    Node * n = ast_create_node(&(yyval.subtree), NCall, s->asoc_type.type);
     n->value.call = (FunctionCall){
         .args = args,
         .symbol = *s,
@@ -2897,7 +2824,7 @@ yyreduce:
 
   case 67:
 /* Line 1802 of yacc.c  */
-#line 1124 "src/grammar.y"
+#line 1051 "src/grammar.y"
     {
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (4)].symbol));
 
@@ -2949,9 +2876,7 @@ yyreduce:
 
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NCall;
-    n->asoc_type = s->asoc_type.type;
+    Node * n = ast_create_node(&(yyval.subtree), NCall, s->asoc_type.type);
     n->value.call = (FunctionCall){
         .symbol = *s,
         .args = (yyvsp[(3) - (4)].subtree),
@@ -2961,7 +2886,7 @@ yyreduce:
 
   case 68:
 /* Line 1802 of yacc.c  */
-#line 1185 "src/grammar.y"
+#line 1110 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2969,9 +2894,7 @@ yyreduce:
     Node * rhs = ast_get_root(&(yyvsp[(3) - (3)].subtree));
     assert_expr_type(lhs, rhs);
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
-    n->asoc_type = lhs->asoc_type;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, lhs->asoc_type);
     n->value.expr = (ExprNode){
         .type = EOp,
         .value.op = OpOr,
@@ -2984,7 +2907,7 @@ yyreduce:
 
   case 70:
 /* Line 1802 of yacc.c  */
-#line 1204 "src/grammar.y"
+#line 1127 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2992,9 +2915,7 @@ yyreduce:
     Node * rhs = ast_get_root(&(yyvsp[(3) - (3)].subtree));
     assert_expr_type(lhs, rhs);
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
-    n->asoc_type = lhs->asoc_type;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, lhs->asoc_type);
     n->value.expr = (ExprNode){
         .type = EOp,
         .value.op = OpAnd,
@@ -3007,15 +2928,13 @@ yyreduce:
 
   case 72:
 /* Line 1802 of yacc.c  */
-#line 1223 "src/grammar.y"
+#line 1144 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
     Node * lhs = ast_get_root(&(yyvsp[(2) - (2)].subtree));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
-    n->asoc_type = lhs->asoc_type;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, lhs->asoc_type);
     n->value.expr = (ExprNode){
         .type = EOp,
         .value.op = OpNot,
@@ -3027,13 +2946,13 @@ yyreduce:
 
   case 74:
 /* Line 1802 of yacc.c  */
-#line 1239 "src/grammar.y"
+#line 1158 "src/grammar.y"
     { (yyval.subtree) = (yyvsp[(2) - (3)].subtree); }
     break;
 
   case 76:
 /* Line 1802 of yacc.c  */
-#line 1241 "src/grammar.y"
+#line 1160 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -3041,9 +2960,7 @@ yyreduce:
     Node * rhs = ast_get_root(&(yyvsp[(3) - (3)].subtree));
     assert_expr_type(lhs, rhs);
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
-    n->asoc_type = Bool;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, Bool);
     n->value.expr = (yyvsp[(2) - (3)].expr);
 
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(1) - (3)].subtree), 0, 0);
@@ -3053,62 +2970,59 @@ yyreduce:
 
   case 77:
 /* Line 1802 of yacc.c  */
-#line 1257 "src/grammar.y"
+#line 1174 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpAnd }; }
     break;
 
   case 78:
 /* Line 1802 of yacc.c  */
-#line 1258 "src/grammar.y"
+#line 1175 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpOr }; }
     break;
 
   case 79:
 /* Line 1802 of yacc.c  */
-#line 1259 "src/grammar.y"
+#line 1176 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpBt }; }
     break;
 
   case 80:
 /* Line 1802 of yacc.c  */
-#line 1260 "src/grammar.y"
+#line 1177 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpLt }; }
     break;
 
   case 81:
 /* Line 1802 of yacc.c  */
-#line 1261 "src/grammar.y"
+#line 1178 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpEbt }; }
     break;
 
   case 82:
 /* Line 1802 of yacc.c  */
-#line 1262 "src/grammar.y"
+#line 1179 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpElt }; }
     break;
 
   case 83:
 /* Line 1802 of yacc.c  */
-#line 1263 "src/grammar.y"
+#line 1180 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpEq };}
     break;
 
   case 84:
 /* Line 1802 of yacc.c  */
-#line 1264 "src/grammar.y"
+#line 1181 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpNeq }; }
     break;
 
   case 85:
 /* Line 1802 of yacc.c  */
-#line 1267 "src/grammar.y"
+#line 1184 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * void_root = ast_create_node(&(yyval.subtree));
-    *void_root = (Node) {
-        .node_type = NVoid
-    };
+    ast_create_node(&(yyval.subtree), NVoid, Void);
 
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(1) - (1)].subtree), 0, 0);
 }
@@ -3116,7 +3030,7 @@ yyreduce:
 
   case 86:
 /* Line 1802 of yacc.c  */
-#line 1276 "src/grammar.y"
+#line 1190 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (3)].subtree);
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(3) - (3)].subtree), 0, 0);
@@ -3125,7 +3039,7 @@ yyreduce:
 
   case 87:
 /* Line 1802 of yacc.c  */
-#line 1279 "src/grammar.y"
+#line 1193 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 }
@@ -3133,7 +3047,7 @@ yyreduce:
 
   case 89:
 /* Line 1802 of yacc.c  */
-#line 1282 "src/grammar.y"
+#line 1196 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -3141,9 +3055,7 @@ yyreduce:
     Node * rhs = ast_get_root(&(yyvsp[(3) - (3)].subtree));
     assert_expr_type(lhs, rhs);
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
-    n->asoc_type = lhs->asoc_type;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, lhs->asoc_type);
     n->value.expr = (ExprNode){
         .type = EOp,
         .value.op = (yyvsp[(2) - (3)].op),
@@ -3156,7 +3068,7 @@ yyreduce:
 
   case 91:
 /* Line 1802 of yacc.c  */
-#line 1300 "src/grammar.y"
+#line 1212 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -3164,9 +3076,7 @@ yyreduce:
     Node * rhs = ast_get_root(&(yyvsp[(3) - (3)].subtree));
     assert_expr_type(lhs, rhs);
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
-    n->asoc_type = lhs->asoc_type;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, lhs->asoc_type);
     n->value.expr = (ExprNode){
         .type = EOp,
         .value.op = (yyvsp[(2) - (3)].op),
@@ -3179,7 +3089,7 @@ yyreduce:
 
   case 92:
 /* Line 1802 of yacc.c  */
-#line 1318 "src/grammar.y"
+#line 1228 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (4)].symbol));
     if (s->type != Function) {
@@ -3245,15 +3155,13 @@ yyreduce:
 
   case 93:
 /* Line 1802 of yacc.c  */
-#line 1379 "src/grammar.y"
+#line 1289 "src/grammar.y"
     { 
     tree_init(&(yyval.subtree), sizeof(Node));
 
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (1)].symbol));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->asoc_type = (yyvsp[(1) - (1)].symbol).asoc_type.type;
-    n->node_type = NExpr;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, s->asoc_type.type);
     n->value.expr = (ExprNode) {
         .type = ESymbol,
         .value.symbol = *s,
@@ -3263,7 +3171,7 @@ yyreduce:
 
   case 94:
 /* Line 1802 of yacc.c  */
-#line 1392 "src/grammar.y"
+#line 1300 "src/grammar.y"
     { 
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -3281,9 +3189,7 @@ yyreduce:
         yyerror(str_as_ref(&wrn_buff));
     }
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
-    n->asoc_type = s->asoc_type.type;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, s->asoc_type.type);
     n->value.expr = (ExprNode) {
         .type = ESymbolIdx,
         .value.symbol_idx = (IndexedSymbol) {
@@ -3296,13 +3202,11 @@ yyreduce:
 
   case 95:
 /* Line 1802 of yacc.c  */
-#line 1420 "src/grammar.y"
+#line 1326 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
-    n->asoc_type = (yyvsp[(1) - (1)].function_call).return_type;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, (yyvsp[(1) - (1)].function_call).return_type);
     n->value.expr = (ExprNode) {
         .type = EFunctionCall,
         .value.function_call = (yyvsp[(1) - (1)].function_call),
@@ -3319,13 +3223,11 @@ yyreduce:
 
   case 96:
 /* Line 1802 of yacc.c  */
-#line 1438 "src/grammar.y"
+#line 1342 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
-    n->asoc_type = Int;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, Int);
     n->value.expr = (ExprNode) {
         .type = EIntValue,
         .value.int_value = (yyvsp[(1) - (1)].snum),
@@ -3335,13 +3237,11 @@ yyreduce:
 
   case 97:
 /* Line 1802 of yacc.c  */
-#line 1449 "src/grammar.y"
+#line 1351 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
-    n->asoc_type = Real;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, Real);
     n->value.expr = (ExprNode) {
         .type = ERealValue,
         .value.real_value = (yyvsp[(1) - (1)].fnum),
@@ -3351,15 +3251,13 @@ yyreduce:
 
   case 98:
 /* Line 1802 of yacc.c  */
-#line 1460 "src/grammar.y"
+#line 1360 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
     Node * past_root = ast_get_root(&(yyvsp[(2) - (2)].subtree));
 
-    Node * n = ast_create_node(&(yyval.subtree));
-    n->node_type = NExpr;
-    n->asoc_type = past_root->asoc_type;
+    Node * n = ast_create_node(&(yyval.subtree), NExpr, past_root->asoc_type);
     n->value.expr = (ExprNode){
         .type = EUnaryOp,
         .value.op = (yyvsp[(1) - (2)].op),
@@ -3371,7 +3269,7 @@ yyreduce:
 
   case 99:
 /* Line 1802 of yacc.c  */
-#line 1475 "src/grammar.y"
+#line 1373 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(2) - (3)].subtree);
 }
@@ -3379,7 +3277,7 @@ yyreduce:
 
 
 /* Line 1802 of yacc.c  */
-#line 3383 "grammar.tab.c"
+#line 3281 "grammar.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -3611,5 +3509,5 @@ yyreturn:
 
 
 /* Line 2050 of yacc.c  */
-#line 1478 "src/grammar.y"
+#line 1376 "src/grammar.y"
 

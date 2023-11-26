@@ -140,7 +140,7 @@ typedef struct Node {
 void tree_extend_with_subtree(Tree *t, Tree *o, size_t sub_tree_root,
                               size_t new_parent);
 void tree_root_extend(Tree *t, Tree *o);
-Node *ast_create_node(Tree *t);
+Node *ast_create_node(Tree *t, NodeType nt, DataTypeE asoc_type);
 void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level);
 char *node_type_display(NodeType nt);
 void node_display_id(size_t id, FILE *f, Tree *t, HashSet *tabla, size_t level);

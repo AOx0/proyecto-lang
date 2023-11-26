@@ -316,16 +316,13 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
     assert_not_sym_exists(&$3);
     hashset_insert(&tabla, &$3);
 
-    Node * root = ast_create_node(&ast);
-    root->node_type = NRoot;
-    root->asoc_type = Void;
+    ast_create_node(&ast, NRoot, Void);
 
     for (size_t i = 0; i < $8.len; i++) {
         Symbol *s = vec_get(&$8, i);
-        Node * node = ast_create_node(&ast);
+        Node * node = ast_create_node(&ast, NVar, Void);
 
         if (s->type == Variable) { 
-            node->node_type = NVar;
             node->value.var = (VarNode) { .symbol = *s };
         } else {
             node->node_type = NConst;
@@ -340,9 +337,7 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
     Tree program;
     tree_init(&program, sizeof(Node));
 
-    Node * n = ast_create_node(&program);
-    n->node_type = NFunction;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&program, NFunction, Void);
     n->value.fun = (FunctionNode) {
         .symbol = $3,
         .args = $5,
@@ -512,9 +507,7 @@ subprogramas : subprogramas subprograma_declaracion ';' {
 } | {
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NVoid;
-    n->asoc_type = Void;
+    ast_create_node(&$$, NVoid, Void);
 };
 subprograma_declaracion
     : subprograma_encabezado decl subprogramas instruccion_compuesta {
@@ -522,9 +515,7 @@ subprograma_declaracion
 
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NFunction;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NFunction, Void);
     n->value.fun = (FunctionNode) {
         .symbol = $1,
         .args = $2,
@@ -611,9 +602,7 @@ instruccion_compuesta : KW_BEGIN instrucciones_opcionales KW_END {
 instrucciones_opcionales : instrucciones_lista {
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NVoid;
-    n->asoc_type = Void;
+    ast_create_node(&$$, NVoid, Void);
 
     for (size_t i = 0; i < $1.len; i++) {
         Tree *t2 = (Tree *)vec_get(&$1, i);
@@ -626,9 +615,7 @@ instrucciones_opcionales : instrucciones_lista {
 } | {
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NVoid;
-    n->asoc_type = Void;
+    ast_create_node(&$$, NVoid, Void);
 }
 instrucciones_lista : instrucciones {
     vec_init(&$$, sizeof(Tree));
@@ -650,9 +637,7 @@ instrucciones: variable_asignacion |
 repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones {
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWhile;
-    n->asoc_type = Void;
+    ast_create_node(&$$, NWhile, Void);
 
     assert_tree_asoc_type_is($2, Bool);
 
@@ -661,9 +646,7 @@ repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones {
 } | KW_FOR for_asignacion KW_TO expresion KW_DO instrucciones {
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NFor;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NFor, Void);
     n->value.forn = (ForNode) {
         .down = 0,
     };
@@ -673,9 +656,7 @@ repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones {
 } | KW_FOR for_asignacion KW_DOWNTO expresion KW_DO instrucciones {
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NFor;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NFor, Void);
     n->value.forn = (ForNode) {
         .down = 1,
     };
@@ -689,9 +670,7 @@ lectura_instruccion : KW_READ '(' IDENT ')' {
     assert_sym_exists(&$3);
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NRead;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NRead, Void);
     n->value.read = (ReadNode){
         .newline = 0,
         .target_symbol = $3,
@@ -701,9 +680,7 @@ lectura_instruccion : KW_READLN '(' IDENT ')' {
     assert_sym_exists(&$3); 
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NRead;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NRead, Void);
     n->value.read = (ReadNode){
         .newline = 1,
         .target_symbol = $3,
@@ -716,21 +693,18 @@ escritura_instruccion : KW_WRITE '(' CONST_CADENA ',' IDENT ')' {
     assert_ident_is_printable(&$5);
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NWrite, Void);
     n->value.write = (WriteNode) {
         .newline = 0,
     };
 
-    Node * str = ast_create_node(&$$);
-    str->node_type = NConst;
-    str->asoc_type = Str;
-    str->value.cons = (ConstNode) { .symbol = $3, .value.str = $3 };
+    Node * str = ast_create_node(&$$, NConst, Str);
+    str->value.cons = (ConstNode) { 
+        .symbol = $3, 
+        .value.str = $3
+    };
 
-    Node * var = ast_create_node(&$$);
-    var->node_type = NExpr;
-    var->asoc_type = $5.asoc_type.type;
+    Node * var = ast_create_node(&$$, NExpr, $5.asoc_type.type);
     var->value.expr = (ExprNode) {
         .type = ESymbol,
         .value.symbol = *s,
@@ -744,21 +718,18 @@ escritura_instruccion : KW_WRITELN '(' CONST_CADENA ',' IDENT ')' {
     assert_ident_is_printable(&$5);
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NWrite, Void);
     n->value.write = (WriteNode) {
         .newline = 1,
     };
 
-    Node * str = ast_create_node(&$$);
-    str->node_type = NConst;
-    str->asoc_type = Str;
-    str->value.cons = (ConstNode) { .symbol = $3, .value.str = $3 };
+    Node * str = ast_create_node(&$$, NConst, Str);
+    str->value.cons = (ConstNode) { 
+        .symbol = $3, 
+        .value.str = $3
+    };
 
-    Node * var = ast_create_node(&$$);
-    var->node_type = NExpr;
-    var->asoc_type = $5.asoc_type.type;
+    Node * var = ast_create_node(&$$, NExpr, $5.asoc_type.type);
     var->value.expr = (ExprNode) {
         .type = ESymbol,
         .value.symbol = *s,
@@ -771,50 +742,47 @@ escritura_instruccion : KW_WRITELN '(' CONST_CADENA ',' IDENT ')' {
 escritura_instruccion : KW_WRITE '(' CONST_CADENA ')'{
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NWrite, Void);
     n->value.write = (WriteNode) {
         .newline = 0,
     };
 
-    Node * str = ast_create_node(&$$);
-    str->node_type = NConst;
-    str->asoc_type = Str;
-    str->value.cons = (ConstNode) { .symbol = $3, .value.str = $3 };
+    Node * str = ast_create_node(&$$, NConst, Str);
+    str->value.cons = (ConstNode) { 
+        .symbol = $3, 
+        .value.str = $3 
+    };
 
     tree_new_relation(&$$, 0, 1);
 } | KW_WRITELN '(' CONST_CADENA ')' {
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NWrite, Void);
     n->value.write = (WriteNode) {
         .newline = 1,
     };
 
-    Node * str = ast_create_node(&$$);
-    str->node_type = NConst;
-    str->asoc_type = Str;
-    str->value.cons = (ConstNode) { .symbol = $3, .value.str = $3 };
+    Node * str = ast_create_node(&$$, NConst, Str);
+    str->value.cons = (ConstNode) { 
+        .symbol = $3, 
+        .value.str = $3 
+    };
 
     tree_new_relation(&$$, 0, 1);
  } | KW_WRITE '(' CONST_CADENA ',' expresion ')' {
     assert_node_is_printable(ast_get_root(&$5));
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NWrite, Void);
     n->value.write = (WriteNode) {
         .newline = 0,
     };
 
-    Node * str = ast_create_node(&$$);
-    str->node_type = NConst;
-    str->asoc_type = Str;
-    str->value.cons = (ConstNode) { .symbol = $3, .value.str = $3 };
+    Node * str = ast_create_node(&$$, NConst, Str);
+    str->value.cons = (ConstNode) { 
+        .symbol = $3, 
+        .value.str = $3 
+    };
 
     tree_new_relation(&$$, 0, 1);
     tree_extend_with_subtree(&$$, &$5, 0, 0);
@@ -823,17 +791,16 @@ escritura_instruccion : KW_WRITE '(' CONST_CADENA ')'{
     assert_node_is_printable(ast_get_root(&$5));
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NWrite, Void);
     n->value.write = (WriteNode) {
         .newline = 1,
     };
 
-    Node * str = ast_create_node(&$$);
-    str->node_type = NConst;
-    str->asoc_type = Str;
-    str->value.cons = (ConstNode) { .symbol = $3, .value.str = $3 };
+    Node * str = ast_create_node(&$$, NConst, Str);
+    str->value.cons = (ConstNode) { 
+        .symbol = $3, 
+        .value.str = $3,
+    };
 
     tree_new_relation(&$$, 0, 1);
     tree_extend_with_subtree(&$$, &$5, 0, 0);
@@ -846,24 +813,18 @@ escritura_instruccion : KW_WRITE '(' IDENT ',' IDENT ')' {
     assert_ident_is_printable(&$3);
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NWrite, Void);
     n->value.write = (WriteNode){
         .newline = 0,
     };
 
-    Node * var = ast_create_node(&$$);
-    var->node_type = NExpr;
-    var->asoc_type = $3.asoc_type.type;
+    Node * var = ast_create_node(&$$, NExpr, $3.asoc_type.type);
     var->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s3,
     };
 
-    Node * var2 = ast_create_node(&$$);
-    var2->node_type = NExpr;
-    var2->asoc_type = $5.asoc_type.type;
+    Node * var2 = ast_create_node(&$$, NExpr, $5.asoc_type.type);
     var2->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s,
@@ -881,24 +842,18 @@ escritura_instruccion : KW_WRITELN '(' IDENT ',' IDENT ')' {
 
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NWrite, Void);
     n->value.write = (WriteNode){
         .newline = 1,
     };
 
-    Node * var = ast_create_node(&$$);
-    var->node_type = NExpr;
-    var->asoc_type = $3.asoc_type.type;
+    Node * var = ast_create_node(&$$, NExpr, $3.asoc_type.type);
     var->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s3,
     };
 
-    Node * var2 = ast_create_node(&$$);
-    var2->node_type = NExpr;
-    var2->asoc_type = $5.asoc_type.type;
+    Node * var2 = ast_create_node(&$$, NExpr, $5.asoc_type.type);
     var2->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s,
@@ -913,16 +868,12 @@ escritura_instruccion : KW_WRITE '(' IDENT ')' {
     assert_ident_is_printable(&$3);
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NWrite, Void);
     n->value.write = (WriteNode){
         .newline = 0,
     };
 
-    Node * var = ast_create_node(&$$);
-    var->node_type = NExpr;
-    var->asoc_type = $3.asoc_type.type;
+    Node * var = ast_create_node(&$$, NExpr, $3.asoc_type.type);
     var->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s,
@@ -936,17 +887,13 @@ escritura_instruccion : KW_WRITELN '(' IDENT ')' {
     assert_ident_is_printable(&$3);
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NWrite, Void);
     n->value.write = (WriteNode){
         .newline = 1,
     };
 
 
-    Node * ident = ast_create_node(&$$);
-    ident->node_type = NExpr;
-    ident->asoc_type = $3.asoc_type.type;
+    Node * ident = ast_create_node(&$$, NExpr, $3.asoc_type.type);
     ident->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s,
@@ -961,16 +908,12 @@ escritura_instruccion : KW_WRITE '(' IDENT ',' expresion ')' {
     assert_ident_is_printable(&$3);
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NWrite, Void);
     n->value.write = (WriteNode){
         .newline = 0,
     };
 
-    Node * ident = ast_create_node(&$$);
-    ident->node_type = NExpr;
-    ident->asoc_type = $3.asoc_type.type;
+    Node * ident = ast_create_node(&$$, NExpr, $3.asoc_type.type);
     ident->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s,
@@ -985,16 +928,12 @@ escritura_instruccion : KW_WRITELN '(' IDENT ',' expresion ')' {
     assert_ident_is_printable(&$3);
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NWrite;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NWrite, Void);
     n->value.write = (WriteNode){
         .newline = 1,
     };
 
-    Node * ident = ast_create_node(&$$);
-    ident->node_type = NExpr;
-    ident->asoc_type = $3.asoc_type.type;
+    Node * ident = ast_create_node(&$$, NExpr, $3.asoc_type.type);
     ident->value.expr = (ExprNode){
         .type = ESymbol,
         .value.symbol = *s,
@@ -1006,9 +945,7 @@ escritura_instruccion : KW_WRITELN '(' IDENT ',' expresion ')' {
 if_instruccion : KW_IF relop_expresion KW_THEN instrucciones {
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NIf;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NIf, Void);
     n->value.ifn = (IfNode){
         .blocks = 1
     };
@@ -1018,9 +955,7 @@ if_instruccion : KW_IF relop_expresion KW_THEN instrucciones {
 } | KW_IF relop_expresion KW_THEN instrucciones KW_ELSE instrucciones {
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NIf;
-    n->asoc_type = Void;
+    Node * n = ast_create_node(&$$, NIf, Void);
     n->value.ifn = (IfNode){
         .blocks = 2
     };
@@ -1038,9 +973,7 @@ variable_asignacion : variable OP_ASIGN expresion {
     assert_variable_assigned_type(var, expr);
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NAssign;
-    n->asoc_type = Void;
+    ast_create_node(&$$, NAssign, Void);
 
     tree_extend_with_subtree(&$$, &$1, 0, 0);
     tree_extend_with_subtree(&$$, &$3, 0, 0);
@@ -1052,9 +985,7 @@ variable : IDENT {
     Symbol * s = assert_sym_exists(&$1);
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
-    n->asoc_type = s->asoc_type.type;
+    Node * n = ast_create_node(&$$, NExpr, s->asoc_type.type);
     n->value.expr = (ExprNode) {
         .type = ESymbol,
         .value.symbol = *s,
@@ -1078,8 +1009,7 @@ variable : IDENT '[' CONST_ENTERA ']' {
 
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
+    Node * n = ast_create_node(&$$, NExpr, s->asoc_type.type);
     n->value.expr = (ExprNode) {
         .type = ESymbolIdx,
         .value.symbol_idx = (IndexedSymbol) {
@@ -1087,7 +1017,6 @@ variable : IDENT '[' CONST_ENTERA ']' {
             .index = $3
         }
     };
-    n->asoc_type = s->asoc_type.type;
 };
 
 procedure_instruccion : IDENT { 
@@ -1111,9 +1040,7 @@ procedure_instruccion : IDENT {
     Tree args;
     tree_init(&args, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NCall;
-    n->asoc_type = s->asoc_type.type;
+    Node * n = ast_create_node(&$$, NCall, s->asoc_type.type);
     n->value.call = (FunctionCall){
         .args = args,
         .symbol = *s,
@@ -1172,9 +1099,7 @@ procedure_instruccion : IDENT '(' expresion_lista ')' {
 
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NCall;
-    n->asoc_type = s->asoc_type.type;
+    Node * n = ast_create_node(&$$, NCall, s->asoc_type.type);
     n->value.call = (FunctionCall){
         .symbol = *s,
         .args = $3,
@@ -1189,9 +1114,7 @@ relop_expresion : relop_expresion RELOP_OR relop_and {
     Node * rhs = ast_get_root(&$3);
     assert_expr_type(lhs, rhs);
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
-    n->asoc_type = lhs->asoc_type;
+    Node * n = ast_create_node(&$$, NExpr, lhs->asoc_type);
     n->value.expr = (ExprNode){
         .type = EOp,
         .value.op = OpOr,
@@ -1208,9 +1131,7 @@ relop_and : relop_and RELOP_AND relop_not {
     Node * rhs = ast_get_root(&$3);
     assert_expr_type(lhs, rhs);
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
-    n->asoc_type = lhs->asoc_type;
+    Node * n = ast_create_node(&$$, NExpr, lhs->asoc_type);
     n->value.expr = (ExprNode){
         .type = EOp,
         .value.op = OpAnd,
@@ -1225,9 +1146,7 @@ relop_not : RELOP_NOT relop_not {
 
     Node * lhs = ast_get_root(&$2);
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
-    n->asoc_type = lhs->asoc_type;
+    Node * n = ast_create_node(&$$, NExpr, lhs->asoc_type);
     n->value.expr = (ExprNode){
         .type = EOp,
         .value.op = OpNot,
@@ -1245,9 +1164,7 @@ relop_expresion_simple : expresion relop expresion {
     Node * rhs = ast_get_root(&$3);
     assert_expr_type(lhs, rhs);
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
-    n->asoc_type = Bool;
+    Node * n = ast_create_node(&$$, NExpr, Bool);
     n->value.expr = $2;
 
     tree_extend_with_subtree(&$$, &$1, 0, 0);
@@ -1267,10 +1184,7 @@ relop : RELOP_AND { $$ = (ExprNode) { .type = EOp, .value.op = OpAnd }; }
 expresion_lista : expresion {
     tree_init(&$$, sizeof(Node));
 
-    Node * void_root = ast_create_node(&$$);
-    *void_root = (Node) {
-        .node_type = NVoid
-    };
+    ast_create_node(&$$, NVoid, Void);
 
     tree_extend_with_subtree(&$$, &$1, 0, 0);
 } | expresion_lista ',' expresion {
@@ -1286,9 +1200,7 @@ expresion: termino | expresion ADDOP termino {
     Node * rhs = ast_get_root(&$3);
     assert_expr_type(lhs, rhs);
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
-    n->asoc_type = lhs->asoc_type;
+    Node * n = ast_create_node(&$$, NExpr, lhs->asoc_type);
     n->value.expr = (ExprNode){
         .type = EOp,
         .value.op = $2,
@@ -1304,9 +1216,7 @@ termino : factor | termino MULOP factor {
     Node * rhs = ast_get_root(&$3);
     assert_expr_type(lhs, rhs);
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
-    n->asoc_type = lhs->asoc_type;
+    Node * n = ast_create_node(&$$, NExpr, lhs->asoc_type);
     n->value.expr = (ExprNode){
         .type = EOp,
         .value.op = $2,
@@ -1381,9 +1291,7 @@ factor : IDENT {
 
     Symbol * s = assert_sym_exists(&$1);
 
-    Node * n = ast_create_node(&$$);
-    n->asoc_type = $1.asoc_type.type;
-    n->node_type = NExpr;
+    Node * n = ast_create_node(&$$, NExpr, s->asoc_type.type);
     n->value.expr = (ExprNode) {
         .type = ESymbol,
         .value.symbol = *s,
@@ -1406,9 +1314,7 @@ factor : IDENT '[' CONST_ENTERA ']' {
         yyerror(str_as_ref(&wrn_buff));
     }
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
-    n->asoc_type = s->asoc_type.type;
+    Node * n = ast_create_node(&$$, NExpr, s->asoc_type.type);
     n->value.expr = (ExprNode) {
         .type = ESymbolIdx,
         .value.symbol_idx = (IndexedSymbol) {
@@ -1420,9 +1326,7 @@ factor : IDENT '[' CONST_ENTERA ']' {
 factor : llamado_funcion {
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
-    n->asoc_type = $1.return_type;
+    Node * n = ast_create_node(&$$, NExpr, $1.return_type);
     n->value.expr = (ExprNode) {
         .type = EFunctionCall,
         .value.function_call = $1,
@@ -1438,9 +1342,7 @@ factor : llamado_funcion {
 factor : CONST_ENTERA {
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
-    n->asoc_type = Int;
+    Node * n = ast_create_node(&$$, NExpr, Int);
     n->value.expr = (ExprNode) {
         .type = EIntValue,
         .value.int_value = $1,
@@ -1449,9 +1351,7 @@ factor : CONST_ENTERA {
 factor : CONST_REAL {
     tree_init(&$$, sizeof(Node));
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
-    n->asoc_type = Real;
+    Node * n = ast_create_node(&$$, NExpr, Real);
     n->value.expr = (ExprNode) {
         .type = ERealValue,
         .value.real_value = $1,
@@ -1462,9 +1362,7 @@ factor : ADDOP factor {
 
     Node * past_root = ast_get_root(&$2);
 
-    Node * n = ast_create_node(&$$);
-    n->node_type = NExpr;
-    n->asoc_type = past_root->asoc_type;
+    Node * n = ast_create_node(&$$, NExpr, past_root->asoc_type);
     n->value.expr = (ExprNode){
         .type = EUnaryOp,
         .value.op = $1,
