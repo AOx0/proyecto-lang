@@ -5,6 +5,10 @@
 #include <string.h>
 
 void tree_extend(Tree *t, Tree *o, size_t childs_of) {
+    if (t->values.t_size != o->values.t_size)
+        panic("Tree values size mismatch %zu != %zu", t->values.t_size,
+              o->values.t_size);
+
     size_t offset = t->values.len;
     // Copuamos todos los valores
     for (size_t i = 0; i < o->values.len; i++) {

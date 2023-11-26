@@ -11,6 +11,7 @@
 void tree_debug(Tree *t) {
 
     for (size_t i = 0; i < t->values.len; i++) {
+        printf("Registered size: %zu\n", t->values.t_size);
         Node *n = (Node *)vec_get(&t->values, i);
         printf("%zu: ", i);
         node_type_debug(n->node_type);
