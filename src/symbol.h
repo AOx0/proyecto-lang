@@ -68,6 +68,7 @@ void data_type_display(FILE *f, int is_fun, StrSlice *name, DataType *d);
 char *data_type_e_display_return(DataTypeE d);
 void const_value_display(FILE *f, ConstValue *cv, DataType *d);
 void const_info_debug(ConstantInfo *f);
+char *data_type_e_display_scan(DataTypeE d);
 void fun_info_debug(FunctionInfo *f);
 void var_info_debug(VariableInfo *f);
 void sym_type_display(SymbolType st);

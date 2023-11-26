@@ -103,6 +103,31 @@ char *data_type_e_display_return(DataTypeE d) {
     return "NONE";
 }
 
+char *data_type_e_display_scan(DataTypeE d) {
+    switch (d) {
+    case Int: {
+        return "%d";
+    }
+    case Real: {
+        return "%f";
+    }
+    case Str: {
+        return "%s";
+    }
+    case Bool: {
+        return "%d";
+    }
+    case Void: {
+        return "err";
+    }
+    case Ukw: {
+        panic("Invalid DataType");
+    }
+    }
+
+    return "NONE";
+}
+
 void data_type_display(FILE *f, int is_fun, StrSlice *name, DataType *d) {
     if (d->size == 1 || d->type == Str) {
         data_type_e_display(f, d->type);

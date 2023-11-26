@@ -12,6 +12,7 @@ program principal(input, output, entrada);
 
     (* Suma numeros *)
     function Add(a: integer; b: integer) : integer;
+    var zz: integer;
     begin
         writeln(c);
         Add := a + b
@@ -27,7 +28,7 @@ program principal(input, output, entrada);
     (* Invoca a Multiplica y Suma numeros *)
     procedure multadd;
     begin
-        c := Add(a, b);
+        c := Add(c, b);
         writeln(c);
         d := Mult(c, a)
     end;

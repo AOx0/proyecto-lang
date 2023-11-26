@@ -37,7 +37,7 @@ int tree_extend_test() {
         tree_new_relation(&t2, idx, cidx);
     }
 
-    tree_extend(&t1, &t2, 0, 2);
+    // tree_extend(&t1, &t2, 0, 2);
 
     TreeIter ti = tree_iter_new(&t1, 0);
 

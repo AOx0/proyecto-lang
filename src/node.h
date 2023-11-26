@@ -77,7 +77,6 @@ typedef enum OpType {
     OpLt,
     OpEbt,
     OpElt,
-    OpAssign,
     OpAdd,
     OpSub,
     OpMul,
@@ -138,10 +137,14 @@ typedef struct Node {
         DataTypeE asoc_type;
 } Node;
 
+void tree_extend_with_subtree(Tree *t, Tree *o, size_t sub_tree_root,
+                              size_t new_parent);
+void tree_root_extend(Tree *t, Tree *o);
+Node *ast_create_node(Tree *t);
 void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla);
 char *node_type_display(NodeType nt);
 void node_display_id(size_t id, FILE *f, Tree *t, HashSet *tabla);
 void node_type_debug(NodeType nt);
-void tree_debug(Tree *t);
+void tree_debug(Tree *t, HashSet *tabla);
 
 #endif
