@@ -402,7 +402,7 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
         Node * node = ast_create_node(&ast, NVar, Void);
 
         if (s->type == Variable) { 
-            node->value.var = (VarNode) { .symbol = *s };
+            node->value.var = (VarNode) { .symbol = *s, .statement = 1 };
         } else {
             node->node_type = NConst;
             node->value.cons = (ConstNode) { .symbol = *s, .value.bool = 1 };
@@ -726,22 +726,66 @@ repeticion_instruccion: KW_WHILE relop_expresion KW_DO instrucciones {
     tree_init(&$$, sizeof(Node));
 
     Node * n = ast_create_node(&$$, NFor, Void);
-    n->value.forn = (ForNode) {
-        .down = 0,
-    };
+    Node * var = ast_get_root(&$2);
+
+    switch (var->node_type) {
+        case NExpr: {
+            n->value.forn = (ForNode) {
+                .down = 0,
+                .is_assign = 0,
+                .symbol = var->value.expr.value.symbol,
+            };
+            break;
+        }
+        case NAssign: {
+            n->value.forn = (ForNode) {
+                .down = 0,
+                .is_assign = 1,
+                .symbol = var->value.var.symbol,
+            };
+            break;
+        }
+        default: {
+            panic("Invalid node type");
+        }
+    }
 
     tree_extend_with_subtree(&$$, &$2, 0, 0);
     tree_extend_with_subtree(&$$, &$4, 0, 0);
+    tree_extend_with_subtree(&$$, &$6, 0, 0);
 } | KW_FOR for_asignacion KW_DOWNTO expresion KW_DO instrucciones {
     tree_init(&$$, sizeof(Node));
 
     Node * n = ast_create_node(&$$, NFor, Void);
-    n->value.forn = (ForNode) {
-        .down = 1,
-    };
+    Node * var = ast_get_root(&$2);
+
+    switch (var->node_type) {
+        case NExpr: {
+            n->value.forn = (ForNode) {
+                .down = 1,
+                .is_assign = 0,
+                .symbol = var->value.expr.value.symbol,
+            };
+            break;
+        }
+        case NAssign: {
+            n->value.forn = (ForNode) {
+                .down = 1,
+                .is_assign = 1,
+                .symbol = var->value.var.symbol,
+            };
+            
+            break;
+        }
+        default: {
+            panic("Invalid node type");
+        }
+    }
+    
 
     tree_extend_with_subtree(&$$, &$2, 0, 0);
     tree_extend_with_subtree(&$$, &$4, 0, 0);
+    tree_extend_with_subtree(&$$, &$6, 0, 0);
 };
 
 /* Lectura */
@@ -819,13 +863,41 @@ variable_asignacion : variable OP_ASIGN expresion {
     assert_variable_assigned_type(var, expr);
     tree_init(&$$, sizeof(Node));
 
-    ast_create_node(&$$, NAssign, Void);
+    Node * n = ast_create_node(&$$, NAssign, Void);
+    
+    switch (var->value.expr.type) {
+        case ESymbol: {
+            n->value.var = (VarNode) {
+                .symbol = var->value.expr.value.symbol,
+                .statement = 1,
+            };
+            break;
+        }
+        case ESymbolIdx: {
+            n->value.var = (VarNode) {
+                .symbol = var->value.expr.value.symbol_idx.symbol,
+                .statement = 1,
+            };
+            break;
+        }
+    }
 
     tree_extend_with_subtree(&$$, &$1, 0, 0);
     tree_extend_with_subtree(&$$, &$3, 0, 0);
 };
 
-for_asignacion : variable_asignacion | variable;
+for_asignacion : variable_asignacion {
+    $$ = $1;
+    
+    Node * n = ast_get_root(&$1);
+    if (n->node_type != NAssign) {
+        panic("Invalid node type");
+    }
+
+    n->value.var.statement = 0;
+    
+
+} | variable;
 
 variable : IDENT { 
     Symbol * s = assert_sym_exists(&$1);

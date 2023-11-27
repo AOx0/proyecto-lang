@@ -825,12 +825,12 @@ static const yytype_uint16 yyrline[] =
      518,   535,   552,   572,   573,   577,   578,   579,   580,   583,
      586,   592,   606,   606,   619,   619,   634,   647,   650,   661,
      678,   681,   694,   699,   704,   711,   712,   712,   712,   713,
-     713,   713,   716,   725,   735,   748,   758,   770,   780,   791,
-     801,   815,   828,   828,   830,   841,   857,   879,   929,   946,
-     948,   965,   967,   981,   983,   983,   985,  1001,  1002,  1003,
-    1004,  1005,  1006,  1007,  1008,  1011,  1017,  1020,  1026,  1032,
-    1035,  1045,  1054,  1054,  1072,  1072,  1090,  1152,  1163,  1179,
-    1179,  1188,  1197,  1212
+     713,   713,   716,   725,   756,   792,   802,   814,   824,   835,
+     845,   859,   889,   900,   902,   913,   929,   951,  1001,  1018,
+    1020,  1037,  1039,  1053,  1055,  1055,  1057,  1073,  1074,  1075,
+    1076,  1077,  1078,  1079,  1080,  1083,  1089,  1092,  1098,  1104,
+    1107,  1117,  1126,  1126,  1144,  1144,  1162,  1224,  1235,  1251,
+    1251,  1260,  1269,  1284
 };
 #endif
 
@@ -1927,7 +1927,7 @@ yyreduce:
         Node * node = ast_create_node(&ast, NVar, Void);
 
         if (s->type == Variable) { 
-            node->value.var = (VarNode) { .symbol = *s };
+            node->value.var = (VarNode) { .symbol = *s, .statement = 1 };
         } else {
             node->node_type = NConst;
             node->value.cons = (ConstNode) { .symbol = *s, .value.bool = 1 };
@@ -2391,34 +2391,78 @@ yyreduce:
     tree_init(&(yyval.subtree), sizeof(Node));
 
     Node * n = ast_create_node(&(yyval.subtree), NFor, Void);
-    n->value.forn = (ForNode) {
-        .down = 0,
-    };
+    Node * var = ast_get_root(&(yyvsp[(2) - (6)].subtree));
+
+    switch (var->node_type) {
+        case NExpr: {
+            n->value.forn = (ForNode) {
+                .down = 0,
+                .is_assign = 0,
+                .symbol = var->value.expr.value.symbol,
+            };
+            break;
+        }
+        case NAssign: {
+            n->value.forn = (ForNode) {
+                .down = 0,
+                .is_assign = 1,
+                .symbol = var->value.var.symbol,
+            };
+            break;
+        }
+        default: {
+            panic("Invalid node type");
+        }
+    }
 
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(2) - (6)].subtree), 0, 0);
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(4) - (6)].subtree), 0, 0);
+    tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(6) - (6)].subtree), 0, 0);
 }
     break;
 
   case 44:
 /* Line 1802 of yacc.c  */
-#line 735 "src/grammar.y"
+#line 756 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
     Node * n = ast_create_node(&(yyval.subtree), NFor, Void);
-    n->value.forn = (ForNode) {
-        .down = 1,
-    };
+    Node * var = ast_get_root(&(yyvsp[(2) - (6)].subtree));
+
+    switch (var->node_type) {
+        case NExpr: {
+            n->value.forn = (ForNode) {
+                .down = 1,
+                .is_assign = 0,
+                .symbol = var->value.expr.value.symbol,
+            };
+            break;
+        }
+        case NAssign: {
+            n->value.forn = (ForNode) {
+                .down = 1,
+                .is_assign = 1,
+                .symbol = var->value.var.symbol,
+            };
+            
+            break;
+        }
+        default: {
+            panic("Invalid node type");
+        }
+    }
+    
 
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(2) - (6)].subtree), 0, 0);
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(4) - (6)].subtree), 0, 0);
+    tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(6) - (6)].subtree), 0, 0);
 }
     break;
 
   case 45:
 /* Line 1802 of yacc.c  */
-#line 748 "src/grammar.y"
+#line 792 "src/grammar.y"
     { 
     assert_sym_exists(&(yyvsp[(3) - (4)].symbol));
     tree_init(&(yyval.subtree), sizeof(Node));
@@ -2433,7 +2477,7 @@ yyreduce:
 
   case 46:
 /* Line 1802 of yacc.c  */
-#line 758 "src/grammar.y"
+#line 802 "src/grammar.y"
     { 
     assert_sym_exists(&(yyvsp[(3) - (4)].symbol)); 
     tree_init(&(yyval.subtree), sizeof(Node));
@@ -2448,7 +2492,7 @@ yyreduce:
 
   case 47:
 /* Line 1802 of yacc.c  */
-#line 770 "src/grammar.y"
+#line 814 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2464,7 +2508,7 @@ yyreduce:
 
   case 48:
 /* Line 1802 of yacc.c  */
-#line 780 "src/grammar.y"
+#line 824 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2479,7 +2523,7 @@ yyreduce:
 
   case 49:
 /* Line 1802 of yacc.c  */
-#line 791 "src/grammar.y"
+#line 835 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2495,7 +2539,7 @@ yyreduce:
 
   case 50:
 /* Line 1802 of yacc.c  */
-#line 801 "src/grammar.y"
+#line 845 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2512,7 +2556,7 @@ yyreduce:
 
   case 51:
 /* Line 1802 of yacc.c  */
-#line 815 "src/grammar.y"
+#line 859 "src/grammar.y"
     {
     Node * var = ast_get_root(&(yyvsp[(1) - (3)].subtree));
     Node * expr = ast_get_root(&(yyvsp[(3) - (3)].subtree));
@@ -2520,16 +2564,50 @@ yyreduce:
     assert_variable_assigned_type(var, expr);
     tree_init(&(yyval.subtree), sizeof(Node));
 
-    ast_create_node(&(yyval.subtree), NAssign, Void);
+    Node * n = ast_create_node(&(yyval.subtree), NAssign, Void);
+    
+    switch (var->value.expr.type) {
+        case ESymbol: {
+            n->value.var = (VarNode) {
+                .symbol = var->value.expr.value.symbol,
+                .statement = 1,
+            };
+            break;
+        }
+        case ESymbolIdx: {
+            n->value.var = (VarNode) {
+                .symbol = var->value.expr.value.symbol_idx.symbol,
+                .statement = 1,
+            };
+            break;
+        }
+    }
 
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(1) - (3)].subtree), 0, 0);
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(3) - (3)].subtree), 0, 0);
 }
     break;
 
+  case 52:
+/* Line 1802 of yacc.c  */
+#line 889 "src/grammar.y"
+    {
+    (yyval.subtree) = (yyvsp[(1) - (1)].subtree);
+    
+    Node * n = ast_get_root(&(yyvsp[(1) - (1)].subtree));
+    if (n->node_type != NAssign) {
+        panic("Invalid node type");
+    }
+
+    n->value.var.statement = 0;
+    
+
+}
+    break;
+
   case 54:
 /* Line 1802 of yacc.c  */
-#line 830 "src/grammar.y"
+#line 902 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (1)].symbol));
     tree_init(&(yyval.subtree), sizeof(Node));
@@ -2544,7 +2622,7 @@ yyreduce:
 
   case 55:
 /* Line 1802 of yacc.c  */
-#line 841 "src/grammar.y"
+#line 913 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (4)].symbol)); 
     bound_check(s, (yyvsp[(3) - (4)].snum));
@@ -2564,7 +2642,7 @@ yyreduce:
 
   case 56:
 /* Line 1802 of yacc.c  */
-#line 857 "src/grammar.y"
+#line 929 "src/grammar.y"
     { 
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (1)].symbol));
     assert_sym_is_callable(s);
@@ -2590,7 +2668,7 @@ yyreduce:
 
   case 57:
 /* Line 1802 of yacc.c  */
-#line 879 "src/grammar.y"
+#line 951 "src/grammar.y"
     {
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (4)].symbol));
     assert_sym_is_callable(s);
@@ -2643,7 +2721,7 @@ yyreduce:
 
   case 58:
 /* Line 1802 of yacc.c  */
-#line 929 "src/grammar.y"
+#line 1001 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2666,7 +2744,7 @@ yyreduce:
 
   case 60:
 /* Line 1802 of yacc.c  */
-#line 948 "src/grammar.y"
+#line 1020 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2689,7 +2767,7 @@ yyreduce:
 
   case 62:
 /* Line 1802 of yacc.c  */
-#line 967 "src/grammar.y"
+#line 1039 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2709,13 +2787,13 @@ yyreduce:
 
   case 64:
 /* Line 1802 of yacc.c  */
-#line 983 "src/grammar.y"
+#line 1055 "src/grammar.y"
     { (yyval.subtree) = (yyvsp[(2) - (3)].subtree); }
     break;
 
   case 66:
 /* Line 1802 of yacc.c  */
-#line 985 "src/grammar.y"
+#line 1057 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2735,55 +2813,55 @@ yyreduce:
 
   case 67:
 /* Line 1802 of yacc.c  */
-#line 1001 "src/grammar.y"
+#line 1073 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpAnd }; }
     break;
 
   case 68:
 /* Line 1802 of yacc.c  */
-#line 1002 "src/grammar.y"
+#line 1074 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpOr }; }
     break;
 
   case 69:
 /* Line 1802 of yacc.c  */
-#line 1003 "src/grammar.y"
+#line 1075 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpBt }; }
     break;
 
   case 70:
 /* Line 1802 of yacc.c  */
-#line 1004 "src/grammar.y"
+#line 1076 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpLt }; }
     break;
 
   case 71:
 /* Line 1802 of yacc.c  */
-#line 1005 "src/grammar.y"
+#line 1077 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpEbt }; }
     break;
 
   case 72:
 /* Line 1802 of yacc.c  */
-#line 1006 "src/grammar.y"
+#line 1078 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpElt }; }
     break;
 
   case 73:
 /* Line 1802 of yacc.c  */
-#line 1007 "src/grammar.y"
+#line 1079 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpEq };}
     break;
 
   case 74:
 /* Line 1802 of yacc.c  */
-#line 1008 "src/grammar.y"
+#line 1080 "src/grammar.y"
     { (yyval.expr) = (ExprNode) { .type = EOp, .value.op = OpNeq }; }
     break;
 
   case 75:
 /* Line 1802 of yacc.c  */
-#line 1011 "src/grammar.y"
+#line 1083 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2795,7 +2873,7 @@ yyreduce:
 
   case 76:
 /* Line 1802 of yacc.c  */
-#line 1017 "src/grammar.y"
+#line 1089 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (3)].subtree);
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(3) - (3)].subtree), 0, 0);
@@ -2804,7 +2882,7 @@ yyreduce:
 
   case 77:
 /* Line 1802 of yacc.c  */
-#line 1020 "src/grammar.y"
+#line 1092 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2814,7 +2892,7 @@ yyreduce:
 
   case 78:
 /* Line 1802 of yacc.c  */
-#line 1026 "src/grammar.y"
+#line 1098 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2826,7 +2904,7 @@ yyreduce:
 
   case 79:
 /* Line 1802 of yacc.c  */
-#line 1032 "src/grammar.y"
+#line 1104 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (3)].subtree);
     tree_extend_with_subtree(&(yyval.subtree), &(yyvsp[(3) - (3)].subtree), 0, 0);
@@ -2835,7 +2913,7 @@ yyreduce:
 
   case 80:
 /* Line 1802 of yacc.c  */
-#line 1035 "src/grammar.y"
+#line 1107 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2851,7 +2929,7 @@ yyreduce:
 
   case 81:
 /* Line 1802 of yacc.c  */
-#line 1045 "src/grammar.y"
+#line 1117 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(1) - (3)].subtree);
 
@@ -2864,7 +2942,7 @@ yyreduce:
 
   case 83:
 /* Line 1802 of yacc.c  */
-#line 1054 "src/grammar.y"
+#line 1126 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2887,7 +2965,7 @@ yyreduce:
 
   case 85:
 /* Line 1802 of yacc.c  */
-#line 1072 "src/grammar.y"
+#line 1144 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2910,7 +2988,7 @@ yyreduce:
 
   case 86:
 /* Line 1802 of yacc.c  */
-#line 1090 "src/grammar.y"
+#line 1162 "src/grammar.y"
     { 
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2977,7 +3055,7 @@ yyreduce:
 
   case 87:
 /* Line 1802 of yacc.c  */
-#line 1152 "src/grammar.y"
+#line 1224 "src/grammar.y"
     { 
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -2993,7 +3071,7 @@ yyreduce:
 
   case 88:
 /* Line 1802 of yacc.c  */
-#line 1163 "src/grammar.y"
+#line 1235 "src/grammar.y"
     { 
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -3014,7 +3092,7 @@ yyreduce:
 
   case 90:
 /* Line 1802 of yacc.c  */
-#line 1179 "src/grammar.y"
+#line 1251 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -3028,7 +3106,7 @@ yyreduce:
 
   case 91:
 /* Line 1802 of yacc.c  */
-#line 1188 "src/grammar.y"
+#line 1260 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -3042,7 +3120,7 @@ yyreduce:
 
   case 92:
 /* Line 1802 of yacc.c  */
-#line 1197 "src/grammar.y"
+#line 1269 "src/grammar.y"
     {
     tree_init(&(yyval.subtree), sizeof(Node));
 
@@ -3062,7 +3140,7 @@ yyreduce:
 
   case 93:
 /* Line 1802 of yacc.c  */
-#line 1212 "src/grammar.y"
+#line 1284 "src/grammar.y"
     {
     (yyval.subtree) = (yyvsp[(2) - (3)].subtree);
 }
@@ -3070,7 +3148,7 @@ yyreduce:
 
 
 /* Line 1802 of yacc.c  */
-#line 3074 "grammar.tab.c"
+#line 3152 "grammar.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -3302,5 +3380,5 @@ yyreturn:
 
 
 /* Line 2050 of yacc.c  */
-#line 1215 "src/grammar.y"
+#line 1287 "src/grammar.y"
 

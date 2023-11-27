@@ -35,16 +35,13 @@ typedef struct FunctionNode {
 
 typedef struct VarNode {
         Symbol symbol;
+        size_t statement;
 } VarNode;
 
 typedef struct ConstNode {
         Symbol symbol;
         ConstValue value;
 } ConstNode;
-
-typedef struct ForNode {
-        int down;
-} ForNode;
 
 typedef enum ExprType {
     EIntValue,
@@ -67,6 +64,12 @@ typedef struct IndexedSymbol {
         Symbol symbol;
         size_t index;
 } IndexedSymbol;
+
+typedef struct ForNode {
+        int down;
+        int is_assign;
+        Symbol symbol;
+} ForNode;
 
 typedef enum OpType {
     OpAnd,

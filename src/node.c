@@ -535,17 +535,73 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
         id = (size_t *)vec_get(&child, 1);
         v = (Node *)vec_get(&t->values, *id);
         node_display_id(v->id, f, t, tabla, 0);
-        fprintf(f, ";\n");
 
+
+        if (n->value.var.statement) {
+            fprintf(f, ";\n");
+        } else {
+            fprintf(f, "");
+        }
+    
         break;
     }
     case NFor: {
         display_identation(f, level);
-        fprintf(f, "for ()");
+        fprintf(f, "for (");
         Vec child = tree_get_children(t, n->id);
-        if (child.len != 2) {
+        if (child.len != 3) {
             panic("Invalid number of children");
         }
+
+        ForNode fn = n->value.forn;
+        size_t *i, *id;
+        Node *v;
+
+        if (fn.is_assign) {
+            i = (size_t *)vec_get(&child, 0);
+            v = (Node *)vec_get(&t->values, *i);
+            node_display_id(v->id, f, t, tabla, 0);
+        }
+
+        i = (size_t *)vec_get(&child, 0);
+        v = (Node *)vec_get(&t->values, *i);
+    
+        fprintf(f, "; ");
+
+        Symbol *s = (Symbol *)hashset_get(tabla, &fn.symbol);
+
+        if (fn.down) {
+            fprintf(f, "%.*s", (int)s->name.len, s->name.ptr);
+            fprintf(f, " >= ");
+        } else {
+            fprintf(f, "%.*s", (int)s->name.len, s->name.ptr);
+            fprintf(f, " <= ");
+        }
+
+        id = (size_t *)vec_get(&child, 1);
+        v = (Node *)vec_get(&t->values, *id);
+        node_display_id(v->id, f, t, tabla, 0);
+        fprintf(f, "; ");
+         
+        fprintf(f, "%.*s", (int)s->name.len, s->name.ptr);
+        if (n->value.forn.down) {
+            fprintf(f, "--");
+        } else {
+            fprintf(f, "++");
+        }
+
+        fprintf(f, ") {\n");
+
+        id = (size_t *)vec_get(&child, 2);
+        v = (Node *)vec_get(&t->values, *id);
+
+        node_display_id(v->id, f, t, tabla, level + 1);
+
+        display_identation(f, level);
+        fprintf(f, "}\n");
+
+        vec_drop(&child);
+
         break;
     }
     case NWhile: {
