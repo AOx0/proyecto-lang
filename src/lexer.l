@@ -24,6 +24,7 @@ NZDIGIT [1-9]
 SPACE [ \t\f] 
 SIGNO [+-]?
 ENTERO 0|{NZDIGIT}{DIGIT}*
+ZENTERO {DIGIT}+
 CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"|";"|"["|"]"|","|"."|"#"
 %%
 <INITIAL,COMENTARIO>"(*" {
@@ -37,6 +38,11 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
 <COMENTARIO>[a-zA-Z0-9 \t]* { nchar += yyleng; }
 <COMENTARIO>. { nchar += 1; }
 <COMENTARIO>\n { line++; nchar = 1; }
+{SIGNO}{ENTERO}"."{ZENTERO}(e{SIGNO}{ENTERO})? {
+    nchar += yyleng;
+    yylval.fnum = atof(yytext);
+    return CONST_REAL;
+}
 {SPACE}+ {
     nchar += yyleng; }/* Nah */
 \n {
@@ -51,11 +57,6 @@ CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"
     nchar += yyleng;
     yylval.snum = atoll(yytext);
     return CONST_ENTERA;
-}
-{SIGNO}{ENTERO}"."{ENTERO} {
-    nchar += yyleng;
-    yylval.fnum = atof(yytext);
-    return CONST_REAL;
 }
 ":=" {
     nchar += yyleng;

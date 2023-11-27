@@ -1,6 +1,6 @@
 program HOLA (entrada);
-    var numero: integer;
+    var numero: real;
 
     begin
-        numero := 1 + 1.0
+        numero := -1.02857e+2 + 1.0
     end.
