@@ -313,12 +313,14 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
     };
     case NVar: {
         VarNode node = n->value.var;
+        display_identation(f, level);
         data_type_display(f, 0, &node.symbol.name, &node.symbol.asoc_type);
         fprintf(f, ";\n");
         break;
     }
     case NConst: {
         ConstNode node = n->value.cons;
+        display_identation(f, level);
         data_type_display(f, 0, &node.symbol.name, &node.symbol.asoc_type);
         fprintf(f, " = ");
         const_value_display(f, &node.symbol.info.cons.value,
@@ -531,7 +533,20 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
                 fprintf(f, "%s", data_type_e_display_scan(Str));
                 break;
             }
-        }
+            case Bool: {
+                fprintf(f, "%s", data_type_e_display_scan(Bool));
+                break;
+            }
+            case Void: {
+                fprintf(f, "%s", data_type_e_display_scan(Void));
+                break;
+            }
+            case Ukw: {
+                panic("Ukw type");
+                break;
+            }
+                break;
+            }
 
         fprintf(f, "\", ");
 

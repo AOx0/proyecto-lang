@@ -19,6 +19,7 @@ program principal(input, output, entrada);
     (* Suma numeros *)
     function Add(a: integer; b: integer) : integer;
     var zz: integer;
+    const c = 3;
     begin
         writeln(a, c);
         Add := a + b

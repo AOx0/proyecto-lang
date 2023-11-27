@@ -603,6 +603,28 @@ subprograma_declaracion
         .args = $2,
     };
 
+    Tree decls;
+    tree_init(&decls, sizeof(Node));
+
+    ast_create_node(&decls, NVoid, Void);
+
+    for (size_t i = 0; i < $2.len; i++) {
+        Symbol *s = vec_get(&$2, i);
+        Node * node = ast_create_node(&decls, NVar, Void);
+
+        if (s->type == Variable) { 
+            node->value.var = (VarNode) { .symbol = *s, .statement = 1 };
+        } else {
+            node->node_type = NConst;
+            node->value.cons = (ConstNode) { .symbol = *s, .value.bool = 1 };
+        }
+
+        tree_new_relation(&decls, 0, node->id); 
+    }
+
+    vec_drop(&$2);
+
+    tree_extend_with_subtree(&$$, &decls, 0, 0);
     tree_extend_with_subtree(&$$, &$3, 0, 0);
     tree_extend_with_subtree(&$$, &$4, 0, 0);
 };
