@@ -1,6 +1,6 @@
-CC=zig cc
+CC=gcc
 CF=-Wall -Wextra -pedantic
-OUT=zig-out/bin
+OUT=bin
 
 run: zig_bin
 	$(OUT)/lng $(args)
@@ -20,38 +20,8 @@ pre:
 out_dir: 
 	mkdir -p $(OUT)
 
-zig_lib: out_dir
-	zig build-lib -cflags $(CF) -- \
-		src/str.c \
-		src/vector.c \
-		src/hashset.c \
-		src/parser.c \
-		src/lexer.c \
-		src/symbol.c \
-		src/panic.c \
-		src/node.c \
-		src/tree.c \
-		-lc --cache-dir zig-cache \
-		--global-cache-dir $(HOME)/.cache/zig \
-		--name lnglib -static
-	mv liblnglib.a $(OUT)/liblnglib.a
+build: out_dir
+	$(CC) $(CF) src/*.c -o $(OUT)/lng
 
-zig_test: zig_lib
-	zig build-exe $(OUT)/liblnglib.a -cflags $(CF) -- \
-		test/main.c \
-		test/str_test.c \
-		test/vec_test.c \
-		test/hash_test.c \
-		-lc --cache-dir zig-cache \
-		--global-cache-dir $(HOME)/.cache/zig \
-		--name tmptest
-	mv tmptest $(OUT)/test
-	
-zig_bin: zig_lib
-	zig build-exe $(OUT)/liblnglib.a -cflags $(CF) -- \
-		src/main.c \
-		-lc \
-		--cache-dir zig-cache \
-		--global-cache-dir $(HOME)/.cache/zig \
-		--name tmplng
-	mv tmplng $(OUT)/lng
+build_print: out_dir
+	$(CC) $(CF) -DPRINT_TABLE -DPRINT_TREE src/*.c -o $(OUT)/lng
