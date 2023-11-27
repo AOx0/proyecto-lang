@@ -40,9 +40,9 @@ program principal(input, output, entrada);
         else
             begin
                 if(numero1 <numero2) then
-                    writeln(numero2)
+                    writeln("Aaaa", numero2)
                 else
-                    writeln(numero2)
+                    writeln("Bbb", numero2, 3)
             end
     end;
 

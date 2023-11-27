@@ -175,6 +175,9 @@ char *node_type_display(NodeType nt) {
         return "llamada a funcion";
     case NRoot:
         return "root";
+    case NStr:
+        return "string";
+        break;
     }
 
     panic("Invalid node type");
@@ -240,6 +243,9 @@ void node_type_debug(NodeType nt) {
         break;
     case NRoot:
         printf("NRoot");
+        break;
+    case NStr:
+        printf("NStr");
         break;
     }
 }
@@ -611,12 +617,18 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
         fprintf(f, "printf(\"");
 
         Vec child = tree_get_childs(t, n->id);
-        for (size_t i = 0; i < child.len; i++) {
-            size_t *id = (size_t *)vec_get(&child, i);
+        size_t *id = (size_t *)vec_get(&child, 0);
+
+        Vec childs = tree_get_childs(t, *id);
+
+        for (size_t i = 0; i < childs.len; i++) {
+            size_t *id = (size_t *)vec_get(&childs, i);
             Node *v = (Node *)vec_get(&t->values, *id);
-            if (v->node_type != NExpr) {
-                panic("Expected expression");
-            }
+            
+            /*if (v->node_type != NExpr && v->node_type != NStr) {
+                panic("Expected expression or constant");
+            }*/ 
+            
 
             switch (v->value.expr.type) {
             case EIntValue: {
@@ -659,19 +671,35 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
                 break;
             }
             }
+            if (v->node_type == NStr) {
+                fprintf(f, "%s", data_type_e_display_scan(Str));
+            }
         }
+
+        vec_drop(&child);
+        vec_drop(&childs);
 
         fprintf(f, "\", ");
 
-        Vec childs = tree_get_childs(t, n->id);
-        for (size_t i = 0; i < childs.len; i++) {
-            size_t *id = (size_t *)vec_get(&childs, i);
-            Node *v = (Node *)vec_get(&t->values, *id);
-            node_display_id(v->id, f, t, tabla, 0);
-            if (i + 1 != childs.len) {
-                fprintf(f, ", ");
+        child = tree_get_childs(t, n->id);
+        id = (size_t *)vec_get(&child, 0);
+
+        childs = tree_get_childs(t, *id);
+
+        if (childs.len != 0) {
+            for (size_t i = 0; i < childs.len; i++) {
+                size_t *id = (size_t *)vec_get(&childs, i);
+                Node *v = (Node *)vec_get(&t->values, *id);
+                node_display_id(v->id, f, t, tabla, 0);
+                if (i + 1 != childs.len) {
+                    fprintf(f, ", ");
+                }
             }
+        } else {
+            fprintf(f, "");
         }
+
+        
         fprintf(f, ");\n");
 
         vec_drop(&childs);
@@ -715,10 +743,11 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
 
         break;
     }
-    case NFor:
+    case NFor: {
         fprintf(f, "For\n");
         break;
-    case NWhile:
+    }
+    case NWhile: {
         display_identation(f, level);
         fprintf(f, "while (");
         Vec child = tree_get_childs(t, n->id);
@@ -736,6 +765,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
         fprintf(f, "}\n");
 
         break;
+    }
     case NCall: {
         display_identation(f, level);
         fprintf(f, "%.*s(", (int)n->value.call.symbol.name.len,
@@ -763,8 +793,8 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
         }
 
         fprintf(f, ");\n");
-    }
         break;
+    }
     case NVoid: {
         Vec child = tree_get_childs(t, n->id);
 
@@ -774,5 +804,10 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
             node_display_id(*id, f, t, tabla, level);
         }
     } break;
+    case NStr:
+        fprintf(f, "\"");
+        fprintf(f, "%.*s", (int)n->value.sl.len, n->value.sl.ptr);
+        fprintf(f, "\"");
+        break;
     }
 }

@@ -24,6 +24,7 @@ typedef enum NodeType {
     NFor,
     NWhile,
     NCall,
+    NStr,
 } NodeType;
 
 typedef struct FunctionNode {

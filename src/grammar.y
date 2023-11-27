@@ -222,6 +222,24 @@
 
         return 1;
     }
+
+    int bound_check(Symbol *s, int64_t id) {
+        size_t idx = (size_t)id;
+        size_t arr_size = s->asoc_type.size;
+
+        if (arr_size < idx || idx < 0) {
+            str_clear(&wrn_buff);
+            str_push(&wrn_buff, "Error: Indice fuera de rango: ");
+            str_push_n(&wrn_buff, s->name.ptr, s->name.len);
+            str_push(&wrn_buff, ", el arreglo tiene un tamaño de ");
+            str_push_sizet(&wrn_buff, arr_size);
+            str_push(&wrn_buff, " y se intento acceder a la posicion ");
+            str_push_sizet(&wrn_buff, idx);
+            yyerror(str_as_ref(&wrn_buff));
+        }
+
+        return 1;
+    }
 }
 
 %code requires {
@@ -323,6 +341,7 @@
 %type <subtree>subprogramas;
 %type <subtree>subprograma_declaracion;
 %type <symbol>subprograma_encabezado;
+%type <subtree>expresion_lista_con_cadena;
 
 %destructor {
     // printf("Dropping ident_lista:  ");
@@ -748,34 +767,7 @@ lectura_instruccion : KW_READLN '(' IDENT ')' {
 };
 
 /* Escritura */
-escritura_instruccion : KW_WRITE '(' CONST_CADENA ',' IDENT ')' {
-    Symbol * s = assert_sym_exists(&$5);
-    assert_ident_is_printable(&$5);
-    tree_init(&$$, sizeof(Node));
-
-    Node * n = ast_create_node(&$$, NWrite, Void);
-    n->value.write = (WriteNode) {
-        .newline = 0,
-    };
-
-    Node * str = ast_create_node(&$$, NConst, Str);
-    str->value.cons = (ConstNode) { 
-        .symbol = $3, 
-        .value.str = $3
-    };
-
-    Node * var = ast_create_node(&$$, NExpr, $5.asoc_type.type);
-    var->value.expr = (ExprNode) {
-        .type = ESymbol,
-        .value.symbol = *s,
-    };
-
-    tree_new_relation(&$$, 0, 1);
-    tree_new_relation(&$$, 0, 2);
-};
-escritura_instruccion : KW_WRITELN '(' CONST_CADENA ',' IDENT ')' {
-    Symbol * s = assert_sym_exists(&$5);
-    assert_ident_is_printable(&$5);
+escritura_instruccion : KW_WRITELN '(' expresion_lista_con_cadena ')' {
     tree_init(&$$, sizeof(Node));
 
     Node * n = ast_create_node(&$$, NWrite, Void);
@@ -783,23 +775,9 @@ escritura_instruccion : KW_WRITELN '(' CONST_CADENA ',' IDENT ')' {
         .newline = 1,
     };
 
-    Node * str = ast_create_node(&$$, NConst, Str);
-    str->value.cons = (ConstNode) { 
-        .symbol = $3, 
-        .value.str = $3
-    };
+    tree_extend_with_subtree(&$$, &$3, 0, 0);
 
-    Node * var = ast_create_node(&$$, NExpr, $5.asoc_type.type);
-    var->value.expr = (ExprNode) {
-        .type = ESymbol,
-        .value.symbol = *s,
-    };
-
-    tree_new_relation(&$$, 0, 1);
-    tree_new_relation(&$$, 0, 2);
-};
-
-escritura_instruccion : KW_WRITE '(' CONST_CADENA ')'{
+} | KW_WRITE '(' expresion_lista_con_cadena ')'{
     tree_init(&$$, sizeof(Node));
 
     Node * n = ast_create_node(&$$, NWrite, Void);
@@ -807,201 +785,9 @@ escritura_instruccion : KW_WRITE '(' CONST_CADENA ')'{
         .newline = 0,
     };
 
-    Node * str = ast_create_node(&$$, NConst, Str);
-    str->value.cons = (ConstNode) { 
-        .symbol = $3, 
-        .value.str = $3 
-    };
-
-    tree_new_relation(&$$, 0, 1);
-} | KW_WRITELN '(' CONST_CADENA ')' {
-    tree_init(&$$, sizeof(Node));
-
-    Node * n = ast_create_node(&$$, NWrite, Void);
-    n->value.write = (WriteNode) {
-        .newline = 1,
-    };
-
-    Node * str = ast_create_node(&$$, NConst, Str);
-    str->value.cons = (ConstNode) { 
-        .symbol = $3, 
-        .value.str = $3 
-    };
-
-    tree_new_relation(&$$, 0, 1);
- } | KW_WRITE '(' CONST_CADENA ',' expresion ')' {
-    assert_node_is_printable(ast_get_root(&$5));
-    tree_init(&$$, sizeof(Node));
-
-    Node * n = ast_create_node(&$$, NWrite, Void);
-    n->value.write = (WriteNode) {
-        .newline = 0,
-    };
-
-    Node * str = ast_create_node(&$$, NConst, Str);
-    str->value.cons = (ConstNode) { 
-        .symbol = $3, 
-        .value.str = $3 
-    };
-
-    tree_new_relation(&$$, 0, 1);
-    tree_extend_with_subtree(&$$, &$5, 0, 0);
-}
- | KW_WRITELN '(' CONST_CADENA ',' expresion ')' {
-    assert_node_is_printable(ast_get_root(&$5));
-    tree_init(&$$, sizeof(Node));
-
-    Node * n = ast_create_node(&$$, NWrite, Void);
-    n->value.write = (WriteNode) {
-        .newline = 1,
-    };
-
-    Node * str = ast_create_node(&$$, NConst, Str);
-    str->value.cons = (ConstNode) { 
-        .symbol = $3, 
-        .value.str = $3,
-    };
-
-    tree_new_relation(&$$, 0, 1);
-    tree_extend_with_subtree(&$$, &$5, 0, 0);
+    tree_extend_with_subtree(&$$, &$3, 0, 0);
 };
 
-escritura_instruccion : KW_WRITE '(' IDENT ',' IDENT ')' {
-    Symbol * s3 = assert_sym_exists(&$3);
-    Symbol * s = assert_sym_exists(&$5);
-    assert_ident_is_printable(&$5);
-    assert_ident_is_printable(&$3);
-    tree_init(&$$, sizeof(Node));
-
-    Node * n = ast_create_node(&$$, NWrite, Void);
-    n->value.write = (WriteNode){
-        .newline = 0,
-    };
-
-    Node * var = ast_create_node(&$$, NExpr, $3.asoc_type.type);
-    var->value.expr = (ExprNode){
-        .type = ESymbol,
-        .value.symbol = *s3,
-    };
-
-    Node * var2 = ast_create_node(&$$, NExpr, $5.asoc_type.type);
-    var2->value.expr = (ExprNode){
-        .type = ESymbol,
-        .value.symbol = *s,
-    };
-
-    tree_new_relation(&$$, 0, 1);
-    tree_new_relation(&$$, 0, 2);
-};
-
-escritura_instruccion : KW_WRITELN '(' IDENT ',' IDENT ')' {
-    Symbol * s3 =assert_sym_exists(&$3);
-    Symbol * s = assert_sym_exists(&$5);
-    assert_ident_is_printable(&$5);
-    assert_ident_is_printable(&$3);
-
-    tree_init(&$$, sizeof(Node));
-
-    Node * n = ast_create_node(&$$, NWrite, Void);
-    n->value.write = (WriteNode){
-        .newline = 1,
-    };
-
-    Node * var = ast_create_node(&$$, NExpr, $3.asoc_type.type);
-    var->value.expr = (ExprNode){
-        .type = ESymbol,
-        .value.symbol = *s3,
-    };
-
-    Node * var2 = ast_create_node(&$$, NExpr, $5.asoc_type.type);
-    var2->value.expr = (ExprNode){
-        .type = ESymbol,
-        .value.symbol = *s,
-    };
-
-    tree_new_relation(&$$, 0, 1);
-    tree_new_relation(&$$, 0, 2);
-};
-
-escritura_instruccion : KW_WRITE '(' IDENT ')' { 
-    Symbol * s = assert_sym_exists(&$3);
-    assert_ident_is_printable(&$3);
-    tree_init(&$$, sizeof(Node));
-
-    Node * n = ast_create_node(&$$, NWrite, Void);
-    n->value.write = (WriteNode){
-        .newline = 0,
-    };
-
-    Node * var = ast_create_node(&$$, NExpr, $3.asoc_type.type);
-    var->value.expr = (ExprNode){
-        .type = ESymbol,
-        .value.symbol = *s,
-    };
-
-    tree_new_relation(&$$, 0, 1);
-};
-
-escritura_instruccion : KW_WRITELN '(' IDENT ')' { 
-    Symbol * s = assert_sym_exists(&$3);
-    assert_ident_is_printable(&$3);
-    tree_init(&$$, sizeof(Node));
-
-    Node * n = ast_create_node(&$$, NWrite, Void);
-    n->value.write = (WriteNode){
-        .newline = 1,
-    };
-
-
-    Node * ident = ast_create_node(&$$, NExpr, $3.asoc_type.type);
-    ident->value.expr = (ExprNode){
-        .type = ESymbol,
-        .value.symbol = *s,
-    };
-
-    tree_new_relation(&$$, 0, 1);
-};
-
-escritura_instruccion : KW_WRITE '(' IDENT ',' expresion ')' {
-    Symbol * s = assert_sym_exists(&$3);
-    assert_node_is_printable(ast_get_root(&$5));
-    assert_ident_is_printable(&$3);
-    tree_init(&$$, sizeof(Node));
-
-    Node * n = ast_create_node(&$$, NWrite, Void);
-    n->value.write = (WriteNode){
-        .newline = 0,
-    };
-
-    Node * ident = ast_create_node(&$$, NExpr, $3.asoc_type.type);
-    ident->value.expr = (ExprNode){
-        .type = ESymbol,
-        .value.symbol = *s,
-    };
-
-    tree_new_relation(&$$, 0, 1);
-    tree_extend_with_subtree(&$$, &$5, 0, 0);    
-};
-escritura_instruccion : KW_WRITELN '(' IDENT ',' expresion ')' {
-    Symbol * s = assert_sym_exists(&$3);
-    assert_node_is_printable(ast_get_root(&$5));
-    assert_ident_is_printable(&$3);
-    tree_init(&$$, sizeof(Node));
-
-    Node * n = ast_create_node(&$$, NWrite, Void);
-    n->value.write = (WriteNode){
-        .newline = 1,
-    };
-
-    Node * ident = ast_create_node(&$$, NExpr, $3.asoc_type.type);
-    ident->value.expr = (ExprNode){
-        .type = ESymbol,
-        .value.symbol = *s,
-    };
-
-    tree_new_relation(&$$, 0, 1);
-    tree_extend_with_subtree(&$$, &$5, 0, 0);
-};
 if_instruccion : KW_IF relop_expresion KW_THEN instrucciones {
     tree_init(&$$, sizeof(Node));
 
@@ -1054,18 +840,7 @@ variable : IDENT {
 
 variable : IDENT '[' CONST_ENTERA ']' { 
     Symbol * s = assert_sym_exists(&$1); 
-
-    size_t arr_size = s->asoc_type.size;
-    if ((int64_t)arr_size < $3 || $3 < 0) {
-        str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Error: Indice fuera de rango: ");
-        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
-        str_push(&wrn_buff, ", el arreglo tiene un tamaño de ");
-        str_push_sizet(&wrn_buff, arr_size);
-        str_push(&wrn_buff, " y se intento acceder a la posicion ");
-        str_push_sizet(&wrn_buff, $3);
-        yyerror(str_as_ref(&wrn_buff));
-    }
+    bound_check(s, $3);
 
     tree_init(&$$, sizeof(Node));
 
@@ -1247,6 +1022,39 @@ expresion_lista : expresion {
 
     ast_create_node(&$$, NVoid, Void);
 };
+
+expresion_lista_con_cadena : expresion {
+    tree_init(&$$, sizeof(Node));
+
+    ast_create_node(&$$, NVoid, Void);
+
+    tree_extend_with_subtree(&$$, &$1, 0, 0);
+} | expresion_lista_con_cadena ',' expresion {
+    $$ = $1;
+    tree_extend_with_subtree(&$$, &$3, 0, 0);
+} | {
+    tree_init(&$$, sizeof(Node));
+
+    ast_create_node(&$$, NVoid, Void);
+} | CONST_CADENA {
+    tree_init(&$$, sizeof(Node));
+
+    ast_create_node(&$$, NVoid, Void);
+
+    Node * n = ast_create_node(&$$, NStr, Str);
+    n->value.sl = $1;
+
+    tree_new_relation(&$$, 0, n->id);
+
+} | expresion_lista_con_cadena ',' CONST_CADENA {
+    $$ = $1;
+
+    Node * n = ast_create_node(&$$, NStr, Str);
+    n->value.sl = $3;
+
+    tree_new_relation(&$$, 0, n->id);
+};
+
 expresion: termino | expresion ADDOP termino {
     tree_init(&$$, sizeof(Node));
 
@@ -1361,17 +1169,7 @@ factor : IDENT '[' CONST_ENTERA ']' {
 
     Symbol * s = assert_sym_exists(&$1); 
 
-    size_t arr_size = s->asoc_type.size;
-    if ((int64_t)arr_size < $3 || $3 < 0) {
-        str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Error: Indice fuera de rango: ");
-        str_push_n(&wrn_buff, $1.name.ptr, $1.name.len);
-        str_push(&wrn_buff, ", el arreglo tiene un tamaño de ");
-        str_push_sizet(&wrn_buff, arr_size);
-        str_push(&wrn_buff, " y se intento acceder a la posicion ");
-        str_push_sizet(&wrn_buff, $3);
-        yyerror(str_as_ref(&wrn_buff));
-    }
+    bound_check(s, $3);
 
     Node * n = ast_create_node(&$$, NExpr, s->asoc_type.type);
     n->value.expr = (ExprNode) {
