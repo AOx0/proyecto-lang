@@ -1,11 +1,17 @@
 (* Un comentario *)
 program HOLA (input, output, other);
     var numero, edad: integer;
+    var a, b, c, d: integer;
     const NUMERO = "ass";
 
     function Add(a: integer; b: integer) : integer;
     begin
         Add := a + b
+    end;
+
+    function Mult(c: integer; a: integer) : integer;
+    begin
+        Mult := c * a
     end;
 
     procedure multadd;
@@ -14,10 +20,6 @@ program HOLA (input, output, other);
         d := Mult(c, a)
     end;
 
-    function Mult(c: integer; a: integer) : integer;
-    begin
-        Mult := c * a
-    end;
 
 begin
     a := 5;

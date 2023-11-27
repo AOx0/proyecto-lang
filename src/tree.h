@@ -37,7 +37,7 @@ void tree_relations_debug(Tree *t);
 TreeIterEntry tree_iter_next(TreeIter *ti);
 int tree_iter_has_next(TreeIter *ti);
 void tree_root_extend(Tree *t, Tree *o);
-Vec tree_get_childs(Tree *t, size_t parent_id);
+Vec tree_get_children(Tree *t, size_t parent_id);
 TreeIter tree_iter_new(Tree *t, size_t root);
 size_t tree_num_child(Tree *t, size_t root);
 void tree_iter_drop(TreeIter *ti);

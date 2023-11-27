@@ -864,7 +864,7 @@ procedure_instruccion : IDENT {
     Tree args;
     tree_init(&args, sizeof(Node));
 
-    ast_create_node(&$$, NVoid, Void);
+    ast_create_node(&args, NVoid, Void);
 
     Node * n = ast_create_node(&$$, NCall, s->asoc_type.type);
     n->value.call = (FunctionCall){
@@ -880,7 +880,7 @@ procedure_instruccion : IDENT '(' expresion_lista ')' {
     Symbol * s = assert_sym_exists(&$1);
     assert_sym_is_callable(s);
 
-    Vec children = tree_get_childs(&$3, 0);
+    Vec children = tree_get_children(&$3, 0);
     if (assert_arguments_length(s, children.len) == 1 && children.len > 0) {
         Node * void_root = (Node *)vec_get(&$3.values, 0);
 
@@ -1097,7 +1097,7 @@ llamado_funcion : IDENT '(' expresion_lista ')' {
     Symbol * s = assert_sym_exists(&$1);
     assert_sym_is_callable(s);
 
-    Vec children = tree_get_childs(&$3, 0);
+    Vec children = tree_get_children(&$3, 0);
     if (assert_arguments_length(s, children.len) == 1 && children.len > 0) {
         Node * void_root = (Node *)vec_get(&$3.values, 0);
 

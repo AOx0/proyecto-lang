@@ -2575,7 +2575,7 @@ yyreduce:
     Tree args;
     tree_init(&args, sizeof(Node));
 
-    ast_create_node(&(yyval.subtree), NVoid, Void);
+    ast_create_node(&args, NVoid, Void);
 
     Node * n = ast_create_node(&(yyval.subtree), NCall, s->asoc_type.type);
     n->value.call = (FunctionCall){
@@ -2595,7 +2595,7 @@ yyreduce:
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (4)].symbol));
     assert_sym_is_callable(s);
 
-    Vec children = tree_get_childs(&(yyvsp[(3) - (4)].subtree), 0);
+    Vec children = tree_get_children(&(yyvsp[(3) - (4)].subtree), 0);
     if (assert_arguments_length(s, children.len) == 1 && children.len > 0) {
         Node * void_root = (Node *)vec_get(&(yyvsp[(3) - (4)].subtree).values, 0);
 
@@ -2927,7 +2927,7 @@ yyreduce:
     Symbol * s = assert_sym_exists(&(yyvsp[(1) - (4)].symbol));
     assert_sym_is_callable(s);
 
-    Vec children = tree_get_childs(&(yyvsp[(3) - (4)].subtree), 0);
+    Vec children = tree_get_children(&(yyvsp[(3) - (4)].subtree), 0);
     if (assert_arguments_length(s, children.len) == 1 && children.len > 0) {
         Node * void_root = (Node *)vec_get(&(yyvsp[(3) - (4)].subtree).values, 0);
 

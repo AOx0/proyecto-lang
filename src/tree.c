@@ -64,7 +64,7 @@ size_t tree_num_child(Tree *t, size_t root) {
     return num;
 }
 
-Vec tree_get_childs(Tree *t, size_t parent_id) {
+Vec tree_get_children(Tree *t, size_t parent_id) {
     Vec res = vec_new(sizeof(size_t));
     vec_init(&res, sizeof(size_t));
 
