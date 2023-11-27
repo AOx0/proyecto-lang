@@ -58,11 +58,12 @@ program principal(input, output, entrada);
 begin
     a := 5;
     b := arr[9];
-    b := 3 + Add(a, +3);
+    b := 3 + Add(a, (1 + 3));
     (*b := multadd();*)
     multadd();
     while (a > b) do
       b := b + 2 + 1;
     writeln(c);
+    NumberRelation(3 * 2 + 1, 3 * 3 + b);
     writeln(d)
 end.

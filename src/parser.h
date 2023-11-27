@@ -41,7 +41,7 @@ extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
 /* Line 2060 of yacc.c  */
-#line 213 "src/grammar.y"
+#line 227 "src/grammar.y"
 
 
     #ifndef LNG_PARSERH
@@ -132,7 +132,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2060 of yacc.c  */
-#line 243 "src/grammar.y"
+#line 257 "src/grammar.y"
 
     int64_t snum;
     uint64_t unum;
@@ -146,12 +146,11 @@ typedef union YYSTYPE
     OpType op;
     Tree subtree;
     ExprNode expr;
-    FunctionCall function_call;
     Vec instructions;
 
 
 /* Line 2060 of yacc.c  */
-#line 155 "parser.h"
+#line 154 "parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

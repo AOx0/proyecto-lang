@@ -109,6 +109,20 @@
         return 1;
     }
 
+    int assert_number_of_children(Tree *t, size_t id, size_t len) {
+        if (tree_num_child(t, id) != len) {
+            str_clear(&wrn_buff);
+            str_push(&wrn_buff, "Error: Se esperaba una cantidad de hijos distinta a la recibida: ");
+            str_push_sizet(&wrn_buff, len);
+            str_push(&wrn_buff, " hijos pero se recibieron ");
+            str_push_sizet(&wrn_buff, tree_num_child(t, id));
+            yyerror(str_as_ref(&wrn_buff));
+            return 0;
+        }
+
+        return 1;
+    }
+
     int assert_expr_type(Node *a, Node *b) {
         if (a->asoc_type != b->asoc_type) {
             str_clear(&wrn_buff);
@@ -253,7 +267,6 @@
     OpType op;
     Tree subtree;
     ExprNode expr;
-    FunctionCall function_call;
     Vec instructions;
 }
 
@@ -303,7 +316,7 @@
 %type <subtree>escritura_instruccion;
 %type <subtree>relop_paren;
 %type <subtree>variable_asignacion;
-%type <function_call>llamado_funcion;
+%type <subtree>llamado_funcion;
 %type <subtree>procedure_instruccion;
 %type <subtree>instrucciones_opcionales;
 %type <instructions>instrucciones_lista;
@@ -1076,12 +1089,16 @@ procedure_instruccion : IDENT {
     Tree args;
     tree_init(&args, sizeof(Node));
 
+    ast_create_node(&$$, NVoid, Void);
+
     Node * n = ast_create_node(&$$, NCall, s->asoc_type.type);
     n->value.call = (FunctionCall){
-        .args = args,
+        .args = 0,
         .symbol = *s,
         .return_type = s->asoc_type.type,
     };
+
+    tree_extend_with_subtree(&$$, &args, 0, 0);
 };
 
 procedure_instruccion : IDENT '(' expresion_lista ')' {
@@ -1117,7 +1134,7 @@ procedure_instruccion : IDENT '(' expresion_lista ')' {
             }
         }
 
-        vec_drop(&children);
+        
     }
 
     tree_init(&$$, sizeof(Node));
@@ -1125,8 +1142,12 @@ procedure_instruccion : IDENT '(' expresion_lista ')' {
     Node * n = ast_create_node(&$$, NCall, s->asoc_type.type);
     n->value.call = (FunctionCall){
         .symbol = *s,
-        .args = $3,
+        .args = children.len,
     };
+
+    vec_drop(&children);
+
+    tree_extend_with_subtree(&$$, &$3, 0, 0);
 };
 
 /* Relop */
@@ -1145,6 +1166,8 @@ relop_expresion : relop_expresion RELOP_OR relop_and {
 
     tree_extend_with_subtree(&$$, &$1, 0, 0);
     tree_extend_with_subtree(&$$, &$3, 0, 0);
+
+    assert_number_of_children(&$$, 0, 2);
 } | relop_and;
 
 relop_and : relop_and RELOP_AND relop_not {
@@ -1162,6 +1185,8 @@ relop_and : relop_and RELOP_AND relop_not {
 
     tree_extend_with_subtree(&$$, &$1, 0, 0);
     tree_extend_with_subtree(&$$, &$3, 0, 0);
+
+    assert_number_of_children(&$$, 0, 2);
 } | relop_not;
 
 relop_not : RELOP_NOT relop_not {
@@ -1171,11 +1196,13 @@ relop_not : RELOP_NOT relop_not {
 
     Node * n = ast_create_node(&$$, NExpr, lhs->asoc_type);
     n->value.expr = (ExprNode){
-        .type = EOp,
+        .type = EUnaryOp,
         .value.op = OpNot,
     };
 
     tree_extend_with_subtree(&$$, &$2, 0, 0);
+
+    assert_number_of_children(&$$, 0, 1);
 } | relop_paren;
 
 relop_paren : '(' relop_expresion ')' { $$ = $2; } | relop_expresion_simple;
@@ -1192,6 +1219,8 @@ relop_expresion_simple : expresion relop expresion {
 
     tree_extend_with_subtree(&$$, &$1, 0, 0);
     tree_extend_with_subtree(&$$, &$3, 0, 0);
+
+    assert_number_of_children(&$$, 0, 2);
 };
 
 relop : RELOP_AND { $$ = (ExprNode) { .type = EOp, .value.op = OpAnd }; } 
@@ -1215,6 +1244,8 @@ expresion_lista : expresion {
     tree_extend_with_subtree(&$$, &$3, 0, 0);
 } | {
     tree_init(&$$, sizeof(Node));
+
+    ast_create_node(&$$, NVoid, Void);
 };
 expresion: termino | expresion ADDOP termino {
     tree_init(&$$, sizeof(Node));
@@ -1231,6 +1262,8 @@ expresion: termino | expresion ADDOP termino {
 
     tree_extend_with_subtree(&$$, &$1, 0, 0);
     tree_extend_with_subtree(&$$, &$3, 0, 0);
+
+    assert_number_of_children(&$$, 0, 2);
 };
 termino : factor | termino MULOP factor {
     tree_init(&$$, sizeof(Node));
@@ -1247,8 +1280,12 @@ termino : factor | termino MULOP factor {
 
     tree_extend_with_subtree(&$$, &$1, 0, 0);
     tree_extend_with_subtree(&$$, &$3, 0, 0);
+
+    assert_number_of_children(&$$, 0, 2);
 };
 llamado_funcion : IDENT '(' expresion_lista ')' { 
+    tree_init(&$$, sizeof(Node));
+
     Symbol * s = assert_sym_exists(&$1);
     assert_sym_is_callable(s);
 
@@ -1282,14 +1319,31 @@ llamado_funcion : IDENT '(' expresion_lista ')' {
             }
         }
 
-        vec_drop(&children);
+       
     }
 
-    $$ = (FunctionCall) {
-        .symbol = *s,
-        .args = $3,
-        .return_type = s->asoc_type.type
+    Node * n = ast_create_node(&$$, NExpr, s->asoc_type.type);
+    n->value.expr = (ExprNode) {
+        .type = EFunctionCall,
+        .value.function_call = (FunctionCall) {
+            .symbol = *s,
+            .args = children.len,
+            .return_type = s->asoc_type.type
+        }
     };
+
+    vec_drop(&children);   
+
+    tree_extend_with_subtree(&$$, &$3, 0, 0);
+
+    if (s->asoc_type.type == Void) {
+        str_clear(&wrn_buff);
+        str_push(&wrn_buff, "Error: Se intento usar una funcion que devuelve () como expresion: ");
+        str_push_n(&wrn_buff, s->name.ptr, s->name.len);
+        yyerror(str_as_ref(&wrn_buff));
+    }
+
+    assert_number_of_children(&$$, 0, 1);
 };
 factor : IDENT { 
     tree_init(&$$, sizeof(Node));
@@ -1328,23 +1382,7 @@ factor : IDENT '[' CONST_ENTERA ']' {
         }
     };
 };
-factor : llamado_funcion {
-    tree_init(&$$, sizeof(Node));
-
-    Node * n = ast_create_node(&$$, NExpr, $1.return_type);
-    n->value.expr = (ExprNode) {
-        .type = EFunctionCall,
-        .value.function_call = $1,
-    };
-
-    if ($1.return_type == Void) {
-        str_clear(&wrn_buff);
-        str_push(&wrn_buff, "Error: Se intento usar una funcion que devuelve () como expresion: ");
-        str_push_n(&wrn_buff, $1.symbol.name.ptr, $1.symbol.name.len);
-        yyerror(str_as_ref(&wrn_buff));
-    }
-};
-factor : CONST_ENTERA {
+factor : llamado_funcion | CONST_ENTERA {
     tree_init(&$$, sizeof(Node));
 
     Node * n = ast_create_node(&$$, NExpr, Int);
@@ -1374,6 +1412,8 @@ factor : ADDOP factor {
     };
 
     tree_root_extend(&$$, &$2);
+
+    assert_number_of_children(&$$, 0, 1);
 };
 factor : '(' expresion ')' {
     $$ = $2;

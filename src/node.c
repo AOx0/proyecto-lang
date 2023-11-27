@@ -395,12 +395,20 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
             }
 
             fprintf(f, "%.*s(", (int)s->name.len, s->name.ptr);
-            Tree args = n->value.expr.value.function_call.args;
-            Vec childs = tree_get_childs(&args, n->id);
+
+            // Get childs of the root node of the unique child
+            Vec child = tree_get_childs(t, n->id);
+            if (child.len != 1) {
+                panic("Invalid number of childs");
+            }
+
+            size_t *id = (size_t *)vec_get(&child, 0);
+            Vec childs = tree_get_childs(t, *id);
+            
             for (size_t i = 0; i < childs.len; i++) {
                 size_t *id = (size_t *)vec_get(&childs, i);
-                Node *v = (Node *)vec_get(&args.values, *id);
-                node_display_id(v->id, f, &args, tabla, 0);
+                Node *v = (Node *)vec_get(&t->values, *id);
+                node_display_id(v->id, f, t, tabla, 0);
                 if (i + 1 != childs.len) {
                     fprintf(f, ", ");
                 }
@@ -415,16 +423,12 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
             // Primero mostramos la derecha
             Vec hijos = tree_get_childs(t, n->id);
 
-            // if (hijos.len != 2) {
-            //      panic("Invalid number of childs");
-            //  }
-
-            Node *derecha =
-                (Node *)vec_get(&t->values, *(size_t *)vec_get(&hijos, 0));
-
-            if (derecha->node_type != NExpr) {
-                panic("Esperaba una expresion");
+            if (hijos.len != 2) {
+               panic("Invalid number of childs");
             }
+
+            size_t *id = (size_t *)vec_get(&hijos, 0);
+            Node *derecha = (Node *)vec_get(&t->values, *id);
 
             node_display_id(derecha->id, f, t, tabla, 0);
 
@@ -732,20 +736,34 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
         fprintf(f, "}\n");
 
         break;
-    case NCall:
+    case NCall: {
         display_identation(f, level);
         fprintf(f, "%.*s(", (int)n->value.call.symbol.name.len,
                 n->value.call.symbol.name.ptr);
 
-        if (n->value.call.args.relations.len != 0) {
-            Node *nnnnn = (Node *)vec_get(&n->value.call.args.values, 0);
-            node_display_id(nnnnn->id, f, t, tabla, 0);
+        Vec child = tree_get_childs(t, n->id);
+        if (child.len != 1) {
+            panic("Invalid number of childs");
+        }
+
+        size_t *id = (size_t *)vec_get(&child, 0);
+        Vec childs = tree_get_childs(t, *id);
+
+        if (childs.len != 0) {
+            for (size_t i = 0; i < childs.len; i++) {
+                size_t *id = (size_t *)vec_get(&childs, i);
+                Node *v = (Node *)vec_get(&t->values, *id);
+                node_display_id(v->id, f, t, tabla, 0);
+                if (i + 1 != childs.len) {
+                    fprintf(f, ", ");
+                }
+            }
         } else {
             fprintf(f, "");
         }
 
         fprintf(f, ");\n");
-
+    }
         break;
     case NVoid: {
         Vec child = tree_get_childs(t, n->id);
