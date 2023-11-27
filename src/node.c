@@ -47,8 +47,6 @@ Node *ast_create_node(Tree *t, NodeType nt, DataTypeE asoc_type) {
     return res;
 }
 
-// Expands the specified tree with the subtree in the specified root
-// It assumes all nodes are of type Node, and updates the id of the nodes
 void tree_extend_with_subtree(Tree *t, Tree *o, size_t sub_tree_root,
                               size_t new_parent) {
     if (t->values.t_size != o->values.t_size)
@@ -62,15 +60,12 @@ void tree_extend_with_subtree(Tree *t, Tree *o, size_t sub_tree_root,
 
     for (size_t i = 0; i < o->values.len; i++) {
         Node *value = (Node *)vec_get(&o->values, i);
-        // size_t id_was = value->id;
         Node *new_node = ast_create_node(t, value->node_type, value->asoc_type);
         size_t new_id_is = new_node->id;
         memcpy(new_node, value, t->values.t_size);
 
         Node *n = vec_get(&t->values, new_id_is);
         n->id = new_id_is;
-
-        // printf("New id for %zu is %zu\n", id_was, new_id_is);
     }
 
     for (size_t i = 0; i < o->relations.len; i++) {
@@ -87,228 +82,31 @@ void tree_root_extend(Tree *t, Tree *o) {
     tree_extend_with_subtree(t, o, 0, 0);
 }
 
-void tree_debug(Tree *t, HashSet *tabla) {
+void tree_debug_id(Tree *t, HashSet *tabla, size_t id, size_t level) {
+    Node *node = (Node *)vec_get(&t->values, id);
 
-    UNUSED(tabla);
-
-    for (size_t i = 0; i < t->values.len; i++) {
-        Node *n = (Node *)vec_get(&t->values, i);
-        printf("%zu: ", n->id);
-        node_type_debug(n->node_type);
-
-        printf("\n");
+    if (node == NULL) {
+        panic("Node is null");
     }
 
-    /*
-    for (size_t i = 0; i < t->relations.len; i++) {
-        Node *n = (Node *)vec_get(&t->values, i);
-        printf("%zu: ", n->id);
-        node_type_debug(n->node_type);
-        printf(" ");
-        if (n->node_type != NRoot && n->node_type != NProgram)
-            node_display(n, stdout, t, tabla);
-        printf("\n");
-    }
-    */
-
-    tree_relations_debug(t);
-
-    TreeIter ti = tree_iter_new(t, 0);
-    while (1) {
-        // Print tree with identation
-        TreeIterEntry entry = tree_iter_next(&ti);
-        if (entry.did_set == 0) {
-            break;
-        }
-
-        Node *n = (Node *)entry.value;
-        for (size_t i = 1; i < entry.level; i++) {
-            printf("-");
-        }
-        node_type_debug(n->node_type);
-        printf("\n");
-    }
+    tree_debug(t, tabla, node, level);
 }
 
-char *node_type_display(NodeType nt) {
-    switch (nt) {
-    case NProgram: {
-        return "programa";
-    }
-    case NWrite: {
-        return "escritura";
-    }
-    case NRead: {
-        return "lectura";
-    }
-    case NVar: {
-        return "declaración de variable";
-    }
-    case NConst: {
-        return "declaración de constante";
-    }
-    case NAssign: {
-        return "asignacion";
-    }
-    case NFunction: {
-        return "funcion";
-    }
-    case NFunctionSign: {
-        return "funcion_sign";
-    }
-    case NVoid: {
-        return "void";
-    }
-    case NExpr: {
-        return "expresion";
-    }
-    case NIf: {
-        return "if";
-    }
-    case NFor: {
-        return "bucle for";
-    }
-    case NWhile: {
-        return "bucle while";
-    }
-    case NCall:
-        return "llamada a funcion";
-    case NRoot:
-        return "root";
-    case NStr:
-        return "string";
-        break;
+void tree_debug(Tree *t, HashSet *tabla, Node *n, size_t level) {
+    if (n == NULL) {
+        panic("Node is null");
     }
 
-    panic("Invalid node type");
-    return NULL;
-}
-
-void node_type_debug(NodeType nt) {
-    switch (nt) {
-    case NProgram: {
-        printf("NProgram");
-        break;
+    display_identation(stdout, level);
+    node_type_debug(n->node_type);
+    printf("\n");
+    Vec child = tree_get_children(t, n->id);
+    for (size_t i = 0; i < child.len; i++) {
+        size_t *id = (size_t *)vec_get(&child, i);
+        Node *v = (Node *)vec_get(&t->values, *id);
+        tree_debug(t, tabla, v, level + 1);
     }
-    case NWrite: {
-        printf("NWrite");
-        break;
-    }
-    case NRead: {
-        printf("NRead");
-        break;
-    }
-    case NVar: {
-        printf("NVar");
-        break;
-    }
-    case NConst: {
-        printf("NConst");
-        break;
-    }
-    case NAssign: {
-        printf("NAssign");
-        break;
-    }
-    case NFunction: {
-        printf("NFunction");
-        break;
-    }
-    case NFunctionSign: {
-        printf("NFunctionSign");
-        break;
-    }
-    case NVoid: {
-        printf("NVoid");
-        break;
-    }
-    case NExpr: {
-        printf("NExpr");
-        break;
-    }
-    case NIf: {
-        printf("NIf");
-        break;
-    }
-    case NFor: {
-        printf("NFor");
-        break;
-    }
-    case NWhile: {
-        printf("NWhile");
-        break;
-    }
-    case NCall:
-        printf("NCall");
-        break;
-    case NRoot:
-        printf("NRoot");
-        break;
-    case NStr:
-        printf("NStr");
-        break;
-    }
-}
-
-void display_optype(FILE *f, OpType t) {
-    switch (t) {
-    case OpAdd: {
-        fprintf(f, " + ");
-        break;
-    }
-    case OpSub: {
-        fprintf(f, " - ");
-        break;
-    }
-    case OpMul: {
-        fprintf(f, " * ");
-        break;
-    }
-    case OpDiv: {
-        fprintf(f, " / ");
-        break;
-    }
-    case OpMod: {
-        fprintf(f, " %% ");
-        break;
-    }
-    case OpEq: {
-        fprintf(f, " == ");
-        break;
-    }
-    case OpNeq: {
-        fprintf(f, " != ");
-        break;
-    }
-    case OpBt: {
-        fprintf(f, " > ");
-        break;
-    }
-    case OpLt: {
-        fprintf(f, " < ");
-        break;
-    }
-    case OpEbt: {
-        fprintf(f, " >= ");
-        break;
-    }
-    case OpElt: {
-        fprintf(f, " <= ");
-        break;
-    }
-    case OpAnd: {
-        fprintf(f, " && ");
-        break;
-    }
-    case OpOr: {
-        fprintf(f, " || ");
-        break;
-    }
-    case OpNot: {
-        fprintf(f, "!");
-        break;
-    }
-    }
+    vec_drop(&child);
 }
 
 void node_display_id(size_t id, FILE *f, Tree *t, HashSet *tabla,
@@ -410,7 +208,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
 
             size_t *id = (size_t *)vec_get(&child, 0);
             Vec children = tree_get_children(t, *id);
-            
+
             for (size_t i = 0; i < children.len; i++) {
                 size_t *id = (size_t *)vec_get(&children, i);
                 Node *v = (Node *)vec_get(&t->values, *id);
@@ -430,7 +228,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
             Vec hijos = tree_get_children(t, n->id);
 
             if (hijos.len != 2) {
-               panic("Invalid number of children");
+                panic("Invalid number of children");
             }
 
             size_t *id = (size_t *)vec_get(&hijos, 0);
@@ -624,11 +422,10 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
         for (size_t i = 0; i < children.len; i++) {
             size_t *id = (size_t *)vec_get(&children, i);
             Node *v = (Node *)vec_get(&t->values, *id);
-            
+
             /*if (v->node_type != NExpr && v->node_type != NStr) {
                 panic("Expected expression or constant");
-            }*/ 
-            
+            }*/
 
             switch (v->value.expr.type) {
             case EIntValue: {
@@ -699,7 +496,6 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
             fprintf(f, "");
         }
 
-        
         fprintf(f, ");\n");
 
         vec_drop(&children);
@@ -814,5 +610,186 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
         fprintf(f, "%.*s", (int)n->value.sl.len, n->value.sl.ptr);
         fprintf(f, "\"");
         break;
+    }
+}
+
+char *node_type_display(NodeType nt) {
+    switch (nt) {
+    case NProgram: {
+        return "programa";
+    }
+    case NWrite: {
+        return "escritura";
+    }
+    case NRead: {
+        return "lectura";
+    }
+    case NVar: {
+        return "declaración de variable";
+    }
+    case NConst: {
+        return "declaración de constante";
+    }
+    case NAssign: {
+        return "asignacion";
+    }
+    case NFunction: {
+        return "funcion";
+    }
+    case NFunctionSign: {
+        return "funcion_sign";
+    }
+    case NVoid: {
+        return "void";
+    }
+    case NExpr: {
+        return "expresion";
+    }
+    case NIf: {
+        return "if";
+    }
+    case NFor: {
+        return "bucle for";
+    }
+    case NWhile: {
+        return "bucle while";
+    }
+    case NCall:
+        return "llamada a funcion";
+    case NRoot:
+        return "root";
+    case NStr:
+        return "string";
+        break;
+    }
+
+    panic("Invalid node type");
+    return NULL;
+}
+
+void node_type_debug(NodeType nt) {
+    switch (nt) {
+    case NProgram: {
+        printf("NProgram");
+        break;
+    }
+    case NWrite: {
+        printf("NWrite");
+        break;
+    }
+    case NRead: {
+        printf("NRead");
+        break;
+    }
+    case NVar: {
+        printf("NVar");
+        break;
+    }
+    case NConst: {
+        printf("NConst");
+        break;
+    }
+    case NAssign: {
+        printf("NAssign");
+        break;
+    }
+    case NFunction: {
+        printf("NFunction");
+        break;
+    }
+    case NFunctionSign: {
+        printf("NFunctionSign");
+        break;
+    }
+    case NVoid: {
+        printf("NVoid");
+        break;
+    }
+    case NExpr: {
+        printf("NExpr");
+        break;
+    }
+    case NIf: {
+        printf("NIf");
+        break;
+    }
+    case NFor: {
+        printf("NFor");
+        break;
+    }
+    case NWhile: {
+        printf("NWhile");
+        break;
+    }
+    case NCall:
+        printf("NCall");
+        break;
+    case NRoot:
+        printf("NRoot");
+        break;
+    case NStr:
+        printf("NStr");
+        break;
+    }
+}
+
+void display_optype(FILE *f, OpType t) {
+    switch (t) {
+    case OpAdd: {
+        fprintf(f, " + ");
+        break;
+    }
+    case OpSub: {
+        fprintf(f, " - ");
+        break;
+    }
+    case OpMul: {
+        fprintf(f, " * ");
+        break;
+    }
+    case OpDiv: {
+        fprintf(f, " / ");
+        break;
+    }
+    case OpMod: {
+        fprintf(f, " %% ");
+        break;
+    }
+    case OpEq: {
+        fprintf(f, " == ");
+        break;
+    }
+    case OpNeq: {
+        fprintf(f, " != ");
+        break;
+    }
+    case OpBt: {
+        fprintf(f, " > ");
+        break;
+    }
+    case OpLt: {
+        fprintf(f, " < ");
+        break;
+    }
+    case OpEbt: {
+        fprintf(f, " >= ");
+        break;
+    }
+    case OpElt: {
+        fprintf(f, " <= ");
+        break;
+    }
+    case OpAnd: {
+        fprintf(f, " && ");
+        break;
+    }
+    case OpOr: {
+        fprintf(f, " || ");
+        break;
+    }
+    case OpNot: {
+        fprintf(f, "!");
+        break;
+    }
     }
 }

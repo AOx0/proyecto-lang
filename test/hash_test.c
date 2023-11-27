@@ -16,9 +16,7 @@ int test_hashset(void) {
     return res;
 }
 
-HashIdx hash_num(void *num) {
-    return (HashIdx) { .idx = *(size_t *)num };
-}
+HashIdx hash_num(void *num) { return (HashIdx){.idx = *(size_t *)num}; }
 
 int hash_contains(void) {
     int res = 0;

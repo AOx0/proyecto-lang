@@ -146,7 +146,9 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level);
 char *node_type_display(NodeType nt);
 void node_display_id(size_t id, FILE *f, Tree *t, HashSet *tabla, size_t level);
 void node_type_debug(NodeType nt);
-void tree_debug(Tree *t, HashSet *tabla);
+void tree_debug(Tree *t, HashSet *tabla, Node *n, size_t level);
+void tree_debug_id(Tree *t, HashSet *tabla, size_t id, size_t level);
+void display_optype(FILE *f, OpType t);
 void flip_tree_relations(Tree *t);
 
 #endif

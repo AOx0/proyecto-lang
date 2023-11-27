@@ -1,7 +1,6 @@
-program HOLA (input, output);
-var numero, edad: integer;
-const NUMERO = "ass";
+program HOLA (entrada);
+    var numero: integer;
 
-BEGIN
-
-END.
+    begin
+        numero := 1 + 1.0
+    end.

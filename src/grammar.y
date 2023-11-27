@@ -474,10 +474,10 @@ KW_PROG IDENT '(' ident_lista ')' ';' decl subprogramas
     flip_tree_relations(&ast);
 
     #ifdef PRINT_TREE
-        tree_debug(&ast, &tabla);
+        tree_debug_id(&ast, &tabla, 0, 0);
     #endif
 
-    if (err == 0)  node_display_id(0, OUT_FILE, &ast, &tabla, 0);
+    if (err == 0) node_display_id(0, OUT_FILE, &ast, &tabla, 0);
 
     // Al final liberamos la tabla de hashes de memoria
     vec_drop(&$5);
@@ -1032,10 +1032,6 @@ expresion_lista_con_cadena : expresion {
 } | expresion_lista_con_cadena ',' expresion {
     $$ = $1;
     tree_extend_with_subtree(&$$, &$3, 0, 0);
-} | {
-    tree_init(&$$, sizeof(Node));
-
-    ast_create_node(&$$, NVoid, Void);
 } | CONST_CADENA {
     tree_init(&$$, sizeof(Node));
 

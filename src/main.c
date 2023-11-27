@@ -18,6 +18,7 @@ extern HashSet tabla;
 extern String wrn_buff;
 extern size_t line;
 extern size_t nchar;
+extern char *yytext;
 char *path;
 FILE *OUT_FILE;
 
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]) {
     if (!err)
         printf("Successfull compilation\n");
     else
-        printf("There was one or more errors\n");
+        printf("There was one or more errors, aborting codegen\n");
     return err;
 }
 
