@@ -65,6 +65,7 @@ begin
     a := 5;
     b := arr[9];
     b := 3 + Add(a, (1 + 3));
+    readln(a);
     (*b := multadd();*)
     multadd();
     while (a > b) do

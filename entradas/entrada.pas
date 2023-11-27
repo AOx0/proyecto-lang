@@ -1,10 +1,8 @@
-program HOLA (entrada);
-    var numero: real;
-    var i: integer;
+program programa();
+    var numero, i: integer;
 
     begin
-        for i downto 10 do writeln(i);
-        for i to 10 do writeln(i);
-        for i:= 1 to 10 do writeln(i);
-        numero := -1.02857e+2 + 1.0
+        write("Ingresa el numero: ");
+        read(numero);
+        for i := 0 to numero do writeln("Va en: ", i)
     end.

@@ -343,7 +343,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
                 }
             }
         } else {
-            fprintf(f, "");
+            fprintf(f, "void");
         }
 
         fprintf(f, ") {\n");
@@ -387,7 +387,7 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
         break;
     }
     case NProgram: {
-        fprintf(f, "\nvoid %.*s(", (int)n->value.fun.symbol.name.len,
+        fprintf(f, "\n %.*s(", (int)n->value.fun.symbol.name.len,
                 n->value.fun.symbol.name.ptr);
         for (size_t i = 0; i < n->value.fun.args.len; i++) {
             StrSlice *sl = (StrSlice *)vec_get(&n->value.fun.args, i);
@@ -502,6 +502,12 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
 
         fprintf(f, ");\n");
 
+        if (n->value.write.newline == 0) {
+            // flush
+            display_identation(f, level);
+            fprintf(f, "fflush(stdout);\n");
+        }
+
         vec_drop(&children);
 
         break;
@@ -509,16 +515,38 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
     case NRead: {
         display_identation(f, level);
         fprintf(f, "scanf(\"");
-        Vec child = tree_get_children(t, n->id);
-        size_t *id = (size_t *)vec_get(&child, 0);
-        Node *v = (Node *)vec_get(&t->values, *id);
-        data_type_e_display_scan(v->value.read.target_symbol.asoc_type.type);
-        fprintf(f, "\", &%.*s);\n", (int)v->value.read.target_symbol.name.len,
-                v->value.read.target_symbol.name.ptr);
-        if (v->value.read.newline == 1) {
-            fprintf(f, "\n");
+        
+       Symbol target = n->value.read.target_symbol;
+
+        switch (target.asoc_type.type) {
+            case Int: {
+                fprintf(f, "%s", data_type_e_display_scan(Int));
+                break;
+            }
+            case Real: {
+                fprintf(f, "%s", data_type_e_display_scan(Real));
+                break;
+            }
+            case Str: {
+                fprintf(f, "%s", data_type_e_display_scan(Str));
+                break;
+            }
         }
-        fprintf(f, "\"");
+
+        fprintf(f, "\", ");
+
+        fprintf(f, "&");
+
+        Symbol *s = (Symbol *)hashset_get(tabla, &target);
+        
+        fprintf(f, "%.*s", (int)s->name.len, s->name.ptr);
+
+        if (n->value.read.newline == 1) {
+            fprintf(f, "[^\\n]");
+        }
+
+        fprintf(f, ");\n");
+        
         break;
     }
     case NAssign: {

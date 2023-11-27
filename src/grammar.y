@@ -496,6 +496,9 @@ ident_lista : IDENT {
     Symbol *s = vec_push(&$$);
     *s = $1;
 };
+ident_lista : {
+    $$ = vec_new(sizeof(Symbol));
+};
 
 /* Declaration of var and const */
 decl : decl_var | decl_const | { $$ = vec_new(sizeof(Symbol)); };
