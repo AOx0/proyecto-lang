@@ -25,7 +25,7 @@ SPACE [ \t\f]
 SIGNO [+-]?
 ENTERO 0|{NZDIGIT}{DIGIT}*
 ZENTERO {DIGIT}+
-CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"|";"|"["|"]"|","|"."|"#"
+CALFANUM {LETRA}|{DIGIT}|"$"|"&"|"/"|"+"|"-"|"*"|"%"|"="|":"|"{"|"}"|">"|"<"|":"|";"|"["|"]"|","|"."|"#"|" "|"\n"
 %%
 <INITIAL,COMENTARIO>"(*" {
     nchar += yyleng;

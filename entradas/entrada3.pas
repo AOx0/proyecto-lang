@@ -4,11 +4,17 @@ Tiene tres funciones
 *)
 program principal(input, output, entrada);
     
-    var a,b,c,d: integer;
+    var a,b,c,d,i: integer;
     var arr: array [0..10] of integer;
     const NOMBRE = "Daniel";
     const EDAD = 21;
     const ALTURA = 1.90;
+
+    procedure printNumbers(upTo: integer);
+    begin 
+        for i := 0 to upTo do
+            writeln("Numero: ", i)
+    end;
 
     (* Suma numeros *)
     function Add(a: integer; b: integer) : integer;

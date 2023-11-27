@@ -476,6 +476,10 @@ void node_display(Node *n, FILE *f, Tree *t, HashSet *tabla, size_t level) {
         vec_drop(&child);
         vec_drop(&children);
 
+        if (n->value.write.newline == 1) {
+            fprintf(f, "\\n");
+        }
+
         fprintf(f, "\", ");
 
         child = tree_get_children(t, n->id);
