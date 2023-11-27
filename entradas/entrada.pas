@@ -6,3 +6,4 @@ program programa();
         read(numero);
         for i := 0 to numero do writeln("Va en: ", i)
     end.
+

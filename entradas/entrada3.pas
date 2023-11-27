@@ -1,6 +1,5 @@
 (*
-Este programa calcula c = a+b y entonces d = c * a
-Tiene tres funciones
+    Comentarios
 *)
 program principal(input, output, entrada);
     
@@ -43,23 +42,23 @@ program principal(input, output, entrada);
     procedure NumberRelation(numero1: integer; numero2: integer);
     begin
         if(numero1>numero2) then
-            writeln(numero1)
+            writeln("El numero mayor es: ", numero1)
         else
             begin
                 if(numero1 <numero2) then
-                    writeln("Aaaa", numero2)
+                    writeln("El numero mayor es: ", numero2)
                 else
-                    writeln("Bbb", numero2, 3)
+                    writeln("Los numeros son iguales")
             end
     end;
 
 (*
     Codigo: 
-        - 20% Lexicografico
-        - 20% Sintactico
-        - 20% Tabla de simbolos
+        - 25% Lexicografico
+        - 25% Sintactico
+        - 25% Tabla de simbolos
         - 20% Arbol sintactico
-        - 20% Generacion de C++
+        - 5% Generacion de C++
         
 *)
 begin
