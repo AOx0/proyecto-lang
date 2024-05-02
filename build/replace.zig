@@ -2,14 +2,14 @@ const std = @import("std");
 
 pub const ReplaceInFileStep = struct {
     const Self = @This();
-    step: std.build.Step,
+    step: std.Build.Step,
     from: []const []const u8,
     into: []const []const u8,
     paths: []const []const u8,
 
-    pub fn create(b: *std.build.Builder, paths: []const []const u8, from: []const []const u8, into: []const []const u8) *ReplaceInFileStep {
+    pub fn create(b: *std.Build, paths: []const []const u8, from: []const []const u8, into: []const []const u8) *ReplaceInFileStep {
         const self = b.allocator.create(Self) catch @panic("out of memory");
-        self.* = Self{ .step = std.build.Step.init(.{
+        self.* = Self{ .step = std.Build.Step.init(.{
             .id = .custom,
             .name = "Replace step",
             .owner = b,
@@ -18,15 +18,15 @@ pub const ReplaceInFileStep = struct {
         return self;
     }
 
-    pub fn make(step: *std.build.Step, prog_node: *std.Progress.Node) !void {
+    pub fn make(step: *std.Build.Step, prog_node: *std.Progress.Node) !void {
         _ = prog_node;
-        const self = @fieldParentPtr(ReplaceInFileStep, "step", step);
+        const self: *ReplaceInFileStep = @fieldParentPtr("step", step);
 
         for (self.paths) |path| {
             var file = try std.fs.cwd().openFile(path, .{ .mode = .read_only });
 
             const file_size = (try file.stat()).size;
-            var buffer = try self.step.owner.allocator.alloc(u8, file_size);
+            const buffer = try self.step.owner.allocator.alloc(u8, file_size);
             defer self.step.owner.allocator.free(buffer);
 
             var buffer2 = try self.step.owner.allocator.alloc(u8, file_size * 2);
@@ -68,7 +68,7 @@ pub fn split_once(inp: []const u8, substr: []const u8) ?StrTupla {
 
     while (i < inp.len) {
         if (inp.len >= i + substr.len and std.mem.eql(u8, inp[i .. i + substr.len], substr)) {
-            var res: StrTupla = .{ .left = inp[0..i], .right = inp[i + substr.len ..] };
+            const res: StrTupla = .{ .left = inp[0..i], .right = inp[i + substr.len ..] };
             return res;
         }
 

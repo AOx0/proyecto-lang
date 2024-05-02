@@ -40,15 +40,7 @@ pub fn build(b: *std.Build) void {
     gen_step.dependOn(&mv_flex.step);
     gen_step.dependOn(&mv_bison.step);
 
-    const flags = .{ 
-        "-Wall", "-Wextra", "-pedantic", "-Wno-missing-braces", 
-        "-Wmissing-field-initializers", 
-        if (werror) "-Werror" else "", 
-        if (werror) "-pedantic-errors" else "", 
-        if (target.isWindows()) "-DWIN" else "", 
-        if (tree) "-DPRINT_TREE" else "" , 
-        if (table) "-DPRINT_TABLE" else ""
-    };
+    const flags = .{ "-Wall", "-Wextra", "-pedantic", "-Wno-missing-braces", "-Wmissing-field-initializers", if (werror) "-Werror" else "", if (werror) "-pedantic-errors" else "", if (target.result.isMinGW()) "-DWIN" else "", if (tree) "-DPRINT_TREE" else "", if (table) "-DPRINT_TABLE" else "" };
     // The main source code files without `main.c`. It is easier to compile it with specific main
     // files so that, for example, we can test it.
     const lnglib = b.addStaticLibrary(.{
@@ -58,7 +50,7 @@ pub fn build(b: *std.Build) void {
     });
 
     lnglib.linkLibC();
-    lnglib.addCSourceFiles(&.{ "src/str.c", "src/vector.c", "src/hashset.c", "src/parser.c", "src/lexer.c", "src/symbol.c", "src/tree.c", "src/node.c", "src/panic.c" }, &flags);
+    lnglib.addCSourceFiles(.{ .files = &.{ "src/str.c", "src/vector.c", "src/hashset.c", "src/parser.c", "src/lexer.c", "src/symbol.c", "src/tree.c", "src/node.c", "src/panic.c" }, .flags = &flags });
 
     if (!no_flex and !no_gen) lnglib.step.dependOn(&mv_flex.step);
     if (!no_bison and !no_gen) {
@@ -85,7 +77,7 @@ pub fn build(b: *std.Build) void {
         b.installArtifact(lng);
         lng.linkLibC();
         lng.linkLibrary(lnglib);
-        lng.addCSourceFiles(&.{"src/main.c"}, &flags);
+        lng.addCSourceFiles(.{ .files = &.{"src/main.c"}, .flags = &flags });
 
         const run_cmd = b.addRunArtifact(lng);
         run_cmd.step.dependOn(b.getInstallStep());
@@ -108,7 +100,7 @@ pub fn build(b: *std.Build) void {
         b.installArtifact(lng);
         lng.linkLibC();
         lng.linkLibrary(lnglib);
-        lng.addCSourceFiles(&.{ "test/main.c", "test/str_test.c", "test/vec_test.c", "test/hash_test.c", "test/tree_test.c" }, &.{});
+        lng.addCSourceFiles(.{ .files = &.{ "test/main.c", "test/str_test.c", "test/vec_test.c", "test/hash_test.c", "test/tree_test.c" }, .flags = &.{} });
 
         const run_cmd = b.addRunArtifact(lng);
         run_cmd.step.dependOn(b.getInstallStep());
